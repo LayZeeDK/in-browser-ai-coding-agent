@@ -1,284 +1,135 @@
-# Nx Angular Repository
+# In-Browser AI Coding Agent
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+An Angular 21 application that uses the [LanguageModel browser API](https://developer.chrome.com/docs/ai/prompt-api) to run on-device AI models directly in the browser -- no cloud APIs, no server-side inference.
 
-✨ A repository showcasing key [Nx](https://nx.dev) features for Angular monorepos ✨
+Two browsers implement the LanguageModel API with different on-device models:
 
-## Finish your Nx platform setup
+| Browser                 | Model               | Parameters | Context |
+| ----------------------- | ------------------- | ---------- | ------- |
+| Google Chrome Beta 138+ | Gemini Nano         | --         | --      |
+| Microsoft Edge Dev 138+ | Phi-4-mini-instruct | 3.8B       | 128K    |
 
-🚀 [Finish setting up your workspace](https://cloud.nx.app/connect/SfJ97sbDP8) to get faster builds with remote caching, distributed task execution, and self-healing CI. [Learn more about Nx Cloud](https://nx.dev/ci/intro/why-nx-cloud).
+Both expose the **same `LanguageModel` API** and use the same TypeScript types (`@types/dom-chromium-ai`).
 
-## 📦 Project Overview
+## Prerequisites
 
-This repository demonstrates a production-ready Angular monorepo with:
+- [Node.js](https://nodejs.org/) (see `.node-version` for the required version)
+- Google Chrome Beta and/or Microsoft Edge Dev installed locally
+- On-device models downloaded (see [Browser Setup](#browser-setup))
 
-- **2 Applications**
-  - `shop` - Angular e-commerce application with product listings and detail views
-  - `api` - Backend API with Docker support serving product data
-
-- **6 Libraries**
-  - `@org/feature-products` - Product listing feature (Angular)
-  - `@org/feature-product-detail` - Product detail feature (Angular)
-  - `@org/data` - Data access layer for shop features
-  - `@org/shared-ui` - Shared UI components
-  - `@org/models` - Shared data models
-  - `@org/products` - API product service library
-
-- **E2E Testing**
-  - `shop-e2e` - Playwright tests for the shop application
-
-## 🚀 Quick Start
+## Getting Started
 
 ```bash
-# Clone the repository
-git clone <your-fork-url>
-cd <your-repository-name>
-
-# Install dependencies
-# (Note: You may need --legacy-peer-deps)
 npm install
-
-# Serve the Angular shop application (this will simultaneously serve the API backend)
-npx nx serve shop
-
-# ...or you can serve the API separately
-npx nx serve api
-
-# Build all projects
-npx nx run-many -t build
-
-# Run tests
-npx nx run-many -t test
-
-# Lint all projects
-npx nx run-many -t lint
-
-# Run e2e tests
-npx nx e2e shop-e2e
-
-# Run tasks in parallel
-
-npx nx run-many -t lint test build e2e --parallel=3
-
-# Visualize the project graph
-npx nx graph
+npm run build
+npx nx serve in-browser-ai-coding-agent
 ```
 
-## ⭐ Featured Nx Capabilities
+Open `http://localhost:4200` in Chrome Beta or Edge Dev.
 
-This repository showcases several powerful Nx features:
+## Scripts
 
-### 1. 🔒 Module Boundaries
+| Script                 | Description                                   |
+| ---------------------- | --------------------------------------------- |
+| `npm run build`        | Build all projects                            |
+| `npm run lint`         | Lint all projects                             |
+| `npm test`             | Run unit tests (Vitest Browser Mode)          |
+| `npm run typecheck`    | TypeScript type checking                      |
+| `npm run e2e`          | Run e2e tests (Playwright)                    |
+| `npm run format`       | Format code with Prettier                     |
+| `npm run format:check` | Check formatting                              |
+| `npm run ci`           | Full CI pipeline (format check + all targets) |
 
-Enforces architectural constraints using tags. Each project has specific dependencies it can use:
+## Browser Setup
 
-- `scope:shared` - Can be used by all projects
-- `scope:shop` - Shop-specific libraries
-- `scope:api` - API-specific libraries
-- `type:feature` - Feature libraries
-- `type:data` - Data access libraries
-- `type:ui` - UI component libraries
+### Google Chrome Beta
 
-**Try it out:**
+1. Install via `winget install Google.Chrome.Beta` or [download](https://www.google.com/chrome/beta/)
+2. Open `chrome://flags/#optimization-guide-on-device-model` -- select **Enabled BypassPerfRequirement**
+3. Open `chrome://flags/#prompt-api-for-gemini-nano` -- select **Enabled**
+4. Restart Chrome Beta
+5. Open `chrome://on-device-internals` to monitor model download
+6. Verify in DevTools: `await LanguageModel.availability()` should return `"available"`
 
-```bash
-# See the current project graph and boundaries
-npx nx graph
+If it returns `"downloadable"`, trigger the download:
 
-# View a specific project's details
-npx nx show project shop --web
+```js
+await LanguageModel.create({ expectedInputLanguages: ['en'], expectedOutputLanguages: ['en'] });
 ```
 
-[Learn more about module boundaries →](https://nx.dev/features/enforce-module-boundaries)
+### Microsoft Edge Dev
 
-### 2. 🐳 Docker Integration
+1. Install via `winget install Microsoft.Edge.Dev` or [download](https://www.microsoft.com/edge/download/insider)
+2. Open `edge://flags/` and search "Prompt API for Phi mini" -- select **Enabled**
+3. Restart Edge Dev
+4. Open `edge://on-device-internals` to check model status
+5. Verify in DevTools: `await LanguageModel.availability()` should return `"available"`
 
-The API project includes Docker support with automated targets and release management:
+## Architecture
 
-```bash
-# Build Docker image
-npx nx docker:build api
-
-# Run Docker container
-npx nx docker:run api
-
-# Release with automatic Docker image versioning
-npx nx release
-```
-
-**Nx Release for Docker:** The repository is configured to use Nx Release for managing Docker image versioning and publishing. When running `nx release`, Docker images for the API project are automatically versioned and published based on the release configuration in `nx.json`. This integrates seamlessly with semantic versioning and changelog generation.
-
-[Learn more about Docker integration →](https://nx.dev/recipes/nx-release/release-docker-images)
-
-### 3. 🎭 Playwright E2E Testing
-
-End-to-end testing with Playwright is pre-configured:
-
-```bash
-# Run e2e tests
-npx nx e2e shop-e2e
-
-# Run e2e tests in CI mode
-npx nx e2e-ci shop-e2e
-```
-
-[Learn more about E2E testing →](https://nx.dev/technologies/test-tools/playwright/introduction#e2e-testing)
-
-### 4. ⚡ Vitest for Unit Testing
-
-Fast unit testing with Vite for Angular libraries:
-
-```bash
-# Test a specific library
-npx nx test data
-
-# Test all projects
-npx nx run-many -t test
-```
-
-[Learn more about Vite testing →](https://nx.dev/recipes/vite)
-
-### 5. 🔧 Self-Healing CI
-
-The CI pipeline includes `nx fix-ci` which automatically identifies and suggests fixes for common issues:
-
-```bash
-# In CI, this command provides automated fixes
-npx nx fix-ci
-```
-
-This feature helps maintain a healthy CI pipeline by automatically detecting and suggesting solutions for:
-
-- Missing dependencies
-- Incorrect task configurations
-- Cache invalidation issues
-- Common build failures
-
-[Learn more about self-healing CI →](https://nx.dev/ci/features/self-healing-ci)
-
-## 📁 Project Structure
+This is an [Nx](https://nx.dev) monorepo with Angular 21:
 
 ```
-├── apps/
-│   ├── shop/           [scope:shop]    - Angular e-commerce app
-│   ├── shop-e2e/                       - E2E tests for shop
-│   └── api/            [scope:api]     - Backend API with Docker
-├── libs/
-│   ├── shop/
-│   │   ├── feature-products/        [scope:shop,type:feature] - Product listing
-│   │   ├── feature-product-detail/  [scope:shop,type:feature] - Product details
-│   │   ├── data/                    [scope:shop,type:data]    - Data access
-│   │   └── shared-ui/               [scope:shop,type:ui]      - UI components
-│   ├── api/
-│   │   └── products/    [scope:api]    - Product service
-│   └── shared/
-│       └── models/      [scope:shared,type:data] - Shared models
-├── nx.json             - Nx configuration
-├── tsconfig.json       - TypeScript configuration
-└── eslint.config.mjs   - ESLint with module boundary rules
+apps/
+  in-browser-ai-coding-agent/          # Angular application
+    src/app/
+      language-model.service.ts         # LanguageModel API wrapper
+      model-status.component.ts         # Model availability display
+      app.ts                            # Root component
+    vitest.config.mts                   # Vitest Browser Mode config
+    project.json                        # Nx project config
+  in-browser-ai-coding-agent-e2e/      # Playwright e2e tests
+    playwright.config.ts                # Chrome Beta + Edge Dev projects
+scripts/
+  bootstrap-ai-model.mjs               # CI model download bootstrap
+.planning/research/                     # CI research documents
 ```
 
-## 🏷️ Understanding Tags
+### Key Technical Decisions
 
-This repository uses tags to enforce module boundaries:
+- **Angular 21** with zoneless change detection (no zone.js overhead)
+- **`@angular/build:unit-test`** -- Angular's native Vitest integration (not AnalogJS)
+- **Vitest Browser Mode** -- unit tests run in real Chrome Beta and Edge Dev, not jsdom
+- **Playwright e2e** -- branded browser channels with LanguageModel API feature flags
+- **No mocks in local tests** -- tests exercise the real LanguageModel API
 
-| Project            | Tags                         | Can Import From              |
-| ------------------ | ---------------------------- | ---------------------------- |
-| `shop`             | `scope:shop`                 | `scope:shop`, `scope:shared` |
-| `api`              | `scope:api`                  | `scope:api`, `scope:shared`  |
-| `feature-products` | `scope:shop`, `type:feature` | `scope:shop`, `scope:shared` |
-| `data`             | `scope:shop`, `type:data`    | `scope:shared`               |
-| `models`           | `scope:shared`, `type:data`  | Nothing (base library)       |
+## Testing with Real Browser APIs
 
-## 📚 Useful Commands
+Both unit tests and e2e tests launch real branded browsers with Playwright. Four Playwright default flags must be overridden for the LanguageModel API to work:
 
-```bash
-# Project exploration
-npx nx graph                                    # Interactive dependency graph
-npx nx list                                     # List installed plugins
-npx nx show project shop --web                 # View project details
+1. `--disable-features=...OptimizationHints` -- replaced without OptimizationHints
+2. `--disable-field-trial-config` -- removed for model eligibility checks
+3. `--disable-background-networking` -- removed for model registration
+4. `--disable-component-update` -- removed for model component loading
 
-# Development
-npx nx serve shop                              # Serve Angular app
-npx nx serve api                               # Serve backend API
-npx nx build shop                              # Build Angular app
-npx nx test data                               # Test a specific library
-npx nx lint feature-products                   # Lint a specific library
+Additionally, the `LanguageModel` global only exists on navigated pages (HTTPS, `chrome://`), not on `about:blank`.
 
-# Running multiple tasks
-npx nx run-many -t build                       # Build all projects
-npx nx run-many -t test --parallel=3          # Test in parallel
-npx nx run-many -t lint test build            # Run multiple targets
+See [.planning/research/languagemodel-playwright-automation.md](.planning/research/languagemodel-playwright-automation.md) for the full investigation.
 
-# Affected commands (great for CI)
-npx nx affected -t build                       # Build only affected projects
-npx nx affected -t test                        # Test only affected projects
+## CI
 
-# Docker operations
-npx nx docker:build api                        # Build Docker image
-npx nx docker:run api                          # Run Docker container
-```
+GitHub Actions workflow with four parallel jobs:
 
-## 🎯 Adding New Features
+| Job                    | Purpose                                          |
+| ---------------------- | ------------------------------------------------ |
+| `format`               | Prettier check (PR only)                         |
+| `lint-typecheck-build` | ESLint, TypeScript, Angular build                |
+| `test (chrome-beta)`   | Unit + e2e tests in Chrome Beta with Gemini Nano |
+| `test (msedge-dev)`    | Unit + e2e tests in Edge Dev with Phi-4-mini     |
 
-### Generate a new Angular application:
+Browser test jobs use a matrix strategy with:
 
-```bash
-npx nx g @nx/angular:app my-app
-```
+- Disk cleanup via [`endersonmenezes/free-disk-space`](https://github.com/endersonmenezes/free-disk-space) to free ~30 GB
+- `actions/cache` for browser profiles with downloaded models
+- Bootstrap script to seed chrome://flags and trigger model download on cache miss
 
-### Generate a new Angular library:
+### Model Sizes (Verified)
 
-```bash
-npx nx g @nx/angular:lib my-lib
-```
+| Model                | Docs Claim (free space) | Actual Size on Disk |
+| -------------------- | ----------------------- | ------------------- |
+| Gemini Nano (v3Nano) | 22 GB                   | 4.0 GB              |
+| Phi-4-mini-instruct  | 20 GB                   | 2.3 GB              |
 
-### Generate a new Angular component:
+## License
 
-```bash
-npx nx g @nx/angular:component my-component --project=my-lib
-```
-
-### Generate a new API library:
-
-```bash
-npx nx g @nx/node:lib my-api-lib
-```
-
-You can use `npx nx list` to see all available plugins and `npx nx list <plugin-name>` to see all generators for a specific plugin.
-
-## Nx Cloud
-
-Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
-
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## 🔗 Learn More
-
-- [Nx Documentation](https://nx.dev)
-- [Angular Monorepo Tutorial](https://nx.dev/getting-started/tutorials/angular-monorepo-tutorial)
-- [Module Boundaries](https://nx.dev/features/enforce-module-boundaries)
-- [Docker Integration](https://nx.dev/recipes/nx-release/release-docker-images)
-- [Playwright Testing](https://nx.dev/technologies/test-tools/playwright/introduction#e2e-testing)
-- [Vite with Angular](https://nx.dev/recipes/vite)
-- [Nx Cloud](https://nx.dev/ci/intro/why-nx-cloud)
-- [Releasing Packages](https://nx.dev/features/manage-releases)
-
-## 💬 Community
-
-Join the Nx community:
-
-- [Discord](https://go.nx.dev/community)
-- [X (Twitter)](https://twitter.com/nxdevtools)
-- [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [YouTube](https://www.youtube.com/@nxdevtools)
-- [Blog](https://nx.dev/blog)
+MIT
