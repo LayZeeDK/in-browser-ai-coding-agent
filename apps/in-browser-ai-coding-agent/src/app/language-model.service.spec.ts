@@ -31,4 +31,11 @@ describe('LanguageModelService', () => {
     // the API should be defined. In bundled Chromium, it won't be.
     expect(typeof service.isApiSupported).toBe('boolean');
   });
+
+  it('should respond to a prompt', async () => {
+    const response = await service.prompt('Hi!');
+
+    expect(response).toBeTruthy();
+    expect(response.length).toBeGreaterThan(0);
+  }, 60_000);
 });

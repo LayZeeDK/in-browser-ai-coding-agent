@@ -18,3 +18,14 @@ test('displays model availability status', async ({ page }) => {
     /^(available|downloadable|unavailable)$/,
   );
 });
+
+test('responds to a prompt', async ({ page }) => {
+  await page.goto('/');
+
+  await page.getByTestId('prompt-input').fill('Hi!');
+  await page.getByTestId('prompt-submit').click();
+
+  const responseEl = page.getByTestId('prompt-response');
+  await expect(responseEl).toBeVisible({ timeout: 60_000 });
+  await expect(responseEl).not.toBeEmpty();
+});

@@ -40,4 +40,30 @@ describe('ModelStatusComponent', () => {
       'Checking model availability...',
     );
   });
+
+  it('should respond when a prompt is submitted', async () => {
+    const fixture = TestBed.createComponent(ModelStatusComponent);
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const input = compiled.querySelector(
+      '[data-testid="prompt-input"]',
+    ) as HTMLInputElement;
+    const button = compiled.querySelector(
+      '[data-testid="prompt-submit"]',
+    ) as HTMLButtonElement;
+
+    input.value = 'Hi!';
+    input.dispatchEvent(new Event('input'));
+    button.click();
+
+    await fixture.whenStable();
+
+    const responseEl = compiled.querySelector(
+      '[data-testid="prompt-response"]',
+    );
+
+    expect(responseEl).toBeTruthy();
+    expect(responseEl?.textContent?.trim().length).toBeGreaterThan(0);
+  }, 60_000);
 });

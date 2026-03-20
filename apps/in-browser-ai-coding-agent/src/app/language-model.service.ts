@@ -21,4 +21,18 @@ export class LanguageModelService {
         ? 'downloadable'
         : 'unavailable';
   }
+
+  async prompt(text: string): Promise<string> {
+    if (!this.isApiSupported) {
+      throw new Error('LanguageModel API is not available');
+    }
+
+    const session = await LanguageModel.create();
+
+    try {
+      return await session.prompt(text);
+    } finally {
+      session.destroy();
+    }
+  }
 }

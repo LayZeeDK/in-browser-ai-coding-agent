@@ -29,6 +29,7 @@ const AI_IGNORE_DEFAULT_ARGS = [
 export default defineConfig({
   test: {
     browser: {
+      enabled: true,
       instances: [
         {
           browser: 'chromium',
@@ -51,7 +52,8 @@ export default defineConfig({
             launchOptions: {
               channel: 'msedge-dev',
               args: [
-                '--enable-features=PromptAPIForPhiMini',
+                '--enable-features=AIPromptAPI',
+                '--disable-features=OnDeviceModelPerformanceParams',
                 DISABLE_FEATURES_WITHOUT_OPT_HINTS,
               ],
               ignoreDefaultArgs: AI_IGNORE_DEFAULT_ARGS,
