@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "types": ["node", "dom-chromium-ai"],
     "allowJs": true,
     "outDir": "../../dist/out-tsc",
     "sourceMap": false,

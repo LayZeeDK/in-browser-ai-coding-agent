@@ -1,6 +1,7 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "types": ["dom-chromium-ai"],
     "rootDir": ".",
     "sourceMap": true,
     "declaration": false,
