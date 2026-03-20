@@ -12,6 +12,14 @@ permissions:
   packages: read
 
 jobs:
+  ghcr:
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.image.outputs.base }}
+    steps:
+      - id: image
+        run: echo "base=ghcr.io/${GITHUB_REPOSITORY,,}/playwright" >> "$GITHUB_OUTPUT"
+
   format:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
@@ -50,6 +58,7 @@ jobs:
       - run: npm exec nx -- run-many -t lint typecheck build
 
   test:
+    needs: ghcr
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -62,7 +71,7 @@ jobs:
             project: edge-phi4-mini
             cache-key: msedge-dev-ai-model-v1
     container:
-      image: ghcr.io/${{ github.repository }}/playwright-${{ matrix.browser }}:latest
+      image: ${{ needs.ghcr.outputs.image }}-${{ matrix.browser }}:latest
       options: --ipc=host --user 1001
     steps:
       - uses: actions/checkout@v6
