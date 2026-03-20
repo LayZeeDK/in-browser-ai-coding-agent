@@ -56,6 +56,13 @@ jobs:
           filter: tree:0
           fetch-depth: 0
 
+      # Free disk space for on-device AI model (~4 GB for Gemini Nano).
+      # See https://github.com/actions/runner-images/issues/2840
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/share/boost
+          df -h /
+
       - uses: nrwl/nx-set-shas@v5
 
       - uses: actions/setup-node@v6
@@ -64,11 +71,6 @@ jobs:
           cache: 'npm'
 
       - run: npm ci
-
-      - name: Free disk space
-        run: |
-          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/share/boost
-          df -h /
 
       - name: Install Chrome Beta
         run: npx playwright install chrome-beta --with-deps
@@ -105,6 +107,13 @@ jobs:
           filter: tree:0
           fetch-depth: 0
 
+      # Free disk space for on-device AI model (~2.3 GB for Phi-4-mini).
+      # See https://github.com/actions/runner-images/issues/2840
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/share/boost
+          df -h /
+
       - uses: nrwl/nx-set-shas@v5
 
       - uses: actions/setup-node@v6
@@ -113,11 +122,6 @@ jobs:
           cache: 'npm'
 
       - run: npm ci
-
-      - name: Free disk space
-        run: |
-          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/share/boost
-          df -h /
 
       - name: Install Edge Dev
         run: npx playwright install msedge-dev --with-deps
