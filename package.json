@@ -2,7 +2,15 @@
   "name": "@layzeedk/in-browser-ai-coding-agent-source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "build": "nx run-many -t build",
+    "lint": "nx run-many -t lint",
+    "test": "nx run-many -t test",
+    "typecheck": "nx run-many -t typecheck",
+    "e2e": "nx run-many -t e2e",
+    "format": "nx format",
+    "format:check": "nx format:check"
+  },
   "private": true,
   "engines": {
     "node": "^20.19.0 || ^22.12.0 || >=24.0.0"
