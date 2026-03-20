@@ -31,8 +31,8 @@ jobs:
 
       - name: Run all targets (main)
         if: github.event_name == 'push'
-        run: npx nx run-many -t lint test build typecheck e2e
+        run: npm run ci
 
       - name: Run affected targets (PR)
         if: github.event_name == 'pull_request'
-        run: npx nx affected -t lint test build typecheck e2e
+        run: nx format:check && nx affected -t lint typecheck test build e2e
