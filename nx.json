@@ -42,13 +42,10 @@
     "@nx/vitest:test": {
       "cache": true,
       "inputs": ["default", "^production"]
-    }
-  },
-  "release": {
-    "projects": ["api"],
-    "projectsRelationship": "independent",
-    "docker": {
-      "skipVersionActions": true
+    },
+    "@angular/build:unit-test": {
+      "cache": true,
+      "inputs": ["default", "^production"]
     }
   },
   "plugins": [
@@ -62,13 +59,6 @@
       "plugin": "@nx/eslint/plugin",
       "options": {
         "targetName": "lint"
-      }
-    },
-    {
-      "plugin": "@nx/docker",
-      "options": {
-        "buildTarget": "docker:build",
-        "runTarget": "docker:run"
       }
     },
     {
@@ -106,6 +96,5 @@
       "style": "css"
     }
   },
-  "nxCloudId": "69bd34c8a04f29dcbb482258",
   "analytics": false
 }
