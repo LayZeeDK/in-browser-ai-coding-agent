@@ -264,23 +264,23 @@ Chrome's new headless mode (default since Chrome 112, simplified since Chrome 13
 
 ### Gemini Nano (Chrome) Requirements
 
-| Resource            | Requirement                               | Source                                                             |
-| ------------------- | ----------------------------------------- | ------------------------------------------------------------------ |
-| Disk (free)         | 22 GB minimum                             | [Chrome AI docs](https://developer.chrome.com/docs/ai/get-started) |
-| GPU (if used)       | >4 GB VRAM                                | Chrome AI docs                                                     |
-| CPU-only mode       | 16 GB RAM, 4+ CPU cores                   | Chrome AI docs                                                     |
-| Model download size | ~2.4 GB                                   | Community reports                                                  |
-| OS                  | Windows 10/11, macOS 13+, Linux, ChromeOS | Chrome AI docs                                                     |
+| Resource      | Docs claim                                | Actual (verified)       | Source                                                             |
+| ------------- | ----------------------------------------- | ----------------------- | ------------------------------------------------------------------ |
+| Disk (free)   | 22 GB minimum                             | Pre-flight check only   | [Chrome AI docs](https://developer.chrome.com/docs/ai/get-started) |
+| Model on disk | --                                        | **4,072 MiB (~4.0 GB)** | Verified locally (v3Nano 2025.06.30.1229)                          |
+| GPU (if used) | >4 GB VRAM                                | --                      | Chrome AI docs                                                     |
+| CPU-only mode | 16 GB RAM, 4+ CPU cores                   | --                      | Chrome AI docs                                                     |
+| OS            | Windows 10/11, macOS 13+, Linux, ChromeOS | --                      | Chrome AI docs                                                     |
 
 ### Phi-4-mini (Edge) Requirements
 
-| Resource            | Requirement                                    | Source                                                                                           |
-| ------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Disk (free)         | 20 GB minimum                                  | [Edge Prompt API docs](https://learn.microsoft.com/en-us/microsoft-edge/web-platform/prompt-api) |
-| GPU                 | 5.5 GB VRAM                                    | Edge Prompt API docs                                                                             |
-| CPU-only mode       | Not documented (Edge may not support CPU-only) | --                                                                                               |
-| Model download size | ~3.6 GB (FP16)                                 | HuggingFace model card                                                                           |
-| OS                  | **Windows 10/11, macOS 13.3+** (NO Linux)      | Edge Prompt API docs                                                                             |
+| Resource      | Docs claim                                | Actual (verified)       | Source                                                                                           |
+| ------------- | ----------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------ |
+| Disk (free)   | 20 GB minimum                             | Pre-flight check only   | [Edge Prompt API docs](https://learn.microsoft.com/en-us/microsoft-edge/web-platform/prompt-api) |
+| Model on disk | --                                        | **2,397 MiB (~2.3 GB)** | Verified locally (Phi-4-mini-instruct 2026.2.19.1)                                               |
+| GPU           | 5.5 GB VRAM                               | --                      | Edge Prompt API docs                                                                             |
+| CPU-only mode | Not documented                            | --                      | --                                                                                               |
+| OS            | **Windows 10/11, macOS 13.3+** (NO Linux) | --                      | Edge Prompt API docs                                                                             |
 
 ### GitHub Actions Runner Specs
 
