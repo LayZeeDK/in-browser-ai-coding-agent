@@ -30,7 +30,7 @@ RUN npx -y playwright@${PLAYWRIGHT_VERSION} install-deps chromium && \
     rm -rf /var/lib/apt/lists/* /root/.npm/
 
 # Create non-root user matching GitHub Actions runner UID (1001)
-RUN adduser --uid 1001 --disabled-password --gecos "" pwuser
+RUN useradd --uid 1001 --create-home pwuser
 
 FROM base AS chrome-beta
 ARG PLAYWRIGHT_VERSION
