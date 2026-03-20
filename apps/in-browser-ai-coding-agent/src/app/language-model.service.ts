@@ -22,6 +22,26 @@ export class LanguageModelService {
         : 'unavailable';
   }
 
+  async downloadModel(
+    onProgress?: (loaded: number, total: number) => void,
+  ): Promise<void> {
+    if (!this.isApiSupported) {
+      throw new Error('LanguageModel API is not available');
+    }
+
+    const session = await LanguageModel.create({
+      monitor: (monitor) => {
+        if (onProgress) {
+          monitor.addEventListener('downloadprogress', (event) => {
+            onProgress(event.loaded, event.total);
+          });
+        }
+      },
+    });
+
+    session.destroy();
+  }
+
   async prompt(text: string): Promise<string> {
     if (!this.isApiSupported) {
       throw new Error('LanguageModel API is not available');

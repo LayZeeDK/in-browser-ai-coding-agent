@@ -19,10 +19,13 @@ describe('ModelStatusComponent', () => {
     await fixture.whenStable();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    const statusEl = compiled.querySelector('[data-testid="status-result"]');
+    const statusEl = await waitForElement(
+      compiled,
+      '[data-testid="status-result"]',
+      10_000,
+    );
 
-    expect(statusEl).toBeTruthy();
-    expect(statusEl?.getAttribute('data-status')).toMatch(
+    expect(statusEl.getAttribute('data-status')).toMatch(
       /^(available|downloadable|unavailable)$/,
     );
   });
@@ -41,29 +44,71 @@ describe('ModelStatusComponent', () => {
     );
   });
 
-  it('should respond when a prompt is submitted', async () => {
+  it('should download model if needed and respond to a prompt', async () => {
     const fixture = TestBed.createComponent(ModelStatusComponent);
     await fixture.whenStable();
 
     const compiled = fixture.nativeElement as HTMLElement;
+    const statusEl = await waitForElement(
+      compiled,
+      '[data-testid="status-result"]',
+      10_000,
+    );
+
+    // If model is downloadable, click download and wait for it to become available
+    if (statusEl.getAttribute('data-status') === 'downloadable') {
+      const downloadBtn = compiled.querySelector(
+        '[data-testid="download-button"]',
+      ) as HTMLButtonElement;
+
+      downloadBtn.click();
+
+      await waitForElement(compiled, '[data-status="available"]', 300_000);
+    }
+
+    // Submit a prompt
     const input = compiled.querySelector(
       '[data-testid="prompt-input"]',
     ) as HTMLInputElement;
-    const button = compiled.querySelector(
+    const submitBtn = compiled.querySelector(
       '[data-testid="prompt-submit"]',
     ) as HTMLButtonElement;
 
     input.value = 'Hi!';
     input.dispatchEvent(new Event('input'));
-    button.click();
+    submitBtn.click();
 
-    await fixture.whenStable();
-
-    const responseEl = compiled.querySelector(
+    // Wait for response — no error should appear
+    const responseEl = await waitForElement(
+      compiled,
       '[data-testid="prompt-response"]',
+      55_000,
     );
 
-    expect(responseEl).toBeTruthy();
-    expect(responseEl?.textContent?.trim().length).toBeGreaterThan(0);
-  }, 60_000);
+    expect(responseEl.textContent?.trim().length).toBeGreaterThan(0);
+
+    const errorEl = compiled.querySelector('[data-testid="prompt-error"]');
+
+    expect(errorEl).toBeFalsy();
+  }, 600_000);
 });
+
+async function waitForElement(
+  root: HTMLElement,
+  selector: string,
+  timeoutMs: number,
+): Promise<HTMLElement> {
+  const start = Date.now();
+
+  while (Date.now() - start < timeoutMs) {
+    const el = root.querySelector(selector) as HTMLElement | null;
+
+    if (el) {
+      return el;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 200));
+  }
+
+  throw new Error(`Element "${selector}" not found within ${timeoutMs}ms`);
+}

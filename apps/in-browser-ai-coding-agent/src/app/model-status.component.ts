@@ -20,12 +20,21 @@ import {
             }
             @case ('downloadable') {
               Model is available for download.
+              <button data-testid="download-button" (click)="onDownload()">
+                Download Model
+              </button>
             }
             @case ('unavailable') {
               Model is not available in this browser.
             }
           }
         </p>
+
+        @if (downloading()) {
+          <p data-testid="download-progress">
+            Downloading model... {{ downloadProgress() }}%
+          </p>
+        }
       }
 
       <form (submit)="onSubmit($event)">
@@ -74,6 +83,8 @@ export class ModelStatusComponent implements OnInit {
 
   protected readonly loading = signal(true);
   protected readonly availability = signal<ModelAvailability>('unavailable');
+  protected readonly downloading = signal(false);
+  protected readonly downloadProgress = signal(0);
   protected readonly promptText = signal('');
   protected readonly prompting = signal(false);
   protected readonly response = signal('');
@@ -83,6 +94,23 @@ export class ModelStatusComponent implements OnInit {
     const status = await this.languageModel.checkAvailability();
     this.availability.set(status);
     this.loading.set(false);
+  }
+
+  async onDownload(): Promise<void> {
+    this.downloading.set(true);
+    this.downloadProgress.set(0);
+
+    try {
+      await this.languageModel.downloadModel((loaded, total) => {
+        this.downloadProgress.set(Math.round((loaded / total) * 100));
+      });
+
+      this.availability.set('available');
+    } catch (e) {
+      this.error.set(e instanceof Error ? e.message : String(e));
+    } finally {
+      this.downloading.set(false);
+    }
   }
 
   async onSubmit(event: Event): Promise<void> {

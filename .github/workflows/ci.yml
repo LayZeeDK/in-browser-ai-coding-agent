@@ -75,16 +75,6 @@ jobs:
             xvfb: 'xvfb-run --auto-servernum'
           - browser: msedge-dev
             project: edge-phi4-mini
-            cache-key: msedge-dev-ai-model-macos-intel-v1
-            runner: macos-26-intel
-            xvfb: ''
-          - browser: msedge-dev
-            project: edge-phi4-mini
-            cache-key: msedge-dev-ai-model-macos-arm-v1
-            runner: macos-latest
-            xvfb: ''
-          - browser: msedge-dev
-            project: edge-phi4-mini
             cache-key: msedge-dev-ai-model-windows-v1
             runner: windows-latest
             xvfb: ''
@@ -93,7 +83,7 @@ jobs:
             cache-key: msedge-dev-ai-model-windows11-arm-v1
             runner: windows-11-arm
             xvfb: ''
-    # Container for Linux runners (browser pre-installed); no-op on macOS
+    # Container for Linux runners (browser pre-installed); no-op on Windows
     container: ${{ matrix.runner == 'ubuntu-latest' && fromJSON(format('{{"image":"{0}-{1}:latest","options":"--ipc=host --user 1001"}}', needs.ghcr.outputs.image, matrix.browser)) || '' }}
     steps:
       - uses: actions/checkout@v6
