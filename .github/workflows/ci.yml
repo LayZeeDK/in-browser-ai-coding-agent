@@ -30,7 +30,7 @@ jobs:
       - run: npm ci
       - run: npm exec nx -- format:check
 
-  main:
+  lint-typecheck-build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -46,6 +46,102 @@ jobs:
           cache: 'npm'
 
       - run: npm ci
-      - run: npx playwright install chrome-beta msedge-dev --with-deps
+      - run: npm exec nx -- run-many -t lint typecheck build
 
-      - run: npm exec nx -- run-many -t lint typecheck test build e2e
+  test-chrome-beta:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - uses: nrwl/nx-set-shas@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.node-version'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/share/boost
+          df -h /
+
+      - name: Install Chrome Beta
+        run: npx playwright install chrome-beta --with-deps
+
+      - name: Restore AI model cache (Chrome)
+        uses: actions/cache/restore@v4
+        id: chrome-model-cache
+        with:
+          path: .playwright-profiles/chrome-beta
+          key: chrome-beta-ai-model-v1
+
+      - name: Bootstrap Gemini Nano model
+        if: steps.chrome-model-cache.outputs.cache-hit != 'true'
+        run: node scripts/bootstrap-ai-model.mjs --browser chrome-beta --profile .playwright-profiles/chrome-beta --timeout 300000
+
+      - name: Save AI model cache (Chrome)
+        if: steps.chrome-model-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .playwright-profiles/chrome-beta
+          key: chrome-beta-ai-model-v1
+
+      - name: Run unit tests (Chrome Beta)
+        run: npm exec nx -- test in-browser-ai-coding-agent --project=chrome-gemini-nano
+
+      - name: Run e2e tests (Chrome Beta)
+        run: npm exec nx -- e2e in-browser-ai-coding-agent-e2e --project=chrome-gemini-nano
+
+  test-msedge-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - uses: nrwl/nx-set-shas@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.node-version'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/share/boost
+          df -h /
+
+      - name: Install Edge Dev
+        run: npx playwright install msedge-dev --with-deps
+
+      - name: Restore AI model cache (Edge)
+        uses: actions/cache/restore@v4
+        id: edge-model-cache
+        with:
+          path: .playwright-profiles/msedge-dev
+          key: msedge-dev-ai-model-v1
+
+      - name: Bootstrap Phi-4-mini model
+        if: steps.edge-model-cache.outputs.cache-hit != 'true'
+        run: node scripts/bootstrap-ai-model.mjs --browser msedge-dev --profile .playwright-profiles/msedge-dev --timeout 300000
+
+      - name: Save AI model cache (Edge)
+        if: steps.edge-model-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .playwright-profiles/msedge-dev
+          key: msedge-dev-ai-model-v1
+
+      - name: Run unit tests (Edge Dev)
+        run: npm exec nx -- test in-browser-ai-coding-agent --project=edge-phi4-mini
+
+      - name: Run e2e tests (Edge Dev)
+        run: npm exec nx -- e2e in-browser-ai-coding-agent-e2e --project=edge-phi4-mini
