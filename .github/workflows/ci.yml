@@ -75,8 +75,23 @@ jobs:
             xvfb: 'xvfb-run --auto-servernum'
           - browser: msedge-dev
             project: edge-phi4-mini
-            cache-key: msedge-dev-ai-model-v1
+            cache-key: msedge-dev-ai-model-macos-intel-v1
             runner: macos-26-intel
+            xvfb: ''
+          - browser: msedge-dev
+            project: edge-phi4-mini
+            cache-key: msedge-dev-ai-model-macos-arm-v1
+            runner: macos-latest
+            xvfb: ''
+          - browser: msedge-dev
+            project: edge-phi4-mini
+            cache-key: msedge-dev-ai-model-windows-v1
+            runner: windows-latest
+            xvfb: ''
+          - browser: msedge-dev
+            project: edge-phi4-mini
+            cache-key: msedge-dev-ai-model-windows11-arm-v1
+            runner: windows-11-arm
             xvfb: ''
     # Container for Linux runners (browser pre-installed); no-op on macOS
     container: ${{ matrix.runner == 'ubuntu-latest' && fromJSON(format('{{"image":"{0}-{1}:latest","options":"--ipc=host --user 1001"}}', needs.ghcr.outputs.image, matrix.browser)) || '' }}
@@ -108,7 +123,7 @@ jobs:
 
       - name: Bootstrap AI model
         if: steps.model-cache.outputs.cache-hit != 'true'
-        run: ${{ matrix.xvfb }} node scripts/bootstrap-ai-model.mjs --browser ${{ matrix.browser }} --profile .playwright-profiles/${{ matrix.browser }} --timeout 300000
+        run: ${{ matrix.xvfb }} node scripts/bootstrap-ai-model.mjs --browser ${{ matrix.browser }} --profile .playwright-profiles/${{ matrix.browser }} --timeout 600000
 
       - name: Save AI model cache
         if: steps.model-cache.outputs.cache-hit != 'true'
