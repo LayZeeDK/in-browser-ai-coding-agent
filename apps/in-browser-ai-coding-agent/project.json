@@ -63,7 +63,10 @@
     },
     "test": {
       "executor": "@angular/build:unit-test",
-      "options": {}
+      "options": {
+        "browsers": ["chromium"],
+        "runnerConfig": "apps/in-browser-ai-coding-agent/vitest.config.mts"
+      }
     },
     "serve-static": {
       "continuous": true,
