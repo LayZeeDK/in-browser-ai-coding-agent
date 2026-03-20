@@ -69,10 +69,15 @@ const browserConfig = {
   },
   'msedge-dev': {
     flags: [
-      'optimization-guide-on-device-model@2',
-      'prompt-api-for-phi-mini@1',
+      'edge-llm-prompt-api-for-phi-mini@1',
+      'edge-llm-on-device-model-performance-param@3',
     ],
-    args: ['--no-first-run', DISABLE_FEATURES_WITHOUT_OPT_HINTS],
+    args: [
+      '--no-first-run',
+      '--enable-features=AIPromptAPI',
+      '--disable-features=OnDeviceModelPerformanceParams',
+      DISABLE_FEATURES_WITHOUT_OPT_HINTS,
+    ],
   },
 };
 
