@@ -63,7 +63,7 @@ jobs:
 
   test:
     needs: ghcr
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
@@ -71,12 +71,15 @@ jobs:
           - browser: chrome-beta
             project: chrome-gemini-nano
             cache-key: chrome-beta-ai-model-v1
+            runner: ubuntu-latest
+            xvfb: 'xvfb-run --auto-servernum'
           - browser: msedge-dev
             project: edge-phi4-mini
             cache-key: msedge-dev-ai-model-v1
-    container:
-      image: ${{ needs.ghcr.outputs.image }}-${{ matrix.browser }}:latest
-      options: --ipc=host --user 1001
+            runner: macos-26-intel
+            xvfb: ''
+    # Container for Linux runners (browser pre-installed); no-op on macOS
+    container: ${{ matrix.runner == 'ubuntu-latest' && fromJSON(format('{{"image":"{0}-{1}:latest","options":"--ipc=host --user 1001"}}', needs.ghcr.outputs.image, matrix.browser)) || '' }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -92,6 +95,10 @@ jobs:
 
       - run: npm ci
 
+      - name: Install ${{ matrix.browser }}
+        if: matrix.runner != 'ubuntu-latest'
+        run: npx playwright install ${{ matrix.browser }} --with-deps
+
       - name: Restore AI model cache
         uses: actions/cache/restore@v5
         id: model-cache
@@ -101,7 +108,7 @@ jobs:
 
       - name: Bootstrap AI model
         if: steps.model-cache.outputs.cache-hit != 'true'
-        run: xvfb-run --auto-servernum node scripts/bootstrap-ai-model.mjs --browser ${{ matrix.browser }} --profile .playwright-profiles/${{ matrix.browser }} --timeout 300000
+        run: ${{ matrix.xvfb }} node scripts/bootstrap-ai-model.mjs --browser ${{ matrix.browser }} --profile .playwright-profiles/${{ matrix.browser }} --timeout 300000
 
       - name: Save AI model cache
         if: steps.model-cache.outputs.cache-hit != 'true'
@@ -111,7 +118,7 @@ jobs:
           key: ${{ matrix.cache-key }}
 
       - name: Run unit tests (${{ matrix.project }})
-        run: xvfb-run --auto-servernum npm exec nx -- test in-browser-ai-coding-agent --project=${{ matrix.project }}
+        run: ${{ matrix.xvfb }} npm exec nx -- test in-browser-ai-coding-agent --project=${{ matrix.project }}
 
       - name: Run e2e tests (${{ matrix.project }})
-        run: xvfb-run --auto-servernum npm exec nx -- e2e in-browser-ai-coding-agent-e2e -- --project=${{ matrix.project }}
+        run: ${{ matrix.xvfb }} npm exec nx -- e2e in-browser-ai-coding-agent-e2e -- --project=${{ matrix.project }}
