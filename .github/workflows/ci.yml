@@ -110,4 +110,4 @@ jobs:
         run: xvfb-run --auto-servernum npm exec nx -- test in-browser-ai-coding-agent --project=${{ matrix.project }}
 
       - name: Run e2e tests (${{ matrix.project }})
-        run: xvfb-run --auto-servernum npm exec nx -- e2e in-browser-ai-coding-agent-e2e --project=${{ matrix.project }}
+        run: xvfb-run --auto-servernum npm exec nx -- e2e in-browser-ai-coding-agent-e2e -- --project=${{ matrix.project }}
