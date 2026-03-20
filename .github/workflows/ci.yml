@@ -29,10 +29,14 @@ jobs:
       - run: npm ci
       - run: npx playwright install chrome-beta msedge-dev --with-deps
 
+      - name: Check formatting (PR)
+        if: github.event_name == 'pull_request'
+        run: npm exec nx -- format:check
+
       - name: Run all targets (main)
         if: github.event_name == 'push'
-        run: npm run ci
+        run: npm exec nx -- run-many -t lint typecheck test build e2e
 
       - name: Run affected targets (PR)
         if: github.event_name == 'pull_request'
-        run: npm exec nx -- format:check && npm exec nx -- affected -t lint typecheck test build e2e
+        run: npm exec nx -- affected -t lint typecheck test build e2e
