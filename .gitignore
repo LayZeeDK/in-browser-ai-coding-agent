@@ -46,6 +46,7 @@ Thumbs.db
 .angular
 .claude
 .playwright-mcp
+.playwright-profiles
 
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
