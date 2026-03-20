@@ -19,9 +19,11 @@ jobs:
           filter: tree:0
           fetch-depth: 0
 
+      - uses: nrwl/nx-set-shas@v5
+
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: '.node-version'
           cache: 'npm'
 
       - run: npm ci
