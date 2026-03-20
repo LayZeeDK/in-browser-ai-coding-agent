@@ -70,7 +70,10 @@ jobs:
       # See https://github.com/actions/runner-images/issues/2840
       - name: Free disk space
         run: |
-          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/share/boost
+          sudo rm -rf /usr/local/lib/android  # ~14 GB Android SDK
+          sudo rm -rf /usr/share/dotnet        # ~3 GB .NET SDK
+          sudo rm -rf /opt/ghc                 # ~2 GB Haskell/GHC
+          sudo rm -rf /usr/local/share/boost   # ~1.5 GB Boost C++ libs
           df -h /
 
       - uses: nrwl/nx-set-shas@v5
