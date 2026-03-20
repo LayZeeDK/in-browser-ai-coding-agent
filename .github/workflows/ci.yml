@@ -66,15 +66,17 @@ jobs:
           filter: tree:0
           fetch-depth: 0
 
-      # Free disk space for on-device AI models.
+      # Free disk space for on-device AI models (~4 GB Gemini Nano, ~2.3 GB Phi-4-mini).
       # See https://github.com/actions/runner-images/issues/2840
-      - name: Free disk space
-        run: |
-          sudo rm -rf /usr/local/lib/android  # ~14 GB Android SDK
-          sudo rm -rf /usr/share/dotnet        # ~3 GB .NET SDK
-          sudo rm -rf /opt/ghc                 # ~2 GB Haskell/GHC
-          sudo rm -rf /usr/local/share/boost   # ~1.5 GB Boost C++ libs
-          df -h /
+      - uses: endersonmenezes/free-disk-space@v3
+        with:
+          remove_android: 'true'
+          remove_dotnet: 'true'
+          remove_haskell: 'true'
+          remove_swap: 'true'
+          remove_packages: 'true'
+          remove_packages_one_command: 'google-cloud-cli azure-cli microsoft-edge-stable google-chrome-stable'
+          remove_folders: '/usr/local/share/boost /usr/share/swift /usr/local/share/powershell /opt/hostedtoolcache/CodeQL'
 
       - uses: nrwl/nx-set-shas@v5
 
