@@ -8,10 +8,10 @@ export default defineConfig({
         {
           browser: 'chromium',
           name: 'chrome-gemini-nano',
-          // Google Chrome Canary — Gemini Nano
+          // Google Chrome Beta — Gemini Nano
           provider: playwright({
             launchOptions: {
-              channel: 'chrome-canary',
+              channel: 'chrome-beta',
               args: [
                 '--enable-features=OptimizationGuideOnDeviceModel,PromptAPIForGeminiNano',
               ],

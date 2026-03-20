@@ -27,7 +27,7 @@ jobs:
           cache: 'npm'
 
       - run: npm ci
-      - run: npx playwright install msedge-dev chromium --with-deps
+      - run: npx playwright install chrome-beta msedge-dev --with-deps
 
       - name: Run all targets (main)
         if: github.event_name == 'push'

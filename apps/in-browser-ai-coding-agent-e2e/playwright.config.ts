@@ -33,7 +33,7 @@ export default defineConfig({
     {
       name: 'chrome-gemini-nano',
       use: {
-        channel: 'chrome-canary',
+        channel: 'chrome-beta',
         launchOptions: {
           args: [
             '--enable-features=OptimizationGuideOnDeviceModel,PromptAPIForGeminiNano',
