@@ -29,4 +29,10 @@ jobs:
       - run: npm ci
       - run: npx playwright install --only-shell
 
-      - run: npx nx run-many -t lint test build typecheck e2e
+      - name: Run all targets (main)
+        if: github.event_name == 'push'
+        run: npx nx run-many -t lint test build typecheck e2e
+
+      - name: Run affected targets (PR)
+        if: github.event_name == 'pull_request'
+        run: npx nx affected -t lint test build typecheck e2e
