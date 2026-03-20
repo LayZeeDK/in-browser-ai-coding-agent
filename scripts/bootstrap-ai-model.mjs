@@ -68,7 +68,10 @@ const browserConfig = {
     args: ['--no-first-run', DISABLE_FEATURES_WITHOUT_OPT_HINTS],
   },
   'msedge-dev': {
-    flags: ['prompt-api-for-phi-mini@1'],
+    flags: [
+      'optimization-guide-on-device-model@2',
+      'prompt-api-for-phi-mini@1',
+    ],
     args: ['--no-first-run', DISABLE_FEATURES_WITHOUT_OPT_HINTS],
   },
 };

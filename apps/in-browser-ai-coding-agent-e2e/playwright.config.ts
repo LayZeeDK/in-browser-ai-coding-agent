@@ -65,7 +65,7 @@ export default defineConfig({
         channel: 'msedge-dev',
         launchOptions: {
           args: [
-            '--enable-features=PromptAPIForPhiMini',
+            '--enable-features=OptimizationGuideOnDeviceModel,PromptAPIForPhiMini',
             DISABLE_FEATURES_WITHOUT_OPT_HINTS,
           ],
           ignoreDefaultArgs: AI_IGNORE_DEFAULT_ARGS,
