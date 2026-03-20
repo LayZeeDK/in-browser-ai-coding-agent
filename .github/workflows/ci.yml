@@ -93,7 +93,7 @@ jobs:
       - run: npm ci
 
       - name: Restore AI model cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         id: model-cache
         with:
           path: .playwright-profiles/${{ matrix.browser }}
@@ -105,7 +105,7 @@ jobs:
 
       - name: Save AI model cache
         if: steps.model-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: .playwright-profiles/${{ matrix.browser }}
           key: ${{ matrix.cache-key }}
