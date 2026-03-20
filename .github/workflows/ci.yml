@@ -35,4 +35,4 @@ jobs:
 
       - name: Run affected targets (PR)
         if: github.event_name == 'pull_request'
-        run: nx format:check && nx affected -t lint typecheck test build e2e
+        run: npm exec nx -- format:check && npm exec nx -- affected -t lint typecheck test build e2e
