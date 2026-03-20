@@ -9,6 +9,7 @@ on:
 permissions:
   actions: read
   contents: read
+  packages: read
 
 jobs:
   format:
@@ -60,6 +61,9 @@ jobs:
           - browser: msedge-dev
             project: edge-phi4-mini
             cache-key: msedge-dev-ai-model-v1
+    container:
+      image: ghcr.io/${{ github.repository }}/playwright-${{ matrix.browser }}:latest
+      options: --ipc=host --user 1001
     steps:
       - uses: actions/checkout@v6
         with:
@@ -67,6 +71,7 @@ jobs:
           fetch-depth: 0
 
       # Free disk space for on-device AI models (~4 GB Gemini Nano, ~2.3 GB Phi-4-mini).
+      # Model preflight checks require 20-25 GB free; runner default is ~14 GB.
       # See https://github.com/actions/runner-images/issues/2840
       - uses: endersonmenezes/free-disk-space@v3
         with:
@@ -87,9 +92,6 @@ jobs:
 
       - run: npm ci
 
-      - name: Install ${{ matrix.browser }}
-        run: npx playwright install ${{ matrix.browser }} --with-deps
-
       - name: Restore AI model cache
         uses: actions/cache/restore@v4
         id: model-cache
@@ -99,7 +101,7 @@ jobs:
 
       - name: Bootstrap AI model
         if: steps.model-cache.outputs.cache-hit != 'true'
-        run: node scripts/bootstrap-ai-model.mjs --browser ${{ matrix.browser }} --profile .playwright-profiles/${{ matrix.browser }} --timeout 300000
+        run: xvfb-run --auto-servernum node scripts/bootstrap-ai-model.mjs --browser ${{ matrix.browser }} --profile .playwright-profiles/${{ matrix.browser }} --timeout 300000
 
       - name: Save AI model cache
         if: steps.model-cache.outputs.cache-hit != 'true'
@@ -109,7 +111,7 @@ jobs:
           key: ${{ matrix.cache-key }}
 
       - name: Run unit tests (${{ matrix.project }})
-        run: npm exec nx -- test in-browser-ai-coding-agent --project=${{ matrix.project }}
+        run: xvfb-run --auto-servernum npm exec nx -- test in-browser-ai-coding-agent --project=${{ matrix.project }}
 
       - name: Run e2e tests (${{ matrix.project }})
-        run: npm exec nx -- e2e in-browser-ai-coding-agent-e2e --project=${{ matrix.project }}
+        run: xvfb-run --auto-servernum npm exec nx -- e2e in-browser-ai-coding-agent-e2e --project=${{ matrix.project }}
