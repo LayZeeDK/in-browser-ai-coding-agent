@@ -87,20 +87,6 @@ jobs:
             xvfb: ''
             container: false
             disable-gpu: true
-          - browser: msedge-dev
-            project: edge-phi4-mini
-            cache-key: msedge-dev-cpu-macos-arm-v1
-            runner: macos-latest
-            xvfb: ''
-            container: false
-            disable-gpu: true
-          - browser: msedge-dev
-            project: edge-phi4-mini
-            cache-key: msedge-dev-cpu-macos-intel-v1
-            runner: macos-26-intel
-            xvfb: ''
-            container: false
-            disable-gpu: true
     # Container only for jobs that opt in; no-op otherwise
     container: ${{ matrix.container && fromJSON(format('{{"image":"{0}-{1}:latest","options":"--ipc=host --user 1001"}}', needs.ghcr.outputs.image, matrix.browser)) || '' }}
     steps:
