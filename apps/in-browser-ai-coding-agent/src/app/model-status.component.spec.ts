@@ -29,6 +29,23 @@ describe('ModelStatusComponent', () => {
     );
   }, 30_000);
 
+  it('should have a model that is available, downloading, or downloadable', async () => {
+    const fixture = TestBed.createComponent(ModelStatusComponent);
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    const statusEl = await waitForElement(
+      compiled,
+      '[data-testid="status-result"]',
+    );
+    const status = statusEl.getAttribute('data-status');
+
+    expect(
+      status,
+      `Expected model to be available, downloading, or downloadable but got "${status}". ` +
+        'Ensure the browser has the LanguageModel API enabled and the model profile is bootstrapped.',
+    ).toMatch(/^(available|downloading|downloadable)$/);
+  }, 30_000);
+
   it('should show loading state initially', () => {
     const fixture = TestBed.createComponent(ModelStatusComponent);
     fixture.detectChanges();
@@ -75,23 +92,26 @@ describe('ModelStatusComponent', () => {
     input.dispatchEvent(new Event('input'));
     submitBtn.click();
 
-    const responseEl = await waitForElement(
+    // Wait for either a response or an error — whichever appears first
+    const resultEl = await waitForElement(
       compiled,
-      '[data-testid="prompt-response"]',
+      '[data-testid="prompt-response"], [data-testid="prompt-error"]',
       120_000,
     );
 
-    const responseText = responseEl.textContent?.trim() ?? '';
+    const testId = resultEl.getAttribute('data-testid');
+
+    if (testId === 'prompt-error') {
+      expect.fail(`Prompt failed with error: ${resultEl.textContent?.trim()}`);
+    }
+
+    const responseText = resultEl.textContent?.trim() ?? '';
 
     console.log(
-      `[unit] Component prompt: "Hi!" -> Response: "${responseText}"`,
+      `[unit] Component prompt: "Hello, World!" -> Response: "${responseText}"`,
     );
 
     expect(responseText.length).toBeGreaterThan(0);
-
-    const errorEl = compiled.querySelector('[data-testid="prompt-error"]');
-
-    expect(errorEl).toBeFalsy();
   }, 300_000);
 });
 
