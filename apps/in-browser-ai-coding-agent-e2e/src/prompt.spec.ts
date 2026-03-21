@@ -26,7 +26,7 @@ test('responds to a prompt', async ({ persistentPage: page }) => {
   const submitBtn = page.getByTestId('prompt-submit');
   await expect(submitBtn).toBeEnabled();
 
-  await page.getByTestId('prompt-input').fill('Hi!');
+  await page.getByTestId('prompt-input').fill('Hello, World!');
   await submitBtn.click();
 
   // Wait for either a response or an error to appear
@@ -39,5 +39,7 @@ test('responds to a prompt', async ({ persistentPage: page }) => {
   await expect(responseEl).not.toBeEmpty();
 
   const responseText = await responseEl.textContent();
-  console.log(`[e2e] Prompt: "Hi!" -> Response: "${responseText?.trim()}"`);
+  console.log(
+    `[e2e] Prompt: "Hello, World!" -> Response: "${responseText?.trim()}"`,
+  );
 });

@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { ModelStatusComponent } from './model-status.component';
 
 describe('ModelStatusComponent', () => {
@@ -70,7 +71,7 @@ describe('ModelStatusComponent', () => {
       '[data-testid="prompt-submit"]',
     ) as HTMLButtonElement;
 
-    input.value = 'Hi!';
+    input.value = 'Hello, World!';
     input.dispatchEvent(new Event('input'));
     submitBtn.click();
 

@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
   LanguageModelService,
   ModelAvailability,
@@ -34,9 +35,11 @@ describe('LanguageModelService', () => {
   });
 
   it('should respond to a prompt', async () => {
-    const response = await service.prompt('Hi!');
+    const response = await service.prompt('Hello, World!');
 
-    console.log(`[unit] Prompt: "Hi!" -> Response: "${response.trim()}"`);
+    console.log(
+      `[unit] Prompt: "Hello, World!" -> Response: "${response.trim()}"`,
+    );
 
     expect(response).toBeTruthy();
     expect(response.length).toBeGreaterThan(0);
