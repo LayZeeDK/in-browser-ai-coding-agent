@@ -73,6 +73,7 @@ const instances = filterInstance
 
 export default defineConfig({
   test: {
+    globalSetup: ['apps/in-browser-ai-coding-agent/global-setup.ts'],
     // Persistent context cannot be shared across parallel sessions
     fileParallelism: false,
     // Retry on CI only — matches Playwright e2e preset (nxE2EPreset)
