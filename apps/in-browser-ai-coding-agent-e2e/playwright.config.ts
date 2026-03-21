@@ -38,6 +38,7 @@ const preset = nxE2EPreset(__filename, { testDir: './src' });
 
 export default defineConfig({
   ...preset,
+  globalSetup: './src/global-setup.ts',
   reporter: [
     ...((Array.isArray(preset.reporter)
       ? preset.reporter
