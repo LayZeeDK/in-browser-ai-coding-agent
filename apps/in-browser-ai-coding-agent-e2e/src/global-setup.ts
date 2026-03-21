@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 import { chromium, type FullConfig } from '@playwright/test';
 import { workspaceRoot } from '@nx/devkit';
 
@@ -111,17 +111,26 @@ async function warmUpModel(projectName: string, profile: BrowserProfile) {
   );
 
   // Wait for "Device performance class" to resolve from "Loading..."
-  await page.getByText(/Device performance class:/).waitFor();
-  await page
-    .locator(
-      ':text-matches("Device performance class:"):not(:has-text("Loading"))',
-    )
-    .waitFor({ timeout: 120_000 });
+  // Timeout gracefully — the page may render differently in containers
+  try {
+    await page
+      .getByText(/Device performance class:/)
+      .waitFor({ timeout: 30_000 });
+    await page
+      .locator(
+        ':text-matches("Device performance class:"):not(:has-text("Loading"))',
+      )
+      .waitFor({ timeout: 120_000 });
 
-  const perfClass = await page
-    .getByText(/Device performance class:/)
-    .textContent();
-  console.log(`[global-setup] ${projectName}: ${perfClass?.trim()}`);
+    const perfClass = await page
+      .getByText(/Device performance class:/)
+      .textContent();
+    console.log(`[global-setup] ${projectName}: ${perfClass?.trim()}`);
+  } catch {
+    console.log(
+      `[global-setup] ${projectName}: device performance class not found, continuing...`,
+    );
+  }
 
   // Click "Model Status" tab
   const modelStatusTab = page
@@ -158,4 +167,13 @@ async function warmUpModel(projectName: string, profile: BrowserProfile) {
   console.log(`[global-setup] ${projectName}: model is ready`);
 
   await context.close();
+
+  // Wait for Chrome's lockfile to be released — chrome_crashpad_handler
+  // outlives the main process and holds the FILE_FLAG_DELETE_ON_CLOSE handle
+  const lockfile = join(profile.profileDir, 'lockfile');
+  const lockDeadline = Date.now() + 10_000;
+
+  while (existsSync(lockfile) && Date.now() < lockDeadline) {
+    await new Promise((r) => setTimeout(r, 250));
+  }
 }
