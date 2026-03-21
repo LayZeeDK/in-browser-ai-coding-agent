@@ -160,8 +160,13 @@ jobs:
         if: ${{ !cancelled() && steps.bootstrap.outcome != 'failure' }}
         shell: bash
         run: |
-          sed 's/\x1b\[[0-9;]*m//g' unit-test-output.log | awk '
-            /\[unit\]/{found=1}
-            found{buf=buf $0 "\n"}
-            found && /"$/{printf "**%s**\n\n", buf; buf=""; found=0}
-          ' >> "$GITHUB_STEP_SUMMARY" || echo "_No prompt responses captured_" >> "$GITHUB_STEP_SUMMARY"
+          node -e "
+            const fs = require('fs');
+            const log = fs.readFileSync('unit-test-output.log', 'utf8').replace(/\x1b\[[0-9;]*m/g, '');
+            const re = /\[unit\] (.+?): \"(.+?)\" -> Response: \"([\s\S]*?)\"/g;
+            let md = '', m;
+            while ((m = re.exec(log))) {
+              md += '### Unit Test ' + m[1] + '\n\n**Prompt:** ' + m[2] + '\n\n**Response:** ' + m[3] + '\n\n';
+            }
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, md || '_No prompt responses captured_\n');
+          "
