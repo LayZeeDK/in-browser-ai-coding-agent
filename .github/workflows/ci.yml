@@ -70,12 +70,6 @@ jobs:
         include:
           - browser: chrome-beta
             project: chrome-gemini-nano
-            cache-key: chrome-beta-cpu-bare-v1
-            runner: ubuntu-latest
-            xvfb: 'xvfb-run --auto-servernum'
-            container: false
-          - browser: chrome-beta
-            project: chrome-gemini-nano
             cache-key: chrome-beta-cpu-container-v1
             runner: ubuntu-latest
             xvfb: 'xvfb-run --auto-servernum'
