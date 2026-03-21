@@ -97,7 +97,7 @@ async function warmUpModel(projectName: string, profile: BrowserProfile) {
   const page = context.pages()[0] || (await context.newPage());
   page.setDefaultTimeout(1_200_000);
 
-  // Trigger model loading via the LanguageModel API
+  // Navigate to on-device-internals and trigger model loading
   await page.goto(profile.onDeviceInternalsUrl);
   await page.evaluate(async () => {
     if (typeof LanguageModel !== 'undefined') {
@@ -133,10 +133,27 @@ async function warmUpModel(projectName: string, profile: BrowserProfile) {
     `[global-setup] ${projectName}: waiting for foundational model state: Ready...`,
   );
 
-  // Wait for "Foundational model state: Ready"
-  await page
-    .getByText(/Foundational model state:\s*Ready/i)
-    .waitFor({ timeout: 600_000 });
+  // Wait for "Foundational model state: Ready", refreshing if the model
+  // reports "Not Ready For Unknown Reason" (transient Edge state)
+  const deadline = Date.now() + 600_000;
+
+  while (Date.now() < deadline) {
+    const readyEl = page.getByText(/Foundational model state:\s*Ready/i);
+
+    if (await readyEl.isVisible({ timeout: 30_000 }).catch(() => false)) {
+      break;
+    }
+
+    const notReady = page.getByText(/Not Ready For Unknown Reason/i);
+
+    if (await notReady.isVisible({ timeout: 1_000 }).catch(() => false)) {
+      console.log(
+        `[global-setup] ${projectName}: model not ready, refreshing...`,
+      );
+      await page.reload();
+      await modelStatusTab.click();
+    }
+  }
 
   console.log(`[global-setup] ${projectName}: model is ready`);
 
