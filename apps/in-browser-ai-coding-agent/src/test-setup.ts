@@ -9,10 +9,17 @@ const win = globalThis as typeof globalThis & {
   __modelWarmedUp?: boolean;
 };
 
+// Only poll for model availability in CI — locally, the model is typically
+// ready immediately. Polling blocks test discovery in Vitest UI/watch mode.
+const pollTimeout = (import.meta as unknown as { env?: Record<string, string> })
+  .env?.['CI']
+  ? 300_000
+  : 5_000;
+
 if (!win.__modelWarmedUp && typeof LanguageModel !== 'undefined') {
   // Poll until the model is available — it may still be registering
   // when the setup file runs (especially on slower CI runners)
-  const deadline = Date.now() + 300_000;
+  const deadline = Date.now() + pollTimeout;
   let status = await LanguageModel.availability();
 
   while (status !== 'available' && Date.now() < deadline) {
