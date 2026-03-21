@@ -92,6 +92,7 @@ async function warmUpModel(projectName: string, profile: BrowserProfile) {
     headless: false,
     args: profile.args,
     ignoreDefaultArgs: AI_IGNORE_DEFAULT_ARGS,
+    timeout: 60_000,
   });
 
   const page = context.pages()[0] || (await context.newPage());

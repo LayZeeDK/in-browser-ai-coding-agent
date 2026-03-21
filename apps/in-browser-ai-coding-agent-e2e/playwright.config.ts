@@ -42,9 +42,17 @@ export default defineConfig({
   // Persistent browser contexts cannot be shared across parallel workers
   workers: 1,
   reporter: [
-    ...((Array.isArray(preset.reporter)
-      ? preset.reporter
-      : []) as ReporterDescription[]),
+    ...(
+      (Array.isArray(preset.reporter)
+        ? preset.reporter
+        : []) as ReporterDescription[]
+    ).map((r) =>
+      // Disable auto-opening the HTML report — launching Chrome Stable
+      // for the report interferes with Chrome Beta persistent contexts
+      r[0] === 'html'
+        ? (['html', { ...r[1], open: 'never' }] as ReporterDescription)
+        : r,
+    ),
     ...(process.env['CI'] ? [['github'] as ReporterDescription] : []),
   ],
   use: {
