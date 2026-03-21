@@ -7,6 +7,7 @@ export default [
   {
     ignores: [
       '**/dist',
+      '**/.playwright-profiles',
       '**/vite.config.*.timestamp*',
       '**/vitest.config.*.timestamp*',
     ],
