@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
   LanguageModelService,
   ModelAvailability,
@@ -7,6 +7,14 @@ import {
 
 describe('LanguageModelService', () => {
   let service: LanguageModelService;
+
+  // Warm up the model so cold-start latency doesn't eat into individual test timeouts
+  beforeAll(async () => {
+    if (typeof LanguageModel !== 'undefined') {
+      const session = await LanguageModel.create();
+      session.destroy();
+    }
+  }, 300_000);
 
   beforeEach(() => {
     service = TestBed.inject(LanguageModelService);
