@@ -161,7 +161,7 @@ jobs:
         shell: bash
         run: |
           sed 's/\x1b\[[0-9;]*m//g' unit-test-output.log | awk '
-            /\[unit\]/{found=1; print "### " $0; next}
-            found && /"$/{print; found=0; print ""; next}
-            found{print}
-          ' >> "$GITHUB_STEP_SUMMARY" || echo "### Unit Test Prompt Responses\n_No prompt responses captured_" >> "$GITHUB_STEP_SUMMARY"
+            /\[unit\]/{found=1}
+            found{buf=buf $0 "\n"}
+            found && /"$/{printf "**%s**\n\n", buf; buf=""; found=0}
+          ' >> "$GITHUB_STEP_SUMMARY" || echo "_No prompt responses captured_" >> "$GITHUB_STEP_SUMMARY"
