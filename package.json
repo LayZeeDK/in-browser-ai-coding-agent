@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "build": "nx run-many -t build",
-    "lint": "nx run-many -t lint",
+    "lint": "nx run-many -t lint --max-warnings=0",
     "test": "nx run-many -t test",
     "typecheck": "nx run-many -t typecheck",
     "e2e": "nx run-many -t e2e",
