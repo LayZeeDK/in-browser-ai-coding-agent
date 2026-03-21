@@ -97,8 +97,10 @@ export default async function globalSetup(config: FullConfig) {
             return false; // keep polling
           }
 
+          // Only create a session to trigger model loading — skip the
+          // actual prompt since it can take 18+ minutes on slow runners.
+          // Tests use retries to handle cold-start.
           const session = await LanguageModel.create();
-          await session.prompt('warmup');
           session.destroy();
 
           return true;
