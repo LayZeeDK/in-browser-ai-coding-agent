@@ -1,4 +1,6 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
+import { marked } from 'marked';
 import {
   LanguageModelService,
   ModelAvailability,
@@ -65,7 +67,7 @@ import {
       }
 
       @if (response()) {
-        <p data-testid="prompt-response">{{ response() }}</p>
+        <div data-testid="prompt-response" [innerHTML]="responseHtml()"></div>
       }
     </section>
   `,
@@ -89,6 +91,7 @@ import {
 })
 export class ModelStatusComponent implements OnInit {
   private readonly languageModel = inject(LanguageModelService);
+  private readonly sanitizer = inject(DomSanitizer);
 
   protected readonly loading = signal(true);
   protected readonly availability = signal<ModelAvailability>('unavailable');
@@ -97,6 +100,17 @@ export class ModelStatusComponent implements OnInit {
   protected readonly promptText = signal('');
   protected readonly prompting = signal(false);
   protected readonly response = signal('');
+  protected readonly responseHtml = computed(() => {
+    const md = this.response();
+
+    if (!md) {
+      return '';
+    }
+
+    return this.sanitizer.bypassSecurityTrustHtml(
+      marked.parse(md, { async: false }) as string,
+    );
+  });
   protected readonly error = signal('');
 
   async ngOnInit(): Promise<void> {
