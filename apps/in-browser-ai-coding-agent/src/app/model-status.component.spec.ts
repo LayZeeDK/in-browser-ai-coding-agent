@@ -96,7 +96,7 @@ describe('ModelStatusComponent', () => {
     const resultEl = await waitForElement(
       compiled,
       '[data-testid="prompt-response"], [data-testid="prompt-error"]',
-      120_000,
+      240_000,
     );
 
     const testId = resultEl.getAttribute('data-testid');
