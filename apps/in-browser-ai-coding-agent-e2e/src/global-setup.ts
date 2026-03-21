@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { chromium, type FullConfig } from '@playwright/test';
 import { workspaceRoot } from '@nx/devkit';
@@ -59,17 +60,25 @@ export default async function globalSetup(config: FullConfig) {
       continue;
     }
 
-    const context = await chromium.launchPersistentContext(profile.profileDir, {
-      channel: profile.channel,
-      headless: false,
-      args: profile.args,
-      ignoreDefaultArgs: AI_IGNORE_DEFAULT_ARGS,
-    });
-
-    const page = context.pages()[0] || (await context.newPage());
-    await page.goto('about:blank');
+    // Skip if the browser profile directory doesn't exist (not bootstrapped)
+    if (!existsSync(profile.profileDir)) {
+      continue;
+    }
 
     try {
+      const context = await chromium.launchPersistentContext(
+        profile.profileDir,
+        {
+          channel: profile.channel,
+          headless: false,
+          args: profile.args,
+          ignoreDefaultArgs: AI_IGNORE_DEFAULT_ARGS,
+        },
+      );
+
+      const page = context.pages()[0] || (await context.newPage());
+      await page.goto('about:blank');
+
       await page.waitForFunction(
         async () => {
           if (typeof LanguageModel === 'undefined') {
@@ -90,12 +99,12 @@ export default async function globalSetup(config: FullConfig) {
         },
         { timeout: 300_000 },
       );
+
+      await context.close();
     } catch (error) {
       console.warn(
-        `[global-setup] Model warm-up failed for ${project.name}: ${error}`,
+        `[global-setup] Model warm-up skipped for ${project.name}: ${error}`,
       );
     }
-
-    await context.close();
   }
 }
