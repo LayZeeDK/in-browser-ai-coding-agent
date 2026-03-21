@@ -77,6 +77,8 @@ export default defineConfig({
     fileParallelism: false,
     // Retry on CI only — matches Playwright e2e preset (nxE2EPreset)
     retry: process.env['CI'] ? 2 : 0,
+    // Surface flaky test annotations in GitHub Actions job summaries
+    reporters: process.env['CI'] ? ['default', 'github-actions'] : ['default'],
     browser: {
       enabled: true,
       instances,
