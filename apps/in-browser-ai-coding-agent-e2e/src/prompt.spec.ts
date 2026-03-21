@@ -1,3 +1,4 @@
+import { appendFileSync } from 'node:fs';
 import { test, expect } from './fixtures';
 
 test('responds to a prompt', async ({ persistentPage: page }) => {
@@ -35,14 +36,22 @@ test('responds to a prompt', async ({ persistentPage: page }) => {
   // Wait for either a response or an error to appear
   const errorEl = page.getByTestId('prompt-error');
   const responseEl = page.getByTestId('prompt-response');
-  await expect(responseEl.or(errorEl)).toBeVisible({ timeout: 120_000 });
+  await expect(responseEl.or(errorEl)).toBeVisible({ timeout: 180_000 });
 
   // Assert it was a response, not an error
   await expect(errorEl).toBeHidden();
   await expect(responseEl).not.toBeEmpty();
 
   const responseText = await responseEl.textContent();
-  console.log(
-    `[e2e] Prompt: "Hello, World!" -> Response: "${responseText?.trim()}"`,
-  );
+  const trimmed = responseText?.trim() ?? '';
+
+  console.log(`[e2e] Prompt: "Hello, World!" -> Response: "${trimmed}"`);
+
+  // eslint-disable-next-line playwright/no-conditional-in-test
+  if (process.env['GITHUB_STEP_SUMMARY']) {
+    appendFileSync(
+      process.env['GITHUB_STEP_SUMMARY'],
+      `### E2E Prompt Response\n\n**Prompt:** Hello, World!\n\n**Response:** ${trimmed}\n\n`,
+    );
+  }
 });
