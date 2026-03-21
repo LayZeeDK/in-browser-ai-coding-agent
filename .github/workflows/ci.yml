@@ -143,7 +143,8 @@ jobs:
         if: steps.bootstrap.outcome != 'failure'
         id: unit-tests
         timeout-minutes: 30
-        run: ${{ matrix.xvfb }} npm exec nx -- test in-browser-ai-coding-agent
+        run: ${{ matrix.xvfb }} npm exec nx -- test in-browser-ai-coding-agent 2>&1 | tee unit-test-output.log
+        shell: bash
         env:
           CI_VITEST_BROWSER_INSTANCE: ${{ matrix.project }}
 
@@ -152,3 +153,11 @@ jobs:
         id: e2e-tests
         timeout-minutes: 30
         run: ${{ matrix.xvfb }} npm exec nx -- e2e in-browser-ai-coding-agent-e2e -- --project=${{ matrix.project }}
+
+      - name: Write prompt responses to job summary
+        if: ${{ !cancelled() && steps.bootstrap.outcome != 'failure' }}
+        shell: bash
+        run: |
+          echo "### Unit Test Prompt Responses" >> "$GITHUB_STEP_SUMMARY"
+          grep '\[unit\]' unit-test-output.log >> "$GITHUB_STEP_SUMMARY" || echo "_No prompt responses captured_" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
