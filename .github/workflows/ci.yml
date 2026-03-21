@@ -80,13 +80,6 @@ jobs:
             runner: windows-11-arm
             xvfb: ''
             container: false
-          - browser: msedge-dev
-            project: edge-phi4-mini
-            cache-key: msedge-dev-cpu-windows11-arm-v1
-            runner: windows-11-arm
-            xvfb: ''
-            container: false
-            disable-gpu: true
     # Container only for jobs that opt in; no-op otherwise
     container: ${{ matrix.container && fromJSON(format('{{"image":"{0}-{1}:latest","options":"--ipc=host --user 1001"}}', needs.ghcr.outputs.image, matrix.browser)) || '' }}
     steps:
@@ -118,7 +111,7 @@ jobs:
       - name: Bootstrap AI model
         id: bootstrap
         if: steps.model-cache.outputs.cache-hit != 'true'
-        run: ${{ matrix.xvfb }} node scripts/bootstrap-ai-model.mjs --browser ${{ matrix.browser }} --profile .playwright-profiles/${{ matrix.browser }} --timeout 600000 ${{ matrix.disable-gpu && '--disable-gpu' || '' }}
+        run: ${{ matrix.xvfb }} node scripts/bootstrap-ai-model.mjs --browser ${{ matrix.browser }} --profile .playwright-profiles/${{ matrix.browser }} --timeout 600000
 
       - name: Save AI model cache
         if: steps.model-cache.outputs.cache-hit != 'true' && steps.bootstrap.outcome == 'success'
@@ -133,11 +126,8 @@ jobs:
         run: ${{ matrix.xvfb }} npm exec nx -- test in-browser-ai-coding-agent
         env:
           CI_VITEST_BROWSER_INSTANCE: ${{ matrix.project }}
-          CI_DISABLE_GPU: ${{ matrix.disable-gpu && '1' || '' }}
 
       - name: Run e2e tests (${{ matrix.project }})
         if: ${{ !cancelled() && steps.bootstrap.outcome != 'failure' }}
         id: e2e-tests
         run: ${{ matrix.xvfb }} npm exec nx -- e2e in-browser-ai-coding-agent-e2e -- --project=${{ matrix.project }}
-        env:
-          CI_DISABLE_GPU: ${{ matrix.disable-gpu && '1' || '' }}
