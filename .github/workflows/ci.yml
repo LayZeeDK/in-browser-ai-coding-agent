@@ -75,11 +75,6 @@ jobs:
             xvfb: 'xvfb-run --auto-servernum'
           - browser: msedge-dev
             project: edge-phi4-mini
-            cache-key: msedge-dev-ai-model-windows-v1
-            runner: windows-latest
-            xvfb: ''
-          - browser: msedge-dev
-            project: edge-phi4-mini
             cache-key: msedge-dev-ai-model-windows11-arm-v1
             runner: windows-11-arm
             xvfb: ''
@@ -123,9 +118,12 @@ jobs:
           key: ${{ matrix.cache-key }}
 
       - name: Run unit tests (${{ matrix.project }})
+        id: unit-tests
         run: ${{ matrix.xvfb }} npm exec nx -- test in-browser-ai-coding-agent
         env:
           CI_VITEST_BROWSER_INSTANCE: ${{ matrix.project }}
 
       - name: Run e2e tests (${{ matrix.project }})
+        if: ${{ !cancelled() }}
+        id: e2e-tests
         run: ${{ matrix.xvfb }} npm exec nx -- e2e in-browser-ai-coding-agent-e2e -- --project=${{ matrix.project }}
