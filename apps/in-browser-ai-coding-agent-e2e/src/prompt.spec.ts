@@ -11,12 +11,15 @@ test('responds to a prompt', async ({ persistentPage: page }) => {
   const status = await statusEl.getAttribute('data-status');
 
   // If model is downloadable, trigger download via button click (user gesture)
+  // eslint-disable-next-line playwright/no-conditional-in-test
   if (status === 'downloadable') {
     await page.getByTestId('download-button').click();
   }
 
   // Wait for model to be available (handles downloading and downloadable states)
+  // eslint-disable-next-line playwright/no-conditional-in-test
   if (status !== 'available') {
+    // eslint-disable-next-line playwright/no-conditional-expect
     await expect(statusEl).toHaveAttribute('data-status', 'available', {
       timeout: 300_000,
     });
@@ -35,7 +38,7 @@ test('responds to a prompt', async ({ persistentPage: page }) => {
   await expect(responseEl.or(errorEl)).toBeVisible({ timeout: 120_000 });
 
   // Assert it was a response, not an error
-  await expect(errorEl).not.toBeVisible();
+  await expect(errorEl).toBeHidden();
   await expect(responseEl).not.toBeEmpty();
 
   const responseText = await responseEl.textContent();

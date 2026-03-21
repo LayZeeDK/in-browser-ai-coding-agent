@@ -46,6 +46,7 @@ const browserProfiles: Record<string, { profileDir: string; args: string[] }> =
  * the pre-downloaded AI model from the bootstrap script.
  */
 export const test = base.extend<{ persistentPage: Page }>({
+  // eslint-disable-next-line no-empty-pattern
   persistentPage: async ({}, use, testInfo) => {
     const projectName = testInfo.project.name;
     const profile = browserProfiles[projectName];
