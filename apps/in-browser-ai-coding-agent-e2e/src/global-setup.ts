@@ -84,29 +84,30 @@ export default async function globalSetup(config: FullConfig) {
       // not available on about:blank
       await page.goto(profile.internalPage);
 
-      // Poll for model availability, then prompt to warm up inference
+      // Poll for model availability
       await page.waitForFunction(
         async () => {
           if (typeof LanguageModel === 'undefined') {
             return true;
           }
 
-          const status = await LanguageModel.availability();
-
-          if (status !== 'available') {
-            return false; // keep polling
-          }
-
-          // Only create a session to trigger model loading — skip the
-          // actual prompt since it can take 18+ minutes on slow runners.
-          // Tests use retries to handle cold-start.
-          const session = await LanguageModel.create();
-          session.destroy();
-
-          return true;
+          return (await LanguageModel.availability()) === 'available';
         },
         { polling: 2_000, timeout: 300_000 },
       );
+
+      // Warm up by prompting once — this can take 18+ minutes on slow
+      // runners (Phi-4 Mini on ARM) but ensures tests don't pay cold-start
+      page.setDefaultTimeout(1_200_000);
+      await page.evaluate(async () => {
+        if (typeof LanguageModel === 'undefined') {
+          return;
+        }
+
+        const session = await LanguageModel.create();
+        await session.prompt('warmup');
+        session.destroy();
+      });
 
       await context.close();
     } catch (error) {

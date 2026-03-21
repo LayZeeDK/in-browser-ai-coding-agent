@@ -25,11 +25,8 @@ if (!win.__modelWarmedUp && typeof LanguageModel !== 'undefined') {
   }
 
   if (status === 'available') {
-    // Only create a session to trigger model loading — skip the actual
-    // prompt since it can take 18+ minutes on slow runners (Phi-4 Mini
-    // on ARM). Tests use retries to handle cold-start: the first attempt
-    // warms the model, the retry succeeds quickly.
     const session = await LanguageModel.create();
+    await session.prompt('warmup');
     session.destroy();
   }
 
