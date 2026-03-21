@@ -1,4 +1,5 @@
 import { defineConfig } from '@playwright/test';
+import type { ReporterDescription } from '@playwright/test';
 import { nxE2EPreset } from '@nx/playwright/preset';
 import { workspaceRoot } from '@nx/devkit';
 
@@ -33,8 +34,16 @@ const AI_IGNORE_DEFAULT_ARGS = [
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
+const preset = nxE2EPreset(__filename, { testDir: './src' });
+
 export default defineConfig({
-  ...nxE2EPreset(__filename, { testDir: './src' }),
+  ...preset,
+  reporter: [
+    ...((Array.isArray(preset.reporter)
+      ? preset.reporter
+      : []) as ReporterDescription[]),
+    ...(process.env['CI'] ? [['github'] as ReporterDescription] : []),
+  ],
   use: {
     baseURL,
     trace: 'on-first-retry',
