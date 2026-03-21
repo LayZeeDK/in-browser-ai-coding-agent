@@ -80,6 +80,8 @@ export default defineConfig({
   test: {
     // Persistent context cannot be shared across parallel sessions
     fileParallelism: false,
+    // Retry on CI only — matches Playwright e2e preset (nxE2EPreset)
+    retry: process.env['CI'] ? 2 : 0,
     browser: {
       enabled: true,
       instances,
