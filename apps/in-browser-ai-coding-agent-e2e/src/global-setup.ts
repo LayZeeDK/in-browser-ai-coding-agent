@@ -24,11 +24,12 @@ const DISABLE_FEATURES_WITHOUT_OPT_HINTS =
 
 const browserProfiles: Record<
   string,
-  { profileDir: string; channel: string; args: string[] }
+  { profileDir: string; channel: string; internalPage: string; args: string[] }
 > = {
   'chrome-gemini-nano': {
     profileDir: resolve(workspaceRoot, '.playwright-profiles/chrome-beta'),
     channel: 'chrome-beta',
+    internalPage: 'chrome://gpu',
     args: [
       '--enable-features=OptimizationGuideOnDeviceModel,PromptAPIForGeminiNano',
       DISABLE_FEATURES_WITHOUT_OPT_HINTS,
@@ -37,6 +38,7 @@ const browserProfiles: Record<
   'edge-phi4-mini': {
     profileDir: resolve(workspaceRoot, '.playwright-profiles/msedge-dev'),
     channel: 'msedge-dev',
+    internalPage: 'edge://gpu',
     args: [
       '--enable-features=AIPromptAPI',
       '--disable-features=OnDeviceModelPerformanceParams',
@@ -77,8 +79,12 @@ export default async function globalSetup(config: FullConfig) {
       );
 
       const page = context.pages()[0] || (await context.newPage());
-      await page.goto('about:blank');
 
+      // Navigate to the browser's internal page — LanguageModel API is
+      // not available on about:blank
+      await page.goto(profile.internalPage);
+
+      // Poll for model availability, then prompt to warm up inference
       await page.waitForFunction(
         async () => {
           if (typeof LanguageModel === 'undefined') {
@@ -88,7 +94,7 @@ export default async function globalSetup(config: FullConfig) {
           const status = await LanguageModel.availability();
 
           if (status !== 'available') {
-            return true;
+            return false; // keep polling
           }
 
           const session = await LanguageModel.create();
@@ -97,7 +103,7 @@ export default async function globalSetup(config: FullConfig) {
 
           return true;
         },
-        { timeout: 300_000 },
+        { polling: 2_000, timeout: 300_000 },
       );
 
       await context.close();
