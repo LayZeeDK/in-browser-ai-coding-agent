@@ -72,16 +72,33 @@ export const test = base.extend<
         );
       }
 
-      const context = await chromium.launchPersistentContext(
-        profile.profileDir,
-        {
-          channel: workerInfo.project.use.channel as string,
-          headless: false,
-          args: profile.args,
-          ignoreDefaultArgs: AI_IGNORE_DEFAULT_ARGS,
-          timeout: 60_000,
-        },
-      );
+      // Retry launch — Chrome's ProcessSingleton on Windows may reject
+      // the launch if a previous chrome_crashpad_handler is still running
+      let context!: BrowserContext;
+      const maxAttempts = 5;
+
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          context = await chromium.launchPersistentContext(profile.profileDir, {
+            channel: workerInfo.project.use.channel as string,
+            headless: false,
+            args: profile.args,
+            ignoreDefaultArgs: AI_IGNORE_DEFAULT_ARGS,
+            timeout: 60_000,
+          });
+
+          break;
+        } catch (error) {
+          if (attempt === maxAttempts) {
+            throw error;
+          }
+
+          console.warn(
+            `[fixtures] Launch attempt ${attempt}/${maxAttempts} failed, retrying in 2s...`,
+          );
+          await new Promise((r) => setTimeout(r, 2_000));
+        }
+      }
 
       // Warm up: navigate to on-device-internals and wait for model ready
       const warmupPage = context.pages()[0] || (await context.newPage());
