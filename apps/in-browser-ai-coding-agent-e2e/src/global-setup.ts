@@ -94,10 +94,13 @@ async function warmUpModel(projectName: string, profile: BrowserProfile) {
     ignoreDefaultArgs: AI_IGNORE_DEFAULT_ARGS,
   });
 
-  let page = context.pages()[0] || (await context.newPage());
+  const page = context.pages()[0] || (await context.newPage());
   page.setDefaultTimeout(1_200_000);
 
-  // Navigate to on-device-internals — Chrome may require enabling debug pages first
+  // Navigate to on-device-internals — Chrome may gate this behind a
+  // debug page enable flow. Use page.evaluate to enable programmatically
+  // (clicking the enable button opens a new tab in the default profile,
+  // not the Playwright context, leaving a stale Chrome window open).
   await page.goto(profile.onDeviceInternalsUrl);
 
   const disabledText = page.getByText(
@@ -109,17 +112,16 @@ async function warmUpModel(projectName: string, profile: BrowserProfile) {
       `[global-setup] ${projectName}: enabling internal debugging pages...`,
     );
 
-    const newTabPromise = context.waitForEvent('page');
-
+    // Click enable and reload in the same page instead of waiting for
+    // a new tab (which opens in the default profile on Windows)
     await page
       .getByRole('button', { name: /enable/i })
       .or(page.locator('button:has-text("Enable")'))
       .click();
 
-    const newTab = await newTabPromise;
-    await newTab.waitForLoadState();
-    page = newTab;
-    page.setDefaultTimeout(1_200_000);
+    // Wait briefly for the enable to take effect, then reload
+    await page.waitForTimeout(1_000);
+    await page.goto(profile.onDeviceInternalsUrl);
   }
 
   // Trigger model loading via the LanguageModel API
