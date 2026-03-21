@@ -39,6 +39,8 @@ const preset = nxE2EPreset(__filename, { testDir: './src' });
 export default defineConfig({
   ...preset,
   globalSetup: './src/global-setup.ts',
+  // Persistent browser contexts cannot be shared across parallel workers
+  workers: 1,
   reporter: [
     ...((Array.isArray(preset.reporter)
       ? preset.reporter
