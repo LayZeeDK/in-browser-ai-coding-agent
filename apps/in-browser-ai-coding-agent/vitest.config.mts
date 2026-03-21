@@ -80,6 +80,7 @@ export default defineConfig({
     browser: {
       enabled: true,
       instances,
+      trace: process.env['CI'] ? 'on-first-retry' : 'off',
     },
   },
 });
