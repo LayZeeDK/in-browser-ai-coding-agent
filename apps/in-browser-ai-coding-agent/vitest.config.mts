@@ -27,9 +27,6 @@ const AI_IGNORE_DEFAULT_ARGS = [
   '--disable-component-update',
 ];
 
-/** When set, adds --disable-gpu to browser launch args to force CPU inference. */
-const extraArgs = process.env['CI_DISABLE_GPU'] ? ['--disable-gpu'] : [];
-
 /**
  * All browser instances for on-device AI testing.
  * In CI, CI_VITEST_BROWSER_INSTANCE selects a single instance.
@@ -46,7 +43,6 @@ const allInstances = [
         args: [
           '--enable-features=OptimizationGuideOnDeviceModel,PromptAPIForGeminiNano',
           DISABLE_FEATURES_WITHOUT_OPT_HINTS,
-          ...extraArgs,
         ],
         ignoreDefaultArgs: AI_IGNORE_DEFAULT_ARGS,
       },
@@ -63,7 +59,6 @@ const allInstances = [
           '--enable-features=AIPromptAPI',
           '--disable-features=OnDeviceModelPerformanceParams',
           DISABLE_FEATURES_WITHOUT_OPT_HINTS,
-          ...extraArgs,
         ],
         ignoreDefaultArgs: AI_IGNORE_DEFAULT_ARGS,
       },
