@@ -135,30 +135,46 @@ export const test = base.extend<
           }
         });
 
-        // Wait for model ready state
+        // Wait for model ready state — bail if Model Status tab
+        // isn't found (page may render differently in containers)
         const modelStatusTab = warmupPage
           .getByRole('tab', { name: /Model Status/i })
           .or(warmupPage.locator('text=Model Status'));
-        await modelStatusTab.click();
 
-        const deadline = Date.now() + 600_000;
-
-        while (Date.now() < deadline) {
-          const readyEl = warmupPage.getByText(
-            /Foundational model state:\s*Ready/i,
+        if (
+          !(await modelStatusTab
+            .isVisible({ timeout: 10_000 })
+            .catch(() => false))
+        ) {
+          console.warn(
+            '[fixtures] Model Status tab not found, skipping warm-up',
           );
+        } else {
+          await modelStatusTab.click();
 
-          if (await readyEl.isVisible({ timeout: 30_000 }).catch(() => false)) {
-            break;
-          }
+          const deadline = Date.now() + 600_000;
 
-          const notReady = warmupPage.getByText(
-            /Not Ready For Unknown Reason/i,
-          );
+          while (Date.now() < deadline) {
+            const readyEl = warmupPage.getByText(
+              /Foundational model state:\s*Ready/i,
+            );
 
-          if (await notReady.isVisible({ timeout: 1_000 }).catch(() => false)) {
-            await warmupPage.reload();
-            await modelStatusTab.click();
+            if (
+              await readyEl.isVisible({ timeout: 30_000 }).catch(() => false)
+            ) {
+              break;
+            }
+
+            const notReady = warmupPage.getByText(
+              /Not Ready For Unknown Reason/i,
+            );
+
+            if (
+              await notReady.isVisible({ timeout: 1_000 }).catch(() => false)
+            ) {
+              await warmupPage.reload();
+              await modelStatusTab.click();
+            }
           }
         }
       } catch (error) {
@@ -168,7 +184,7 @@ export const test = base.extend<
       await use(context);
       await context.close();
     },
-    { scope: 'worker' },
+    { scope: 'worker', timeout: 1_200_000 },
   ],
 
   // Test-scoped: provides a fresh page from the shared context

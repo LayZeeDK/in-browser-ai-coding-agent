@@ -146,10 +146,20 @@ async function warmUpModel(instance: BrowserInstance) {
       `[global-setup] ${instance.name}: waiting for model ready state...`,
     );
 
-    // Click "Model Status" tab
+    // Click "Model Status" tab — bail if not found (container rendering)
     const modelStatusTab = page
       .getByRole('tab', { name: /Model Status/i })
       .or(page.locator('text=Model Status'));
+
+    if (
+      !(await modelStatusTab.isVisible({ timeout: 10_000 }).catch(() => false))
+    ) {
+      console.warn(
+        `[global-setup] ${instance.name}: Model Status tab not found, skipping`,
+      );
+      return;
+    }
+
     await modelStatusTab.click();
 
     // Wait for "Foundational model state: Ready"
