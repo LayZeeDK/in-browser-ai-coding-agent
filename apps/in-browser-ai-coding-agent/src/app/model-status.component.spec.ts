@@ -108,7 +108,7 @@ describe('ModelStatusComponent', () => {
     const responseText = resultEl.textContent?.trim() ?? '';
 
     console.log(
-      `[unit] Component prompt: "Hello, AI!" -> Response: "${responseText}"`,
+      `[unit] Component prompt: "Hello, AI!"\n[unit-response]${responseText}[/unit-response]`,
     );
 
     expect(responseText.length).toBeGreaterThan(0);

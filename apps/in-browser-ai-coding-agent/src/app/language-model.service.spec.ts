@@ -48,7 +48,7 @@ describe('LanguageModelService', () => {
     const response = await service.prompt('Hello, AI!');
 
     console.log(
-      `[unit] Prompt: "Hello, AI!" -> Response: "${response.trim()}"`,
+      `[unit] Prompt: "Hello, AI!"\n[unit-response]${response.trim()}[/unit-response]`,
     );
 
     expect(response).toBeTruthy();

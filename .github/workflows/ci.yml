@@ -163,7 +163,7 @@ jobs:
           node -e "
             const fs = require('fs');
             const log = fs.readFileSync('unit-test-output.log', 'utf8').replace(/\x1b\[[0-9;]*m/g, '');
-            const re = /\[unit\] (.+?): \"(.+?)\" -> Response: \"([\s\S]*?)\"/g;
+            const re = /\[unit\] (.+?): \"(.+?)\"\n\[unit-response\]([\s\S]*?)\[\/unit-response\]/g;
             let md = '', m;
             while ((m = re.exec(log))) {
               md += '### Unit Test ' + m[1] + '\n\n**Prompt:** ' + m[2] + '\n\n**Response:** ' + m[3] + '\n\n';
