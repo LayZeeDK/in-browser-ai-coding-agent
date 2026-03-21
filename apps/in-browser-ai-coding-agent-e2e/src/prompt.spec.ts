@@ -30,7 +30,7 @@ test('responds to a prompt', async ({ persistentPage: page }) => {
   const submitBtn = page.getByTestId('prompt-submit');
   await expect(submitBtn).toBeEnabled();
 
-  await page.getByTestId('prompt-input').fill('Hello, World!');
+  await page.getByTestId('prompt-input').fill('Hello, AI!');
   await submitBtn.click();
 
   // Wait for either a response or an error to appear
@@ -45,13 +45,13 @@ test('responds to a prompt', async ({ persistentPage: page }) => {
   const responseText = await responseEl.textContent();
   const trimmed = responseText?.trim() ?? '';
 
-  console.log(`[e2e] Prompt: "Hello, World!" -> Response: "${trimmed}"`);
+  console.log(`[e2e] Prompt: "Hello, AI!" -> Response: "${trimmed}"`);
 
   // eslint-disable-next-line playwright/no-conditional-in-test
   if (process.env['GITHUB_STEP_SUMMARY']) {
     appendFileSync(
       process.env['GITHUB_STEP_SUMMARY'],
-      `### E2E Prompt Response\n\n**Prompt:** Hello, World!\n\n**Response:** ${trimmed}\n\n`,
+      `### E2E Prompt Response\n\n**Prompt:** Hello, AI!\n\n**Response:** ${trimmed}\n\n`,
     );
   }
 });

@@ -53,10 +53,10 @@ describe('LanguageModelService', () => {
   });
 
   it('should respond to a prompt', async () => {
-    const response = await service.prompt('Hello, World!');
+    const response = await service.prompt('Hello, AI!');
 
     console.log(
-      `[unit] Prompt: "Hello, World!" -> Response: "${response.trim()}"`,
+      `[unit] Prompt: "Hello, AI!" -> Response: "${response.trim()}"`,
     );
 
     expect(response).toBeTruthy();

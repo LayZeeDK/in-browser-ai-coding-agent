@@ -96,7 +96,7 @@ describe('ModelStatusComponent', () => {
       '[data-testid="prompt-submit"]',
     ) as HTMLButtonElement;
 
-    input.value = 'Hello, World!';
+    input.value = 'Hello, AI!';
     input.dispatchEvent(new Event('input'));
     submitBtn.click();
 
@@ -116,7 +116,7 @@ describe('ModelStatusComponent', () => {
     const responseText = resultEl.textContent?.trim() ?? '';
 
     console.log(
-      `[unit] Component prompt: "Hello, World!" -> Response: "${responseText}"`,
+      `[unit] Component prompt: "Hello, AI!" -> Response: "${responseText}"`,
     );
 
     expect(responseText.length).toBeGreaterThan(0);
