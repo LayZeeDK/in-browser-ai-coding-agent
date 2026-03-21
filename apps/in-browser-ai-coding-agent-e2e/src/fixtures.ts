@@ -21,6 +21,9 @@ const AI_IGNORE_DEFAULT_ARGS = [
 const DISABLE_FEATURES_WITHOUT_OPT_HINTS =
   '--disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument';
 
+/** When set, adds --disable-gpu to browser launch args to force CPU inference. */
+const extraArgs = process.env['CI_DISABLE_GPU'] ? ['--disable-gpu'] : [];
+
 const browserProfiles: Record<string, { profileDir: string; args: string[] }> =
   {
     'chrome-gemini-nano': {
@@ -28,6 +31,7 @@ const browserProfiles: Record<string, { profileDir: string; args: string[] }> =
       args: [
         '--enable-features=OptimizationGuideOnDeviceModel,PromptAPIForGeminiNano',
         DISABLE_FEATURES_WITHOUT_OPT_HINTS,
+        ...extraArgs,
       ],
     },
     'edge-phi4-mini': {
@@ -36,6 +40,7 @@ const browserProfiles: Record<string, { profileDir: string; args: string[] }> =
         '--enable-features=AIPromptAPI',
         '--disable-features=OnDeviceModelPerformanceParams',
         DISABLE_FEATURES_WITHOUT_OPT_HINTS,
+        ...extraArgs,
       ],
     },
   };
