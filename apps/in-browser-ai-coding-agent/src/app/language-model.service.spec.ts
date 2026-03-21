@@ -19,6 +19,7 @@ describe('LanguageModelService', () => {
     const status = await service.checkAvailability();
     const validStatuses: ModelAvailability[] = [
       'available',
+      'downloading',
       'downloadable',
       'unavailable',
     ];

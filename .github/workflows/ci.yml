@@ -123,7 +123,9 @@ jobs:
           key: ${{ matrix.cache-key }}
 
       - name: Run unit tests (${{ matrix.project }})
-        run: ${{ matrix.xvfb }} npm exec nx -- test in-browser-ai-coding-agent --project=${{ matrix.project }}
+        run: ${{ matrix.xvfb }} npm exec nx -- test in-browser-ai-coding-agent
+        env:
+          CI_VITEST_BROWSER_INSTANCE: ${{ matrix.project }}
 
       - name: Run e2e tests (${{ matrix.project }})
         run: ${{ matrix.xvfb }} npm exec nx -- e2e in-browser-ai-coding-agent-e2e -- --project=${{ matrix.project }}

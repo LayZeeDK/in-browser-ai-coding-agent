@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
 
@@ -26,41 +27,57 @@ const AI_IGNORE_DEFAULT_ARGS = [
   '--disable-component-update',
 ];
 
+/**
+ * All browser instances for on-device AI testing.
+ * In CI, CI_VITEST_BROWSER_INSTANCE selects a single instance.
+ * Locally (no env var), all instances are available.
+ */
+const allInstances = [
+  {
+    browser: 'chromium' as const,
+    name: 'chrome-gemini-nano',
+    provider: playwright({
+      persistentContext: resolve('.playwright-profiles/chrome-beta'),
+      launchOptions: {
+        channel: 'chrome-beta',
+        args: [
+          '--enable-features=OptimizationGuideOnDeviceModel,PromptAPIForGeminiNano',
+          DISABLE_FEATURES_WITHOUT_OPT_HINTS,
+        ],
+        ignoreDefaultArgs: AI_IGNORE_DEFAULT_ARGS,
+      },
+    }),
+  },
+  {
+    browser: 'chromium' as const,
+    name: 'edge-phi4-mini',
+    provider: playwright({
+      persistentContext: resolve('.playwright-profiles/msedge-dev'),
+      launchOptions: {
+        channel: 'msedge-dev',
+        args: [
+          '--enable-features=AIPromptAPI',
+          '--disable-features=OnDeviceModelPerformanceParams',
+          DISABLE_FEATURES_WITHOUT_OPT_HINTS,
+        ],
+        ignoreDefaultArgs: AI_IGNORE_DEFAULT_ARGS,
+      },
+    }),
+  },
+];
+
+const filterInstance = process.env['CI_VITEST_BROWSER_INSTANCE'];
+const instances = filterInstance
+  ? allInstances.filter((i) => i.name === filterInstance)
+  : allInstances;
+
 export default defineConfig({
   test: {
+    // Persistent context cannot be shared across parallel sessions
+    fileParallelism: false,
     browser: {
       enabled: true,
-      instances: [
-        {
-          browser: 'chromium',
-          name: 'chrome-gemini-nano',
-          provider: playwright({
-            launchOptions: {
-              channel: 'chrome-beta',
-              args: [
-                '--enable-features=OptimizationGuideOnDeviceModel,PromptAPIForGeminiNano',
-                DISABLE_FEATURES_WITHOUT_OPT_HINTS,
-              ],
-              ignoreDefaultArgs: AI_IGNORE_DEFAULT_ARGS,
-            },
-          }),
-        },
-        {
-          browser: 'chromium',
-          name: 'edge-phi4-mini',
-          provider: playwright({
-            launchOptions: {
-              channel: 'msedge-dev',
-              args: [
-                '--enable-features=AIPromptAPI',
-                '--disable-features=OnDeviceModelPerformanceParams',
-                DISABLE_FEATURES_WITHOUT_OPT_HINTS,
-              ],
-              ignoreDefaultArgs: AI_IGNORE_DEFAULT_ARGS,
-            },
-          }),
-        },
-      ],
+      instances,
     },
   },
 });
