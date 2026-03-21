@@ -38,9 +38,16 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version-file: '.node-version'
-          cache: 'npm'
+
+      - uses: actions/cache@v5
+        id: node-modules
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-${{ runner.arch }}-node-modules-${{ hashFiles('package-lock.json') }}
 
       - run: npm ci
+        if: steps.node-modules.outputs.cache-hit != 'true'
+
       - run: npm exec nx -- format:check
 
   lint-typecheck-build:
@@ -56,9 +63,16 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version-file: '.node-version'
-          cache: 'npm'
+
+      - uses: actions/cache@v5
+        id: node-modules
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-${{ runner.arch }}-node-modules-${{ hashFiles('package-lock.json') }}
 
       - run: npm ci
+        if: steps.node-modules.outputs.cache-hit != 'true'
+
       - run: npm exec nx -- run-many -t lint typecheck build
 
   test:
@@ -93,9 +107,15 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version-file: '.node-version'
-          cache: 'npm'
+
+      - uses: actions/cache@v5
+        id: node-modules
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-${{ runner.arch }}-node-modules-${{ hashFiles('package-lock.json') }}
 
       - run: npm ci
+        if: steps.node-modules.outputs.cache-hit != 'true'
 
       - name: Restore browser cache
         if: ${{ !matrix.container }}
