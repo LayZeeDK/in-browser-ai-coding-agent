@@ -285,8 +285,8 @@ function logSystemResources(label) {
   const freeMem = (freemem() / 1024 / 1024 / 1024).toFixed(1);
   const totalMem = (totalmem() / 1024 / 1024 / 1024).toFixed(1);
 
-  console.log(`[DIAG] System resources (${label}):`);
-  console.log(`  Memory: ${freeMem} GB free / ${totalMem} GB total`);
+  console.error(`[DIAG] System resources (${label}):`);
+  console.error(`  Memory: ${freeMem} GB free / ${totalMem} GB total`);
 
   try {
     const df = execSync(
@@ -296,7 +296,7 @@ function logSystemResources(label) {
       { encoding: 'utf8', timeout: 5000 },
     );
 
-    console.log(
+    console.error(
       `  Disk:\n${df
         .trim()
         .split('\n')
@@ -304,6 +304,6 @@ function logSystemResources(label) {
         .join('\n')}`,
     );
   } catch {
-    console.log('  Disk: (unable to query)');
+    console.error('  Disk: (unable to query)');
   }
 }
