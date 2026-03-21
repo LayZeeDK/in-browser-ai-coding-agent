@@ -110,32 +110,9 @@ jobs:
       - run: npm ci
         if: ${{ !matrix.container && steps.node-modules.outputs.cache-hit != 'true' }}
 
-      - name: Restore browser cache
-        if: ${{ !matrix.container }}
-        id: browser-cache
-        uses: actions/cache/restore@v5
-        with:
-          path: |
-            ~/.cache/ms-playwright
-            ~/AppData/Local/ms-playwright
-          key: playwright-${{ matrix.browser }}-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('package-lock.json') }}
-
       - name: Install ${{ matrix.browser }}
-        if: ${{ !matrix.container && steps.browser-cache.outputs.cache-hit != 'true' }}
+        if: ${{ !matrix.container }}
         run: npx playwright install ${{ matrix.browser }} --with-deps
-
-      - name: Install ${{ matrix.browser }} deps only
-        if: ${{ !matrix.container && steps.browser-cache.outputs.cache-hit == 'true' }}
-        run: npx playwright install-deps ${{ matrix.browser }}
-
-      - name: Save browser cache
-        if: ${{ !matrix.container && steps.browser-cache.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v5
-        with:
-          path: |
-            ~/.cache/ms-playwright
-            ~/AppData/Local/ms-playwright
-          key: playwright-${{ matrix.browser }}-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('package-lock.json') }}
 
       - name: Restore AI model cache
         uses: actions/cache/restore@v5
