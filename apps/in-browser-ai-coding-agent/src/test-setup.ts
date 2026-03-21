@@ -9,12 +9,9 @@ const win = globalThis as typeof globalThis & {
   __modelWarmedUp?: boolean;
 };
 
-// Only poll for model availability in CI — locally, the model is typically
-// ready immediately. Polling blocks test discovery in Vitest UI/watch mode.
-// __CI__ is a compile-time constant injected by Vite's define option
-// (import.meta.env.CI is not available in browser context).
-declare const __CI__: boolean;
-const pollTimeout = __CI__ ? 300_000 : 5_000;
+// Poll timeout for model availability. Keep short to avoid blocking
+// Vitest UI/watch mode. Tests use retries to handle slow cold starts.
+const pollTimeout = 60_000;
 
 if (!win.__modelWarmedUp && typeof LanguageModel !== 'undefined') {
   // Poll until the model is available — it may still be registering

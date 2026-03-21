@@ -72,9 +72,6 @@ const instances = filterInstance
   : allInstances;
 
 export default defineConfig({
-  define: {
-    __CI__: JSON.stringify(!!process.env['CI']),
-  },
   test: {
     // Persistent context cannot be shared across parallel sessions
     fileParallelism: false,
