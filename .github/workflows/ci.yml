@@ -159,5 +159,5 @@ jobs:
         shell: bash
         run: |
           echo "### Unit Test Prompt Responses" >> "$GITHUB_STEP_SUMMARY"
-          grep '\[unit\]' unit-test-output.log >> "$GITHUB_STEP_SUMMARY" || echo "_No prompt responses captured_" >> "$GITHUB_STEP_SUMMARY"
+          grep '\[unit\]' unit-test-output.log | sed 's/\x1b\[[0-9;]*m//g' >> "$GITHUB_STEP_SUMMARY" || echo "_No prompt responses captured_" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
