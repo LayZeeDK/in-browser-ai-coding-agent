@@ -1,6 +1,6 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
-test('has title', async ({ page }) => {
+test('has title', async ({ persistentPage: page }) => {
   await page.goto('/');
 
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
@@ -8,7 +8,7 @@ test('has title', async ({ page }) => {
   );
 });
 
-test('displays model availability status', async ({ page }) => {
+test('displays model availability status', async ({ persistentPage: page }) => {
   await page.goto('/');
 
   const statusEl = page.getByTestId('status-result');
