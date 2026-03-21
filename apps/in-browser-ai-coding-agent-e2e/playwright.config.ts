@@ -2,8 +2,8 @@ import { defineConfig } from '@playwright/test';
 import { nxE2EPreset } from '@nx/playwright/preset';
 import { workspaceRoot } from '@nx/devkit';
 
-// For CI, you may want to set BASE_URL to the deployed application.
-const baseURL = process.env['BASE_URL'] || 'http://localhost:4200';
+const port = process.env['E2E_PORT'] || '4200';
+const baseURL = process.env['BASE_URL'] || `http://localhost:${port}`;
 
 /**
  * Playwright's exact --disable-features default arg. Must match exactly
@@ -40,8 +40,8 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   webServer: {
-    command: 'npx nx run in-browser-ai-coding-agent:serve',
-    url: 'http://localhost:4200',
+    command: `npx nx run in-browser-ai-coding-agent:serve -- --port=${port}`,
+    url: baseURL,
     reuseExistingServer: true,
     cwd: workspaceRoot,
   },
