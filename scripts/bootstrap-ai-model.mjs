@@ -23,6 +23,7 @@ const { values } = parseArgs({
     profile: { type: 'string', default: '.playwright-profiles/chrome-beta' },
     timeout: { type: 'string', default: '300000' },
     headless: { type: 'boolean', default: false },
+    'disable-gpu': { type: 'boolean', default: false },
   },
 });
 
@@ -69,7 +70,7 @@ const browserConfig = {
   'chrome-beta': {
     internalPage: 'chrome://gpu',
     flags: [
-      'optimization-guide-on-device-model@2',
+      'optimization-guide-on-device-model@1',
       'prompt-api-for-gemini-nano@1',
     ],
     args: ['--no-first-run', DISABLE_FEATURES_WITHOUT_OPT_HINTS],
@@ -108,10 +109,14 @@ console.log(
   `[INFO] Launching ${channel} with persistent profile at ${values.profile}`,
 );
 
+const launchArgs = values['disable-gpu']
+  ? [...config.args, '--disable-gpu']
+  : config.args;
+
 const context = await chromium.launchPersistentContext(values.profile, {
   channel,
   headless: values.headless,
-  args: config.args,
+  args: launchArgs,
   ignoreDefaultArgs: IGNORE_DEFAULT_ARGS,
 });
 
