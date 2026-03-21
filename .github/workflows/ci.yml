@@ -95,20 +95,18 @@ jobs:
           node-version-file: '.node-version'
           cache: ${{ matrix.container && 'npm' || '' }}
 
-      # Ubuntu (container): npm ci always runs with npm download cache from setup-node
-      - run: npm ci
-        if: ${{ matrix.container }}
-
       # Windows ARM: cache node_modules directly, skip npm ci on hit
-      - uses: actions/cache@v5
+      - name: Restore node_modules cache
         if: ${{ !matrix.container }}
         id: node-modules
+        uses: actions/cache@v5
         with:
           path: node_modules
           key: ${{ runner.os }}-${{ runner.arch }}-node-modules-${{ hashFiles('package-lock.json') }}
 
-      - run: npm ci
-        if: ${{ !matrix.container && steps.node-modules.outputs.cache-hit != 'true' }}
+      - name: Install dependencies
+        if: ${{ matrix.container || steps.node-modules.outputs.cache-hit != 'true' }}
+        run: npm ci
 
       - name: Restore Edge Dev cache
         if: matrix.browser == 'msedge-dev'
