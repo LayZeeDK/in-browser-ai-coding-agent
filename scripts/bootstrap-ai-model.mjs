@@ -24,7 +24,9 @@ const { values } = parseArgs({
     timeout: { type: 'string', default: '300000' },
     headless: { type: 'boolean', default: false },
     'disable-gpu': { type: 'boolean', default: false },
+    'extra-arg': { type: 'string', multiple: true, default: [] },
   },
+  allowPositionals: true,
 });
 
 /**
@@ -105,13 +107,19 @@ logSystemResources('before launch');
 // Seed Local State with chrome://flags entries
 seedLocalState(values.profile, config.flags);
 
+const launchArgs = [
+  ...config.args,
+  ...(values['disable-gpu'] ? ['--disable-gpu'] : []),
+  ...values['extra-arg'],
+];
+
 console.log(
   `[INFO] Launching ${channel} with persistent profile at ${values.profile}`,
 );
 
-const launchArgs = values['disable-gpu']
-  ? [...config.args, '--disable-gpu']
-  : config.args;
+if (values['extra-arg'].length > 0) {
+  console.log(`[INFO] Extra args: ${values['extra-arg'].join(' ')}`);
+}
 
 const context = await chromium.launchPersistentContext(values.profile, {
   channel,
