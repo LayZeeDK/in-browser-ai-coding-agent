@@ -153,8 +153,14 @@ jobs:
           path: .playwright-profiles/${{ matrix.browser }}
           key: ${{ matrix.cache-key }}
 
-      - name: Run unit tests (${{ matrix.project }})
+      - name: Run e2e tests (${{ matrix.project }})
         if: steps.bootstrap.outcome != 'failure'
+        id: e2e-tests
+        timeout-minutes: 45
+        run: ${{ matrix.xvfb }} npm exec nx -- e2e in-browser-ai-coding-agent-e2e -- --project=${{ matrix.project }}
+
+      - name: Run unit tests (${{ matrix.project }})
+        if: ${{ !cancelled() && steps.bootstrap.outcome != 'failure' }}
         id: unit-tests
         timeout-minutes: 45
         shell: bash
@@ -163,12 +169,6 @@ jobs:
           ${{ matrix.xvfb }} npm exec nx -- test in-browser-ai-coding-agent 2>&1 | tee unit-test-output.log
         env:
           CI_VITEST_BROWSER_INSTANCE: ${{ matrix.project }}
-
-      - name: Run e2e tests (${{ matrix.project }})
-        if: ${{ !cancelled() && steps.bootstrap.outcome != 'failure' }}
-        id: e2e-tests
-        timeout-minutes: 45
-        run: ${{ matrix.xvfb }} npm exec nx -- e2e in-browser-ai-coding-agent-e2e -- --project=${{ matrix.project }}
 
       - name: Write prompt responses to job summary
         if: ${{ !cancelled() && steps.bootstrap.outcome != 'failure' }}
