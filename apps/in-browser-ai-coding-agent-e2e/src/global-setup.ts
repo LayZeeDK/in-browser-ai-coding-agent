@@ -94,11 +94,35 @@ async function warmUpModel(projectName: string, profile: BrowserProfile) {
     ignoreDefaultArgs: AI_IGNORE_DEFAULT_ARGS,
   });
 
-  const page = context.pages()[0] || (await context.newPage());
+  let page = context.pages()[0] || (await context.newPage());
   page.setDefaultTimeout(1_200_000);
 
-  // Navigate to on-device-internals and trigger model loading
+  // Navigate to on-device-internals — Chrome may require enabling debug pages first
   await page.goto(profile.onDeviceInternalsUrl);
+
+  const disabledText = page.getByText(
+    /debugging pages are currently disabled/i,
+  );
+
+  if (await disabledText.isVisible({ timeout: 3_000 }).catch(() => false)) {
+    console.log(
+      `[global-setup] ${projectName}: enabling internal debugging pages...`,
+    );
+
+    const newTabPromise = context.waitForEvent('page');
+
+    await page
+      .getByRole('button', { name: /enable/i })
+      .or(page.locator('button:has-text("Enable")'))
+      .click();
+
+    const newTab = await newTabPromise;
+    await newTab.waitForLoadState();
+    page = newTab;
+    page.setDefaultTimeout(1_200_000);
+  }
+
+  // Trigger model loading via the LanguageModel API
   await page.evaluate(async () => {
     if (typeof LanguageModel !== 'undefined') {
       const session = await LanguageModel.create();
