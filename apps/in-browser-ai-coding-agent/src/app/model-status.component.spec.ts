@@ -52,6 +52,46 @@ describe('ModelStatusComponent', () => {
       compiled.querySelector('[data-testid="prompt-submit"]'),
     ).toBeTruthy();
   }, 30_000);
+
+  it('should respond when a prompt is submitted', async () => {
+    const fixture = TestBed.createComponent(ModelStatusComponent);
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    // Wait for model to be ready (submit button becomes enabled)
+    await waitForElement(
+      compiled,
+      '[data-testid="prompt-submit"]:not([disabled])',
+    );
+
+    const input = compiled.querySelector(
+      '[data-testid="prompt-input"]',
+    ) as HTMLInputElement;
+    const submitBtn = compiled.querySelector(
+      '[data-testid="prompt-submit"]',
+    ) as HTMLButtonElement;
+
+    input.value = 'Hi!';
+    input.dispatchEvent(new Event('input'));
+    submitBtn.click();
+
+    const responseEl = await waitForElement(
+      compiled,
+      '[data-testid="prompt-response"]',
+      120_000,
+    );
+
+    const responseText = responseEl.textContent?.trim() ?? '';
+
+    console.log(
+      `[unit] Component prompt: "Hi!" -> Response: "${responseText}"`,
+    );
+
+    expect(responseText.length).toBeGreaterThan(0);
+
+    const errorEl = compiled.querySelector('[data-testid="prompt-error"]');
+
+    expect(errorEl).toBeFalsy();
+  }, 300_000);
 });
 
 async function waitForElement(
