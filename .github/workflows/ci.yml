@@ -80,55 +80,6 @@ jobs:
             runner: windows-11-arm
             xvfb: ''
             container: false
-          # macOS experiment: test different runners and flag combinations
-          # macOS 14 (Sonoma) — avoids CoreML crash introduced in macOS 15
-          - browser: msedge-dev
-            project: edge-phi4-mini
-            cache-key: msedge-dev-macos14-arm-v1
-            runner: macos-14
-            xvfb: ''
-            container: false
-            extra-bootstrap-args: '--extra-arg=--in-process-gpu --extra-arg=--no-sandbox'
-          # macOS 15 Intel — same hardware as macos-26-intel, different OS
-          - browser: msedge-dev
-            project: edge-phi4-mini
-            cache-key: msedge-dev-macos15-intel-v1
-            runner: macos-15-intel
-            xvfb: ''
-            container: false
-            extra-bootstrap-args: '--extra-arg=--in-process-gpu --extra-arg=--no-sandbox'
-          # macOS 15 ARM — same as macos-latest but explicit version
-          - browser: msedge-dev
-            project: edge-phi4-mini
-            cache-key: msedge-dev-macos15-arm-v1
-            runner: macos-15
-            xvfb: ''
-            container: false
-            extra-bootstrap-args: '--extra-arg=--in-process-gpu --extra-arg=--no-sandbox'
-          # macOS 26 Intel — retry with --headless=new to skip GPU init
-          - browser: msedge-dev
-            project: edge-phi4-mini
-            cache-key: msedge-dev-macos26-intel-headless-v1
-            runner: macos-26-intel
-            xvfb: ''
-            container: false
-            extra-bootstrap-args: '--headless --extra-arg=--headless=new'
-          # macOS 26 Intel — retry with in-process-gpu and no-sandbox
-          - browser: msedge-dev
-            project: edge-phi4-mini
-            cache-key: msedge-dev-macos26-intel-nosandbox-v1
-            runner: macos-26-intel
-            xvfb: ''
-            container: false
-            extra-bootstrap-args: '--extra-arg=--in-process-gpu --extra-arg=--no-sandbox --extra-arg=--disable-gpu-sandbox'
-          # macOS 26 Intel — disable GPU + software rasterizer
-          - browser: msedge-dev
-            project: edge-phi4-mini
-            cache-key: msedge-dev-macos26-intel-nogpu-v1
-            runner: macos-26-intel
-            xvfb: ''
-            container: false
-            extra-bootstrap-args: '--disable-gpu --extra-arg=--disable-software-rasterizer --extra-arg=--no-sandbox'
     # Container only for jobs that opt in; no-op otherwise
     container: ${{ matrix.container && fromJSON(format('{{"image":"{0}-{1}:latest","options":"--ipc=host --user 1001"}}', needs.ghcr.outputs.image, matrix.browser)) || '' }}
     steps:
@@ -160,7 +111,7 @@ jobs:
       - name: Bootstrap AI model
         id: bootstrap
         if: steps.model-cache.outputs.cache-hit != 'true'
-        run: ${{ matrix.xvfb }} node scripts/bootstrap-ai-model.mjs --browser ${{ matrix.browser }} --profile .playwright-profiles/${{ matrix.browser }} --timeout 600000 ${{ matrix.extra-bootstrap-args || '' }}
+        run: ${{ matrix.xvfb }} node scripts/bootstrap-ai-model.mjs --browser ${{ matrix.browser }} --profile .playwright-profiles/${{ matrix.browser }} --timeout 600000
 
       - name: Save AI model cache
         if: steps.model-cache.outputs.cache-hit != 'true' && steps.bootstrap.outcome == 'success'
