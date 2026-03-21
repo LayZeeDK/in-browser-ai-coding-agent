@@ -1,6 +1,10 @@
 import { Injectable } from '@angular/core';
 
-export type ModelAvailability = 'available' | 'downloadable' | 'unavailable';
+export type ModelAvailability =
+  | 'available'
+  | 'downloadable'
+  | 'downloading'
+  | 'unavailable';
 
 @Injectable({ providedIn: 'root' })
 export class LanguageModelService {
@@ -15,11 +19,15 @@ export class LanguageModelService {
 
     const status = await LanguageModel.availability();
 
-    return status === 'available'
-      ? 'available'
-      : status === 'downloadable'
-        ? 'downloadable'
-        : 'unavailable';
+    if (
+      status === 'available' ||
+      status === 'downloadable' ||
+      status === 'downloading'
+    ) {
+      return status;
+    }
+
+    return 'unavailable';
   }
 
   async downloadModel(

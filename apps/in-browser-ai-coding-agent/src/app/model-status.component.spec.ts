@@ -24,7 +24,7 @@ describe('ModelStatusComponent', () => {
 
     expect(statusEl).toBeTruthy();
     expect(statusEl?.getAttribute('data-status')).toMatch(
-      /^(available|downloadable|unavailable)$/,
+      /^(available|downloading|downloadable|unavailable)$/,
     );
   });
 

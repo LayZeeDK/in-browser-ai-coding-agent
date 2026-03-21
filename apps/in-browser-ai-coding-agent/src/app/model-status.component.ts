@@ -18,6 +18,9 @@ import {
             @case ('available') {
               Model is available and ready.
             }
+            @case ('downloading') {
+              Model is downloading...
+            }
             @case ('downloadable') {
               Model is available for download.
               <button data-testid="download-button" (click)="onDownload()">
@@ -44,7 +47,13 @@ import {
           (input)="promptText.set($any($event.target).value)"
           placeholder="Enter a prompt..."
         />
-        <button type="submit" data-testid="prompt-submit">Send</button>
+        <button
+          type="submit"
+          data-testid="prompt-submit"
+          [disabled]="availability() !== 'available'"
+        >
+          Send
+        </button>
       </form>
 
       @if (prompting()) {
@@ -91,9 +100,16 @@ export class ModelStatusComponent implements OnInit {
   protected readonly error = signal('');
 
   async ngOnInit(): Promise<void> {
-    const status = await this.languageModel.checkAvailability();
+    let status = await this.languageModel.checkAvailability();
     this.availability.set(status);
     this.loading.set(false);
+
+    // Poll while downloading until model becomes available
+    while (status === 'downloading') {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      status = await this.languageModel.checkAvailability();
+      this.availability.set(status);
+    }
   }
 
   async onDownload(): Promise<void> {

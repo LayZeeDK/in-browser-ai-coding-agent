@@ -1,5 +1,6 @@
 import { resolve } from 'node:path';
 import { test as base, chromium, type Page } from '@playwright/test';
+import { workspaceRoot } from '@nx/devkit';
 
 /**
  * Playwright's exact --disable-features default arg. Must match exactly
@@ -23,14 +24,14 @@ const DISABLE_FEATURES_WITHOUT_OPT_HINTS =
 const browserProfiles: Record<string, { profileDir: string; args: string[] }> =
   {
     'chrome-gemini-nano': {
-      profileDir: resolve(process.cwd(), '.playwright-profiles/chrome-beta'),
+      profileDir: resolve(workspaceRoot, '.playwright-profiles/chrome-beta'),
       args: [
         '--enable-features=OptimizationGuideOnDeviceModel,PromptAPIForGeminiNano',
         DISABLE_FEATURES_WITHOUT_OPT_HINTS,
       ],
     },
     'edge-phi4-mini': {
-      profileDir: resolve(process.cwd(), '.playwright-profiles/msedge-dev'),
+      profileDir: resolve(workspaceRoot, '.playwright-profiles/msedge-dev'),
       args: [
         '--enable-features=AIPromptAPI',
         '--disable-features=OnDeviceModelPerformanceParams',
