@@ -75,7 +75,7 @@ export default defineConfig({
   test: {
     // Persistent context cannot be shared across parallel sessions
     fileParallelism: false,
-    setupFiles: ['./src/test-setup.ts'],
+    setupFiles: ['apps/in-browser-ai-coding-agent/src/test-setup.ts'],
     // Retry on CI only — matches Playwright e2e preset (nxE2EPreset)
     retry: process.env['CI'] ? 2 : 0,
     // Surface flaky test annotations in GitHub Actions job summaries
