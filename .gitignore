@@ -45,6 +45,7 @@ Thumbs.db
 
 .angular
 .claude
+.playwright-cli
 .playwright-mcp
 .playwright-profiles
 
