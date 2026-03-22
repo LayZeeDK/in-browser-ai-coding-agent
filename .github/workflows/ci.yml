@@ -78,36 +78,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Step 1: Build base image (Chrome + deps + flags, no model)
-      - name: Build base image
+      - name: Build and push image
         uses: docker/build-push-action@v7
         with:
           context: .github/docker
           target: chrome-beta
-          load: true
+          push: true
           build-args: |
             PLAYWRIGHT_VERSION=${{ steps.versions.outputs.playwright }}
             NODE_VERSION=${{ steps.versions.outputs.node }}
-          tags: chrome-beta-base:local
+          tags: |
+            ${{ steps.meta.outputs.image }}:v${{ steps.versions.outputs.playwright }}
+            ${{ steps.meta.outputs.image }}:latest
           cache-from: type=gha,scope=playwright-chrome-beta
           cache-to: type=gha,scope=playwright-chrome-beta,mode=max
-
-      # Step 2: Run container with --ipc=host to download model + warm up.
-      # Chrome needs shared memory IPC which isn't available during docker build.
-      - name: Bootstrap model in container
-        run: |
-          docker run --ipc=host --name chrome-bootstrap chrome-beta-base:local \
-            xvfb-run --auto-servernum node /opt/bootstrap-model.mjs
-
-      # Step 3: Commit the container with model baked in and push
-      - name: Commit and push image
-        run: |
-          IMAGE="${{ steps.meta.outputs.image }}"
-          docker commit chrome-bootstrap "$IMAGE:v${{ steps.versions.outputs.playwright }}"
-          docker tag "$IMAGE:v${{ steps.versions.outputs.playwright }}" "$IMAGE:latest"
-          docker push "$IMAGE:v${{ steps.versions.outputs.playwright }}"
-          docker push "$IMAGE:latest"
-          docker rm chrome-bootstrap
 
   test-chrome:
     needs: build-chrome-image
@@ -129,13 +113,6 @@ jobs:
           cache: 'npm'
 
       - run: npm ci
-
-      - name: Copy model profile from container image
-        run: |
-          mkdir -p .playwright-profiles
-          cp -r /home/pwuser/.ai-model-profile/chrome-beta .playwright-profiles/chrome-beta
-          echo "Profile contents:"
-          ls -la .playwright-profiles/chrome-beta/
 
       - name: Run e2e tests
         id: e2e-tests

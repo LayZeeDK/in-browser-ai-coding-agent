@@ -36,29 +36,3 @@ FROM base AS chrome-beta
 ARG PLAYWRIGHT_VERSION
 RUN npx -y playwright@${PLAYWRIGHT_VERSION} install chrome-beta && \
     rm -rf /root/.npm/
-
-# Seed Local State flags so Chrome enables the LanguageModel API on first launch.
-# The model download happens at runtime via docker run --ipc=host (not during build)
-# because Chrome needs shared memory IPC that isn't available in docker build.
-RUN mkdir -p /home/pwuser/.ai-model-profile/chrome-beta && \
-    node -e ' \
-      const fs = require("fs"); \
-      const path = require("path"); \
-      const profileDir = "/home/pwuser/.ai-model-profile/chrome-beta"; \
-      const localState = { \
-        browser: { enabled_labs_experiments: [ \
-          "optimization-guide-on-device-model@1", \
-          "prompt-api-for-gemini-nano@1" \
-        ]}, \
-        internal_only_uis_enabled: true \
-      }; \
-      fs.writeFileSync(path.join(profileDir, "Local State"), JSON.stringify(localState, null, 2)); \
-    ' && \
-    chown -R 1001:1001 /home/pwuser/.ai-model-profile
-
-# Install playwright globally and copy bootstrap script for runtime model download.
-# The model download runs via `docker run --ipc=host` (not during build) because
-# Chrome needs shared memory IPC that isn't available in docker build.
-RUN npm install -g playwright@${PLAYWRIGHT_VERSION} && \
-    rm -rf /root/.npm/
-COPY bootstrap-model.mjs /opt/bootstrap-model.mjs
