@@ -67,6 +67,18 @@
         "runnerConfig": "apps/in-browser-ai-coding-agent/vitest.config.mts"
       }
     },
+    "test-chrome": {
+      "executor": "@angular/build:unit-test",
+      "options": {
+        "runnerConfig": "apps/in-browser-ai-coding-agent/vitest.config.chrome.mts"
+      }
+    },
+    "test-edge": {
+      "executor": "@angular/build:unit-test",
+      "options": {
+        "runnerConfig": "apps/in-browser-ai-coding-agent/vitest.config.edge.mts"
+      }
+    },
     "serve-static": {
       "continuous": true,
       "executor": "@nx/web:file-server",

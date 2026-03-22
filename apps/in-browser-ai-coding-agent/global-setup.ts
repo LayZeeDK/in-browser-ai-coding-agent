@@ -57,19 +57,30 @@ const allInstances: BrowserInstance[] = [
   },
 ];
 
+// Guard against duplicate invocations — Vitest may call setup()
+// multiple times when browser instances reinitialize.
+const warmedInstances = new Set<string>();
+
 export async function setup() {
-  const filterInstance = process.env['CI_VITEST_BROWSER_INSTANCE'];
+  // Set by createVitestConfig() in vitest.shared.mts when a
+  // per-browser target is used (e.g. nx test-edge).
+  const filterInstance = process.env['VITEST_BROWSER_INSTANCE'];
   const instances = filterInstance
     ? allInstances.filter((i) => i.name === filterInstance)
     : allInstances;
 
   for (const instance of instances) {
+    if (warmedInstances.has(instance.name)) {
+      continue;
+    }
+
     if (!existsSync(instance.profileDir)) {
       continue;
     }
 
     try {
       await warmUpModel(instance);
+      warmedInstances.add(instance.name);
     } catch (error) {
       console.warn(
         `[global-setup] Model warm-up skipped for ${instance.name}: ${error}`,

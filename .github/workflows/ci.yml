@@ -70,12 +70,14 @@ jobs:
         include:
           - browser: chrome-beta
             project: chrome-gemini-nano
+            test-target: test-chrome
             cache-key: chrome-beta-cpu-container-v2
             runner: ubuntu-latest
             xvfb: 'xvfb-run --auto-servernum'
             container: true
           - browser: msedge-dev
             project: edge-phi4-mini
+            test-target: test-edge
             cache-key: msedge-dev-ai-model-windows11-arm-v2
             runner: windows-11-arm
             xvfb: ''
@@ -158,9 +160,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          ${{ matrix.xvfb }} npm exec nx -- test in-browser-ai-coding-agent 2>&1 | tee unit-test-output.log
-        env:
-          CI_VITEST_BROWSER_INSTANCE: ${{ matrix.project }}
+          ${{ matrix.xvfb }} npm exec nx -- ${{ matrix.test-target }} in-browser-ai-coding-agent 2>&1 | tee unit-test-output.log
 
       - name: Write prompt responses to job summary
         if: ${{ !cancelled() && steps.bootstrap.outcome != 'failure' }}
