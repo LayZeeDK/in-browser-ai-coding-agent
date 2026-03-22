@@ -363,7 +363,7 @@ export const test = base.extend<
       await use(context);
       await context.close();
     },
-    { scope: 'worker', timeout: 2_400_000 },
+    { scope: 'worker', timeout: 3_300_000 }, // 55 min — CI ARM64 warm-up takes 23-48 min
   ],
 
   // Test-scoped: provides a fresh page from the shared context
