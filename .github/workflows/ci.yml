@@ -70,15 +70,31 @@ jobs:
         id: meta
         run: echo "image=ghcr.io/${GITHUB_REPOSITORY,,}/playwright-chrome-beta" >> "$GITHUB_OUTPUT"
 
-      - uses: docker/setup-buildx-action@v4
-
       - uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # Skip build if an image with the matching Playwright+Node version tag exists.
+      # Rebuild triggers: Playwright version bump, Node version change, Dockerfile edit.
+      - name: Check if image exists
+        id: check
+        run: |
+          TAG="v${{ steps.versions.outputs.playwright }}-node${{ steps.versions.outputs.node }}"
+          if docker manifest inspect "${{ steps.meta.outputs.image }}:${TAG}" > /dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Image ${{ steps.meta.outputs.image }}:${TAG} already exists, skipping build"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Image not found, building..."
+          fi
+
+      - uses: docker/setup-buildx-action@v4
+        if: steps.check.outputs.exists != 'true'
+
       - name: Build and push image
+        if: steps.check.outputs.exists != 'true'
         uses: docker/build-push-action@v7
         with:
           context: .github/docker
@@ -88,7 +104,7 @@ jobs:
             PLAYWRIGHT_VERSION=${{ steps.versions.outputs.playwright }}
             NODE_VERSION=${{ steps.versions.outputs.node }}
           tags: |
-            ${{ steps.meta.outputs.image }}:v${{ steps.versions.outputs.playwright }}
+            ${{ steps.meta.outputs.image }}:v${{ steps.versions.outputs.playwright }}-node${{ steps.versions.outputs.node }}
             ${{ steps.meta.outputs.image }}:latest
           cache-from: type=gha,scope=playwright-chrome-beta
           cache-to: type=gha,scope=playwright-chrome-beta,mode=max
