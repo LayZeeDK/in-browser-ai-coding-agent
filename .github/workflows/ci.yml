@@ -167,7 +167,7 @@ jobs:
           "
 
       - name: Save AI model cache (post-test)
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.bootstrap.outcome != 'failure' }}
         uses: actions/cache/save@v5
         with:
           path: .playwright-profiles/${{ matrix.browser }}
