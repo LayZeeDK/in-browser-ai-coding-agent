@@ -134,6 +134,9 @@ export const test = base.extend<
           ? 'edge://on-device-internals'
           : 'chrome://on-device-internals';
 
+      const phaseStart = Date.now();
+      const elapsed = () => `${((Date.now() - phaseStart) / 1000).toFixed(1)}s`;
+
       try {
         console.log(`[fixtures] ${projectName}: navigating to ${onDeviceUrl}`);
         await warmupPage.goto(onDeviceUrl);
@@ -141,17 +144,30 @@ export const test = base.extend<
         // Trigger model registration so the model system starts loading.
         // create() is lightweight (no inference) but kicks off the
         // optimization guide pipeline that Model Status reflects.
+        const availability = await warmupPage.evaluate(async () => {
+          if (typeof LanguageModel === 'undefined') {
+            return 'no-api';
+          }
+
+          return LanguageModel.availability();
+        });
         console.log(
-          `[fixtures] ${projectName}: triggering LanguageModel.create()`,
+          `[fixtures] ${projectName}: LanguageModel.availability() = "${availability}" [${elapsed()}]`,
         );
+
+        console.log(
+          `[fixtures] ${projectName}: triggering LanguageModel.create() [${elapsed()}]`,
+        );
+        const createStart = Date.now();
         await warmupPage.evaluate(async () => {
           if (typeof LanguageModel !== 'undefined') {
             const session = await LanguageModel.create();
             session.destroy();
           }
         });
+        const createMs = Date.now() - createStart;
         console.log(
-          `[fixtures] ${projectName}: model session created and destroyed`,
+          `[fixtures] ${projectName}: model session created and destroyed (${(createMs / 1000).toFixed(1)}s) [${elapsed()}]`,
         );
 
         // Step 1: Wait for Model Status tab to report "Ready"
@@ -170,7 +186,7 @@ export const test = base.extend<
         } else {
           await modelStatusTab.click();
           console.log(
-            `[fixtures] ${projectName}: waiting for model ready state...`,
+            `[fixtures] ${projectName}: waiting for model ready state... [${elapsed()}]`,
           );
 
           const deadline = Date.now() + 1_200_000;
@@ -184,7 +200,9 @@ export const test = base.extend<
             if (
               await readyEl.isVisible({ timeout: 5_000 }).catch(() => false)
             ) {
-              console.log(`[fixtures] ${projectName}: model is ready`);
+              console.log(
+                `[fixtures] ${projectName}: model is ready [${elapsed()}]`,
+              );
 
               break;
             }

@@ -155,6 +155,9 @@ async function warmUpModel(instance: BrowserInstance) {
   const page = context.pages()[0] || (await context.newPage());
   page.setDefaultTimeout(600_000);
 
+  const phaseStart = Date.now();
+  const elapsed = () => `${((Date.now() - phaseStart) / 1000).toFixed(1)}s`;
+
   try {
     await page.goto(instance.onDeviceInternalsUrl);
 
@@ -162,16 +165,29 @@ async function warmUpModel(instance: BrowserInstance) {
     // create() is lightweight (no inference) but kicks off the
     // optimization guide pipeline that Model Status reflects.
     console.log(
-      `[global-setup] ${instance.name}: triggering LanguageModel.create()`,
+      `[global-setup] ${instance.name}: triggering LanguageModel.create() [${elapsed()}]`,
     );
+    const availability = await page.evaluate(async () => {
+      if (typeof LanguageModel === 'undefined') {
+        return 'no-api';
+      }
+
+      return LanguageModel.availability();
+    });
+    console.log(
+      `[global-setup] ${instance.name}: LanguageModel.availability() = "${availability}" [${elapsed()}]`,
+    );
+
+    const createStart = Date.now();
     await page.evaluate(async () => {
       if (typeof LanguageModel !== 'undefined') {
         const session = await LanguageModel.create();
         session.destroy();
       }
     });
+    const createMs = Date.now() - createStart;
     console.log(
-      `[global-setup] ${instance.name}: model session created and destroyed`,
+      `[global-setup] ${instance.name}: model session created and destroyed (${(createMs / 1000).toFixed(1)}s) [${elapsed()}]`,
     );
 
     // Step 1: Wait for Model Status tab to report "Ready"
@@ -190,7 +206,7 @@ async function warmUpModel(instance: BrowserInstance) {
 
     await modelStatusTab.click();
     console.log(
-      `[global-setup] ${instance.name}: waiting for model ready state...`,
+      `[global-setup] ${instance.name}: waiting for model ready state... [${elapsed()}]`,
     );
 
     const deadline = Date.now() + 1_200_000;
@@ -200,7 +216,9 @@ async function warmUpModel(instance: BrowserInstance) {
       const readyEl = page.getByText(/Foundational model state:\s*Ready/i);
 
       if (await readyEl.isVisible({ timeout: 5_000 }).catch(() => false)) {
-        console.log(`[global-setup] ${instance.name}: model is ready`);
+        console.log(
+          `[global-setup] ${instance.name}: model is ready [${elapsed()}]`,
+        );
 
         break;
       }
