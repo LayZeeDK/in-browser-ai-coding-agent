@@ -1,4 +1,5 @@
-import { resolve } from 'node:path';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import {
   test as base,
   chromium,
@@ -46,6 +47,28 @@ const browserProfiles: Record<string, { profileDir: string; args: string[] }> =
   };
 
 /**
+ * Ensure chrome://on-device-internals is accessible by seeding the
+ * internal_only_uis_enabled flag in the profile's Local State file.
+ */
+function enableInternalDebugPages(profileDir: string) {
+  const localStatePath = join(profileDir, 'Local State');
+  let state: Record<string, unknown> = {};
+
+  if (existsSync(localStatePath)) {
+    try {
+      state = JSON.parse(readFileSync(localStatePath, 'utf8'));
+    } catch {
+      // ignore corrupt file
+    }
+  }
+
+  if (!state['internal_only_uis_enabled']) {
+    state['internal_only_uis_enabled'] = true;
+    writeFileSync(localStatePath, JSON.stringify(state, null, 2));
+  }
+}
+
+/**
  * Worker-scoped persistent browser context. Launches once per worker,
  * stays alive for all tests in that worker, then closes. This avoids
  * the Chrome ProcessSingleton issue where closing and relaunching a
@@ -71,6 +94,9 @@ export const test = base.extend<
             `Available: ${Object.keys(browserProfiles).join(', ')}`,
         );
       }
+
+      // Seed internal debug pages flag before launching
+      enableInternalDebugPages(profile.profileDir);
 
       // Retry launch — Chrome's ProcessSingleton on Windows may reject
       // the launch if a previous chrome_crashpad_handler is still running
@@ -109,25 +135,13 @@ export const test = base.extend<
           : 'chrome://on-device-internals';
 
       try {
+        console.log(`[fixtures] ${projectName}: navigating to ${onDeviceUrl}`);
         await warmupPage.goto(onDeviceUrl);
 
-        // Chrome may gate debug pages behind an enable button
-        const disabledText = warmupPage.getByText(
-          /debugging pages are currently disabled/i,
-        );
-
-        if (
-          await disabledText.isVisible({ timeout: 3_000 }).catch(() => false)
-        ) {
-          await warmupPage
-            .getByRole('button', { name: /enable/i })
-            .or(warmupPage.locator('button:has-text("Enable")'))
-            .click();
-          await warmupPage.waitForTimeout(1_000);
-          await warmupPage.goto(onDeviceUrl);
-        }
-
         // Trigger model loading
+        console.log(
+          `[fixtures] ${projectName}: triggering LanguageModel.create()`,
+        );
         await warmupPage.evaluate(async () => {
           if (typeof LanguageModel !== 'undefined') {
             const session = await LanguageModel.create();
@@ -147,10 +161,13 @@ export const test = base.extend<
             .catch(() => false))
         ) {
           console.warn(
-            '[fixtures] Model Status tab not found, skipping warm-up',
+            `[fixtures] ${projectName}: Model Status tab not found, skipping warm-up`,
           );
         } else {
           await modelStatusTab.click();
+          console.log(
+            `[fixtures] ${projectName}: waiting for model ready state...`,
+          );
 
           const deadline = Date.now() + 600_000;
 
@@ -162,8 +179,20 @@ export const test = base.extend<
             if (
               await readyEl.isVisible({ timeout: 30_000 }).catch(() => false)
             ) {
+              console.log(`[fixtures] ${projectName}: model is ready`);
+
               break;
             }
+
+            // Log current state for diagnostics
+            const stateText = await warmupPage
+              .locator(':has-text("Foundational model state")')
+              .last()
+              .textContent()
+              .catch(() => '(not found)');
+            console.log(
+              `[fixtures] ${projectName}: ${stateText?.trim().substring(0, 100)}`,
+            );
 
             const notReady = warmupPage.getByText(
               /Not Ready For Unknown Reason/i,
@@ -172,13 +201,14 @@ export const test = base.extend<
             if (
               await notReady.isVisible({ timeout: 1_000 }).catch(() => false)
             ) {
+              console.log(`[fixtures] ${projectName}: refreshing...`);
               await warmupPage.reload();
               await modelStatusTab.click();
             }
           }
         }
       } catch (error) {
-        console.warn(`[fixtures] Model warm-up failed: ${error}`);
+        console.warn(`[fixtures] ${projectName}: warm-up failed: ${error}`);
       }
 
       await use(context);

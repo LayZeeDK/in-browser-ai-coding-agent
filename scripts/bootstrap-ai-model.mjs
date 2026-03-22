@@ -283,6 +283,13 @@ function seedLocalState(profileDir, flags) {
 
   state.browser.enabled_labs_experiments = existing;
 
+  // Enable internal debugging pages so chrome://on-device-internals
+  // is accessible without manually clicking the enable button
+  if (!state.internal_only_uis_enabled) {
+    state.internal_only_uis_enabled = true;
+    console.log('[INFO] Enabling internal debugging pages');
+  }
+
   writeFileSync(localStatePath, JSON.stringify(state, null, 2));
 }
 

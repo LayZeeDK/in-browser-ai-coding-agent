@@ -8,8 +8,8 @@
  * or all instances (locally). Runs once per vitest invocation, including
  * Vitest UI mode — subsequent test re-runs reuse the warm model.
  */
-import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { chromium } from 'playwright';
 
 const PLAYWRIGHT_DISABLE_FEATURES =
@@ -78,7 +78,27 @@ export async function setup() {
   }
 }
 
+function enableInternalDebugPages(profileDir: string) {
+  const localStatePath = join(profileDir, 'Local State');
+  let state: Record<string, unknown> = {};
+
+  if (existsSync(localStatePath)) {
+    try {
+      state = JSON.parse(readFileSync(localStatePath, 'utf8'));
+    } catch {
+      // ignore corrupt file
+    }
+  }
+
+  if (!state['internal_only_uis_enabled']) {
+    state['internal_only_uis_enabled'] = true;
+    writeFileSync(localStatePath, JSON.stringify(state, null, 2));
+  }
+}
+
 async function warmUpModel(instance: BrowserInstance) {
+  enableInternalDebugPages(instance.profileDir);
+
   // Retry launch — Chrome's ProcessSingleton on Windows may reject
   // the launch if a previous chrome_crashpad_handler is still running
   let context;
@@ -116,23 +136,6 @@ async function warmUpModel(instance: BrowserInstance) {
 
   try {
     await page.goto(instance.onDeviceInternalsUrl);
-
-    // Chrome may gate debug pages behind an enable button
-    const disabledText = page.getByText(
-      /debugging pages are currently disabled/i,
-    );
-
-    if (await disabledText.isVisible({ timeout: 3_000 }).catch(() => false)) {
-      console.log(
-        `[global-setup] ${instance.name}: enabling internal debugging pages...`,
-      );
-      await page
-        .getByRole('button', { name: /enable/i })
-        .or(page.locator('button:has-text("Enable")'))
-        .click();
-      await page.waitForTimeout(1_000);
-      await page.goto(instance.onDeviceInternalsUrl);
-    }
 
     // Trigger model loading
     await page.evaluate(async () => {
