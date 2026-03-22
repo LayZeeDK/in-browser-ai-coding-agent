@@ -6,14 +6,32 @@
  * launched via @vitest/browser-playwright, the ONNX Runtime compilation
  * state is preserved for all subsequent test prompts.
  *
- * Previously, warm-up ran in globalSetup which launched a SEPARATE
- * browser that was closed before tests started — wasting 20+ min of
- * ONNX compilation on every CI run.
+ * Key design decisions (informed by the W3C Prompt API spec):
+ * - Do NOT call session.destroy() — the spec says "destroying the session
+ *   allows the user agent to unload the language model from memory." We
+ *   want the model to stay loaded for tests.
+ * - Do NOT abort the prompt on timeout — let the background inference
+ *   continue while tests start. The ONNX compilation progresses even
+ *   after we stop waiting.
+ * - Use globalThis to persist state across setupFile re-imports (Vitest
+ *   runs setupFiles per test file, not once globally).
  */
 
 const WARMUP_TIMEOUT = 2_700_000; // 45 min — CI ARM64 needs 23-44 min
 
+declare const globalThis: typeof window & {
+  __vitest_warmup_started?: boolean;
+};
+
 async function warmUp() {
+  // Skip if warm-up already started in a previous test file's setupFile run.
+  // The session and its background prompt persist on globalThis.
+  if (globalThis.__vitest_warmup_started) {
+    return;
+  }
+
+  globalThis.__vitest_warmup_started = true;
+
   if (typeof LanguageModel === 'undefined') {
     console.log('[browser-warmup] LanguageModel API not available, skipping');
 
@@ -41,25 +59,30 @@ async function warmUp() {
   try {
     const session = await LanguageModel.create();
 
-    const response = await Promise.race([
-      session
-        .prompt('warmup')
-        .then((text: string) => ({ ok: true as const, text })),
-      new Promise<{ ok: false; text: string }>((resolve) =>
-        setTimeout(
-          () => resolve({ ok: false, text: 'timeout' }),
-          WARMUP_TIMEOUT,
-        ),
+    // Race the prompt against a timeout. On timeout, the prompt continues
+    // running in the background — we just stop blocking test execution.
+    // Do NOT destroy the session: the spec says destroy() signals the
+    // browser to unload the model from memory.
+    const completed = await Promise.race([
+      session.prompt('warmup').then(() => true),
+      new Promise<false>((resolve) =>
+        setTimeout(() => resolve(false), WARMUP_TIMEOUT),
       ),
     ]);
 
-    session.destroy();
     const duration = ((Date.now() - start) / 1000).toFixed(1);
 
-    if (response.ok) {
+    if (completed) {
       console.log(`[browser-warmup] warm-up complete (${duration}s)`);
+      session.destroy();
     } else {
-      console.warn(`[browser-warmup] warm-up timed out after ${duration}s`);
+      // Do NOT destroy — let the background inference continue while tests
+      // start. The ONNX compilation will complete eventually, and the next
+      // session.prompt() in a test will benefit from it.
+      console.warn(
+        `[browser-warmup] warm-up still running after ${duration}s, ` +
+          'continuing to tests (inference will complete in background)',
+      );
     }
   } catch (error) {
     const duration = ((Date.now() - start) / 1000).toFixed(1);
