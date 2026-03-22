@@ -53,27 +53,44 @@ export const allInstances: BrowserInstance[] = [
   },
 ];
 
-// Guard against duplicate invocations — Vitest may call setup()
-// multiple times when browser instances reinitialize.
-const warmedInstances = new Set<string>();
-
 /**
  * Warm up the given browser instances. Skips instances without a
  * profile directory on disk and instances already warmed in this process.
+ *
+ * Uses a PID-based file marker to guard against duplicate invocations —
+ * Vitest calls globalSetup.setup() twice in browser mode (once during
+ * orchestrator init, once when the browser instance starts). The module-
+ * level Set approach fails because Vitest re-imports the module fresh
+ * for the second call.
  */
 export async function warmUpInstances(instances: BrowserInstance[]) {
-  for (const instance of instances) {
-    if (warmedInstances.has(instance.name)) {
-      continue;
-    }
+  const pid = process.pid.toString();
 
+  for (const instance of instances) {
     if (!existsSync(instance.profileDir)) {
       continue;
     }
 
+    // Skip if already warmed in this process (same PID = same Vitest run)
+    const markerPath = join(instance.profileDir, '.warmup-pid');
+
+    if (existsSync(markerPath)) {
+      try {
+        if (readFileSync(markerPath, 'utf8') === pid) {
+          console.log(
+            `[global-setup] ${instance.name}: already warmed (pid ${pid}), skipping`,
+          );
+
+          continue;
+        }
+      } catch {
+        // stale or corrupt marker — proceed with warm-up
+      }
+    }
+
     try {
       await warmUpModel(instance);
-      warmedInstances.add(instance.name);
+      writeFileSync(markerPath, pid);
     } catch (error) {
       console.warn(
         `[global-setup] Model warm-up skipped for ${instance.name}: ${error}`,
