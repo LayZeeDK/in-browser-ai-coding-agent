@@ -166,16 +166,6 @@ jobs:
 
   test-edge:
     runs-on: windows-11-arm
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - perf-param: '3'
-            cache-key: msedge-dev-ai-model-windows11-arm-v3
-          - perf-param: '1'
-            cache-key: msedge-dev-perf1-windows11-arm-v3
-          - perf-param: '2'
-            cache-key: msedge-dev-perf2-windows11-arm-v3
     steps:
       - uses: actions/checkout@v6
         with:
@@ -214,22 +204,22 @@ jobs:
         id: model-cache
         with:
           path: .playwright-profiles/msedge-dev
-          key: ${{ matrix.cache-key }}-run${{ github.run_number }}
+          key: msedge-dev-ai-model-windows11-arm-v3-run${{ github.run_number }}
           restore-keys: |
-            ${{ matrix.cache-key }}-run
-            ${{ matrix.cache-key }}
+            msedge-dev-ai-model-windows11-arm-v3-run
+            msedge-dev-ai-model-windows11-arm-v3
 
       - name: Bootstrap AI model
         id: bootstrap
         if: steps.model-cache.outputs.cache-hit != 'true'
-        run: node scripts/bootstrap-ai-model.mjs --browser msedge-dev --profile .playwright-profiles/msedge-dev --timeout 600000 --perf-param ${{ matrix.perf-param }}
+        run: node scripts/bootstrap-ai-model.mjs --browser msedge-dev --profile .playwright-profiles/msedge-dev --timeout 600000 --perf-param 3
 
       - name: Save AI model cache (post-bootstrap)
         if: ${{ steps.model-cache.outputs.cache-hit != 'true' && steps.bootstrap.outcome == 'success' }}
         uses: actions/cache/save@v5
         with:
           path: .playwright-profiles/msedge-dev
-          key: ${{ matrix.cache-key }}-run${{ github.run_number }}-bootstrap
+          key: msedge-dev-ai-model-windows11-arm-v3-run${{ github.run_number }}-bootstrap
 
       - name: Log ONNX Runtime version and model config
         if: steps.bootstrap.outcome != 'failure'
@@ -290,4 +280,4 @@ jobs:
         uses: actions/cache/save@v5
         with:
           path: .playwright-profiles/msedge-dev
-          key: ${{ matrix.cache-key }}-run${{ github.run_number }}
+          key: msedge-dev-ai-model-windows11-arm-v3-run${{ github.run_number }}
