@@ -174,6 +174,7 @@ export const test = base.extend<
           );
 
           const deadline = Date.now() + 1_200_000;
+          let lastLogTime = 0;
 
           while (Date.now() < deadline) {
             const readyEl = warmupPage.getByText(
@@ -181,22 +182,27 @@ export const test = base.extend<
             );
 
             if (
-              await readyEl.isVisible({ timeout: 30_000 }).catch(() => false)
+              await readyEl.isVisible({ timeout: 5_000 }).catch(() => false)
             ) {
               console.log(`[fixtures] ${projectName}: model is ready`);
 
               break;
             }
 
-            // Log current state for diagnostics
-            const stateText = await warmupPage
-              .locator(':has-text("Foundational model state")')
-              .last()
-              .textContent()
-              .catch(() => '(not found)');
-            console.log(
-              `[fixtures] ${projectName}: ${stateText?.trim().substring(0, 100)}`,
-            );
+            // Log current state for diagnostics (throttle to ~1 per 30s)
+            const now = Date.now();
+
+            if (!lastLogTime || now - lastLogTime >= 30_000) {
+              lastLogTime = now;
+              const stateText = await warmupPage
+                .locator(':has-text("Foundational model state")')
+                .last()
+                .textContent()
+                .catch(() => '(not found)');
+              console.log(
+                `[fixtures] ${projectName}: ${stateText?.trim().substring(0, 100)}`,
+              );
+            }
 
             // Only refresh on explicit error — "NO STATE" is a transient
             // loading state that resolves on its own. Reload lands on the

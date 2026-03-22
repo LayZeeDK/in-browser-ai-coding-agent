@@ -139,7 +139,7 @@ jobs:
       - name: Run e2e tests (${{ matrix.e2e-config }})
         if: steps.bootstrap.outcome != 'failure'
         id: e2e-tests
-        timeout-minutes: 45
+        timeout-minutes: 30
         run: ${{ matrix.xvfb }} npm exec nx -- e2e in-browser-ai-coding-agent-e2e -c ${{ matrix.e2e-config }}
 
       - name: Kill lingering browser processes
@@ -156,7 +156,7 @@ jobs:
       - name: Run unit tests (${{ matrix.e2e-config }})
         if: ${{ !cancelled() && steps.bootstrap.outcome != 'failure' }}
         id: unit-tests
-        timeout-minutes: 45
+        timeout-minutes: 30
         shell: bash
         run: |
           set -o pipefail
