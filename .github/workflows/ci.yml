@@ -149,10 +149,17 @@ jobs:
             ${{ matrix.cache-key }}-run
             ${{ matrix.cache-key }}
 
+      - name: Copy pre-bootstrapped profile from image
+        if: ${{ matrix.container && steps.model-cache.outputs.cache-hit != 'true' }}
+        run: |
+          if [ -d /home/pwuser/.ai-model-profile/${{ matrix.browser }} ]; then
+            cp -r /home/pwuser/.ai-model-profile/${{ matrix.browser }} .playwright-profiles/${{ matrix.browser }}
+            echo "Copied pre-bootstrapped profile from image"
+          fi
+
       - name: Bootstrap AI model
         id: bootstrap
-        if: steps.model-cache.outputs.cache-hit != 'true'
-        continue-on-error: true
+        if: ${{ steps.model-cache.outputs.cache-hit != 'true' && !matrix.container }}
         run: ${{ matrix.xvfb }} node scripts/bootstrap-ai-model.mjs --browser ${{ matrix.browser }} --profile .playwright-profiles/${{ matrix.browser }} --timeout 600000 --perf-param ${{ matrix.perf-param }}
 
       - name: Save AI model cache (post-bootstrap)
