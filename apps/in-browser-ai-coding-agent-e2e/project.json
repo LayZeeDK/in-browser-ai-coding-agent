@@ -8,10 +8,10 @@
   "targets": {
     "e2e": {
       "configurations": {
-        "chrome-gemini-nano": {
+        "chrome": {
           "command": "playwright test --project=chrome-gemini-nano"
         },
-        "edge-phi4-mini": {
+        "edge": {
           "command": "playwright test --project=edge-phi4-mini"
         }
       }
