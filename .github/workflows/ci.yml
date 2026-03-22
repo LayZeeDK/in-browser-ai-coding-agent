@@ -115,24 +115,9 @@ jobs:
           path: node_modules
           key: ${{ runner.os }}-${{ runner.arch }}-node-modules-${{ hashFiles('package-lock.json') }}
 
-      - name: Restore Edge Dev cache
-        if: matrix.browser == 'msedge-dev'
-        id: edge-cache
-        uses: actions/cache/restore@v5
-        with:
-          path: C:\Program Files (x86)\Microsoft\Edge Dev
-          key: msedge-dev-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('package-lock.json') }}
-
       - name: Install ${{ matrix.browser }}
         if: ${{ !matrix.container }}
         run: npx playwright install ${{ matrix.browser }} --with-deps
-
-      - name: Save Edge Dev cache
-        if: ${{ matrix.browser == 'msedge-dev' && steps.edge-cache.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v5
-        with:
-          path: C:\Program Files (x86)\Microsoft\Edge Dev
-          key: msedge-dev-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('package-lock.json') }}
 
       - name: Restore AI model cache
         uses: actions/cache/restore@v5
