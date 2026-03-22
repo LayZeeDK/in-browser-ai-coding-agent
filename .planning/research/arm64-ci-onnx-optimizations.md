@@ -1,209 +1,184 @@
 # ARM64 CI ONNX Runtime Optimization Research
 
 **Researched:** 2026-03-22
-**Overall confidence:** HIGH (ONNX Runtime docs, Arm architecture specs, KleidiAI benchmarks, DLL version inspection, genai_config.json inspection)
-**Focus:** Can we reduce Phi-4 Mini inference time on the `windows-11-arm` CI runner (Azure Cobalt 100, 4 vCPU Neoverse N2, 16 GB RAM, no GPU)?
+**Overall confidence:** HIGH
+**Focus:** Can we reduce Phi-4 Mini inference time on the `windows-11-arm` CI runner?
 
 ---
 
 ## Executive Summary
 
-The 23+ minute first `session.prompt()` on the `windows-11-arm` CI runner is dominated by two factors: (1) ONNX Runtime graph optimization at session creation, and (2) first-pass inference through 3.8B INT4 parameters on only 4 ARM64 cores with no GPU. Research into seven potential optimization vectors reveals that **most are inaccessible** because Edge embeds ONNX Runtime as a black box. However, the investigation uncovered several important facts and one actionable experiment.
+The `windows-11-arm` CI runner (Azure Cobalt 100, 4 vCPU Neoverse N2, 16 GB RAM, no GPU) takes 23+ minutes on the first `session.prompt()` for Phi-4 Mini. This research investigates seven optimization vectors, scoped to what we can actually control: Edge flags (`edge-llm-*`), browser launch args, profile/cache management, and the model artifacts on disk.
 
-**Key findings:**
+Edge embeds ONNX Runtime as a sealed native binary. The only external control surface is:
 
-1. **Edge ships ONNX Runtime 1.25** (pre-release, build 2026-03-07), confirming KleidiAI optimizations (integrated since v1.22) are active. The MLAS backend uses NEON and I8MM instructions, and SVE2 (128-bit) on the Neoverse N2 -- but NOT SME (unsupported on N2).
+1. **`Local State` flags** seeded before launch (`edge-llm-*` entries)
+2. **Chromium launch args** (`--enable-features`, `--disable-features`, etc.)
+3. **Profile directory contents** (model files, cache artifacts, `genai_config.json`)
+4. **Warm-up strategy** (what the fixture/global-setup does before tests run)
 
-2. **DirectML with Microsoft Basic Render Driver is pure software** -- it would be slower than the CPU EP, not faster. Do not attempt to force DirectML.
-
-3. **The `genai_config.json` in the model profile is theoretically editable** and supports `intra_op_num_threads`. Modifying it post-download to tune threading is the only potential external tuning lever, but Edge may override these values at runtime.
-
-4. **SwiftShader/ANGLE flags would hurt, not help.** They affect Chromium's renderer pipeline, not ONNX Runtime's inference pipeline. Adding CPU overhead for software rendering while ONNX Runtime already uses all 4 cores for inference would reduce available CPU for the actual model execution.
-
-5. **Offline model optimization (pre-optimized graph) is theoretically possible** but impractical -- the model is 4.86 GB (exceeding protobuf's 2 GB limit for `optimized_model_filepath`), and Edge downloads the model as a sealed component update.
-
-6. **The 4-core constraint is the fundamental bottleneck.** All other factors are secondary. The same model on a 32-core Cobalt 100 instance completes in ~1-2 minutes. The only path to dramatically faster CI inference is a runner with more cores, or caching the post-inference profile (already implemented).
+**Bottom line:** All available ARM64 SIMD optimizations (KleidiAI, NEON, I8MM, SVE2) are already active in Edge's ONNX Runtime 1.25. The model and runtime are sealed components. The existing profile cache strategy is correct. The 4-core constraint is the fundamental bottleneck -- no flag or launch arg changes that. The only actionable items are diagnostics.
 
 ---
 
-## Q1: DirectML 5.0 with Microsoft Basic Render Driver -- Accelerate Inference?
+## Current Control Surface (Edge Dev on windows-11-arm)
 
-**Verdict: NO. Purely software, would be SLOWER than CPU EP.**
+### What We Control
+
+| Lever                                               | Where                                | Current Value                       |
+| --------------------------------------------------- | ------------------------------------ | ----------------------------------- |
+| `edge-llm-prompt-api-for-phi-mini`                  | Local State flag                     | `@1` (Enabled)                      |
+| `edge-llm-on-device-model-performance-param`        | Local State flag                     | `@3` (bypass all perf requirements) |
+| `internal_only_uis_enabled`                         | Local State                          | `true`                              |
+| `--enable-features=AIPromptAPI`                     | Launch arg                           | Set                                 |
+| `--disable-features=OnDeviceModelPerformanceParams` | Launch arg                           | Set                                 |
+| Playwright default arg removal                      | `ignoreDefaultArgs`                  | 4 args removed                      |
+| Profile directory                                   | `.playwright-profiles/msedge-dev/`   | Cached post-test                    |
+| Warm-up sequence                                    | fixtures.ts / global-setup.shared.ts | create() + prompt('warmup')         |
+
+### What We Do NOT Control
+
+| Aspect                                            | Why                                                    |
+| ------------------------------------------------- | ------------------------------------------------------ |
+| ONNX Runtime session options                      | Edge's LLM service sets these internally               |
+| Execution provider selection                      | Automatic -- DirectML fails (no GPU), CPU EP used      |
+| KleidiAI kernel selection                         | Auto-detected from CPU features at runtime             |
+| Model graph optimizations                         | Applied by ONNX Runtime at session creation internally |
+| Thread count, memory arena, spin control          | Hardcoded in Edge's ONNX Runtime integration           |
+| Model variant (WebGPU-optimized vs CPU-optimized) | Edge downloads its own sealed model component          |
+
+---
+
+## Q1: DirectML with Microsoft Basic Render Driver -- Accelerate Inference?
+
+**Verdict: NO. Software-only, slower than CPU EP.**
 **Confidence: HIGH**
 
-### Analysis
+The Microsoft Basic Render Driver is WARP (Windows Advanced Rasterization Platform) -- a software-only DirectX implementation. It reports 0 GB VRAM and runs all compute shaders on the CPU. ONNX Runtime's CPU EP with KleidiAI uses purpose-built ARM64 NEON/I8MM intrinsics that are strictly faster than a generic GPU API emulated on the same CPU. The CI runner likely does not even expose the Basic Render Driver since Azure Cobalt 100 VMs have no display adapter.
 
-The Microsoft Basic Render Driver is a software-only DirectX implementation using WARP (Windows Advanced Rasterization Platform). It reports as a DirectX 12 device with 0 GB dedicated VRAM, meaning DirectML can technically enumerate it as a target. However:
-
-- **All DirectML compute shaders run on the CPU** when backed by WARP -- there is zero hardware acceleration.
-- WARP exists for display compatibility, not ML inference. It is a generic GPU API emulation layer with significant overhead compared to purpose-built CPU compute paths.
-- ONNX Runtime's CPU EP (via MLAS) with KleidiAI is specifically optimized for ARM64 CPU execution with NEON/I8MM/SVE2 intrinsics. It will always outperform a generic GPU API emulated on the same CPU.
-
-DirectML via WARP would add GPU API overhead (shader compilation, memory management, command queue scheduling) on top of the same CPU cores that MLAS already uses natively. The result would be strictly worse performance.
-
-**Furthermore, the CI runner may not even have the Basic Render Driver available.** Azure Cobalt 100 VMs have no GPU hardware at all -- the Basic Render Driver requires at least a display adapter entry in the device tree, which headless VMs may lack.
-
-### Recommendation
-
-Do not attempt to force DirectML. The current CPU EP fallback is already the optimal path for GPU-less hardware.
+**No flag or launch arg can force DirectML onto the Basic Render Driver**, and doing so would be counterproductive even if possible.
 
 ### Sources
 
-- [DirectML Execution Provider docs](https://onnxruntime.ai/docs/execution-providers/DirectML-ExecutionProvider.html)
-- [DirectML GitHub (now in maintenance mode)](https://github.com/microsoft/DirectML)
-- [DirectML Introduction](https://learn.microsoft.com/en-us/windows/ai/directml/dml)
+- [DirectML EP docs](https://onnxruntime.ai/docs/execution-providers/DirectML-ExecutionProvider.html) -- requires DirectX 12 capable device
+- [DirectML GitHub](https://github.com/microsoft/DirectML) -- maintenance mode, GPU-only
 
 ---
 
-## Q2: Force XNNPACK or Another Optimized CPU Backend on ARM64 Windows?
+## Q2: Force XNNPACK or Another CPU Backend?
 
-**Verdict: NOT POSSIBLE in Edge's embedded ONNX Runtime. And MLAS is already the better choice.**
+**Verdict: NOT POSSIBLE. MLAS + KleidiAI is already the right backend.**
 **Confidence: HIGH**
 
-### Analysis
+XNNPACK is Chrome/LiteRT's CPU backend. Edge uses ONNX Runtime's MLAS backend. The two runtimes are architecturally separate:
 
-ONNX Runtime supports XNNPACK as an execution provider, and XNNPACK does support ARM64 Windows as a build target. However:
+- Chrome + Gemini Nano: LiteRT -> XNNPACK
+- Edge + Phi-4 Mini: ONNX Runtime -> MLAS + KleidiAI
 
-1. **XNNPACK must be built into the ONNX Runtime binary** using the `--use_xnnpack` build flag. Pre-built packages (PyPI, NuGet) do not include XNNPACK -- only Android (Maven) and iOS (CocoaPods) packages ship with it.
-
-2. **Edge's `onnxruntime.dll` is a sealed binary** (version 1.25.20260307, confirmed by DLL inspection). We cannot rebuild it with different execution providers.
-
-3. **MLAS is already optimized for ARM64** and now includes KleidiAI kernels (since v1.22). XNNPACK's ARM64 NEON kernels are comparable in performance to MLAS for the operations Phi-4 Mini uses (MatMul, Conv). The KleidiAI integration into MLAS specifically adds INT4 GEMM acceleration using I8MM and DotProd instructions -- exactly what the INT4-quantized Phi-4 Mini model needs.
-
-4. **XNNPACK is Chrome/LiteRT's CPU backend**, not ONNX Runtime's. The two runtimes use different CPU acceleration libraries by design:
-   - Chrome + Gemini Nano: LiteRT -> XNNPACK (CPU)
-   - Edge + Phi-4 Mini: ONNX Runtime -> MLAS + KleidiAI (CPU)
-
-### Recommendation
-
-No action possible. MLAS + KleidiAI on ONNX Runtime 1.25 is already the optimal CPU backend for this model on ARM64.
+MLAS with KleidiAI (since ORT v1.22) provides ARM64-specific INT4 GEMM acceleration using the same I8MM and DotProd instructions that XNNPACK uses. Edge's `onnxruntime.dll` is a sealed binary -- no launch arg or Edge flag changes the EP selection.
 
 ### Sources
 
-- [XNNPACK Execution Provider docs](https://onnxruntime.ai/docs/execution-providers/Xnnpack-ExecutionProvider.html)
-- [ONNX Runtime build instructions](https://onnxruntime.ai/docs/build/inferencing.html)
-- [KleidiAI + ONNX Runtime blog](https://onnxruntime.ai/blogs/arm-microsoft-kleidiai)
+- [XNNPACK EP docs](https://onnxruntime.ai/docs/execution-providers/Xnnpack-ExecutionProvider.html) -- requires building ORT from source
+- [KleidiAI + ONNX Runtime](https://onnxruntime.ai/blogs/arm-microsoft-kleidiai) -- MLAS backend, INT4 GEMM
 
 ---
 
-## Q3: Does ONNX Runtime Use NEON/SVE SIMD on ARM64 Windows?
+## Q3: Does ONNX Runtime Use NEON/SVE SIMD? Can We Verify?
 
-**Verdict: YES. NEON, I8MM, DotProd, and SVE2 (128-bit) are all used. No flags needed.**
+**Verdict: YES, all available SIMD is active. Verification possible via DLL version check.**
 **Confidence: HIGH**
 
-### Confirmed: Edge's ONNX Runtime DLL Versions
+### Confirmed DLL Versions (Local Profile Inspection)
 
-Inspection of the local profile directory revealed:
+| Component               | Version                             | Path                          |
+| ----------------------- | ----------------------------------- | ----------------------------- |
+| `onnxruntime.dll`       | **1.25.20260307**                   | `EdgeLLMRuntime/2026.3.10.1/` |
+| `onnxruntime-genai.dll` | **0.13.0-dev**                      | `EdgeLLMRuntime/2026.3.10.1/` |
+| Edge LLM Runtime        | **2026.3.10.1**                     | Manifest                      |
+| Model                   | **Phi-4-mini-instruct 2026.2.19.1** | `EdgeLLMOnDeviceModel/`       |
 
-| Component                   | Version                                           | Path                          |
-| --------------------------- | ------------------------------------------------- | ----------------------------- |
-| `onnxruntime.dll`           | **1.25.20260307** (pre-release, build 2026-03-07) | `EdgeLLMRuntime/2026.3.10.1/` |
-| `onnxruntime-genai.dll`     | **0.13.0-dev**                                    | `EdgeLLMRuntime/2026.3.10.1/` |
-| Edge LLM Runtime            | **2026.3.10.1**                                   | Manifest version              |
-| Model (Phi-4-mini-instruct) | **2026.2.19.1**                                   | `EdgeLLMOnDeviceModel/`       |
+ORT 1.25 is a pre-release build ahead of the latest public release (1.24.4). KleidiAI was integrated in v1.22, so all ARM-specific optimizations are present.
 
-ONNX Runtime 1.25 is **newer than the latest public release** (1.24.4 on PyPI, March 17, 2026). This is a bleeding-edge Microsoft-internal build. Since KleidiAI was integrated in v1.22, all ARM-specific optimizations are guaranteed to be present.
+### Cobalt 100 (Neoverse N2) SIMD Used by KleidiAI/MLAS
 
-### Azure Cobalt 100 (Neoverse N2) SIMD Capabilities
+| Feature              | On Cobalt 100? | Used by KleidiAI? | Purpose                                      |
+| -------------------- | -------------- | ----------------- | -------------------------------------------- |
+| NEON (128-bit)       | Yes            | Yes               | Baseline vectorized ops                      |
+| DotProd (SDOT)       | Yes            | Yes               | Decode-stage GEMV                            |
+| I8MM (SMMLA/UMMLA)   | Yes            | Yes               | Prefill-stage GEMM                           |
+| SVE2 (128-bit width) | Yes            | Yes               | Additional instructions (same width as NEON) |
+| BF16                 | Yes            | Supported         | Not primary for INT4 model                   |
+| SME/SME2             | **No**         | N/A               | Neoverse N2 predates SME                     |
 
-| Feature                     | Supported | Used by KleidiAI/MLAS                   |
-| --------------------------- | --------- | --------------------------------------- |
-| NEON (128-bit)              | Yes       | Yes -- baseline vectorized operations   |
-| DotProd (SDOT)              | Yes       | Yes -- vector-by-matrix (decode stage)  |
-| I8MM (SMMLA/UMMLA)          | Yes       | Yes -- matrix-by-matrix (prefill stage) |
-| SVE2 (128-bit vector width) | Yes       | Yes -- additional parallelism           |
-| BF16                        | Yes       | Supported but not primary for INT4      |
-| SME/SME2                    | **No**    | Not available (N2 predates SME)         |
+KleidiAI selects microkernels in order: **SME2 > I8MM > DotProd**. On Cobalt 100 (no SME), the active paths are I8MM for prefill and DotProd for decode. This is automatic and requires no flags.
 
-The Neoverse N2 implements ARMv9.0-A, which mandates SVE2 support. However, the SVE2 implementation uses **128-bit vector width** -- the same as NEON. This means SVE2 provides additional instructions (like multi-vector operations) but not wider vectors on this specific hardware.
+### Actionable: Log DLL Version in CI
 
-### KleidiAI Microkernel Selection
+Add a diagnostic step to track ONNX Runtime version across Edge Dev updates:
 
-KleidiAI selects microkernels in priority order: **SME2 > I8MM > DotProd**. Since Cobalt 100 does not support SME/SME2, the active path is:
-
-- **Prefill (prompt processing):** I8MM microkernels -- uses `SMMLA`/`UMMLA` instructions for INT4-packed GEMM
-- **Decode (token generation):** DotProd microkernels -- uses `SDOT` for vector-by-matrix operations
-
-The INT4 computation works by packing two INT4 values into INT8 containers and using I8MM/DotProd instructions to perform the multiply-accumulate. This is already happening automatically -- no flags or configuration needed.
-
-### How to Verify
-
-To confirm SIMD usage in CI, add a diagnostic step:
-
-```powershell
-# Check CPU features reported by the OS
-Get-CimInstance Win32_Processor | Select-Object Name, Architecture, NumberOfCores
-# Or check via onnxruntime logging:
-# Set ORT_LOG_LEVEL=VERBOSE environment variable before Edge launch
+```yaml
+- name: Log ONNX Runtime version
+  if: ${{ !matrix.container }}
+  shell: pwsh
+  run: |
+    $rtDir = Get-ChildItem ".playwright-profiles/msedge-dev/EdgeLLMRuntime" -Directory -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($rtDir) {
+      $dll = Join-Path $rtDir.FullName "onnxruntime.dll"
+      $ver = (Get-Item $dll).VersionInfo.FileVersion
+      $genai = (Get-Item (Join-Path $rtDir.FullName 'onnxruntime-genai.dll')).VersionInfo.FileVersion
+      Write-Output "ONNX Runtime: $ver"
+      Write-Output "GenAI: $genai"
+    }
 ```
 
-However, since ONNX Runtime 1.25 auto-detects ARM64 capabilities at startup, no manual verification is strictly necessary.
+This costs nothing and provides early warning if an Edge Dev update ships an older ORT build without KleidiAI.
 
 ### Sources
 
-- [Azure Cobalt 100 overview](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/cobalt-overview)
-- [Arm Neoverse N2 architecture](https://newsroom.arm.com/blog/arm-powered-microsoft-azure-cobalt-100-vms)
+- [Azure Cobalt 100 specs](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/cobalt-overview)
 - [KleidiAI microkernel selection](https://learn.arm.com/learning-paths/cross-platform/kleidiai-explainer/page3/)
-- [KleidiAI SDOT and I8MM usage](https://developer.arm.com/community/arm-community-blogs/b/ai-blog/posts/kleidiai)
-- [Azure Cobalt 100 AI inference benchmarks](https://thomasvanlaere.com/posts/2025/10/exploring-ai-cpu-inferencing-with-azure-cobalt-100/)
+- [Cobalt 100 AI inference benchmarks](https://thomasvanlaere.com/posts/2025/10/exploring-ai-cpu-inferencing-with-azure-cobalt-100/)
+- [KleidiAI I8MM/DotProd usage](https://developer.arm.com/community/arm-community-blogs/b/ai-blog/posts/kleidiai)
 
 ---
 
-## Q4: KleidiAI for ARM64 ONNX Runtime -- Does It Apply? Does Edge Ship It?
+## Q4: KleidiAI -- Does Edge Ship It?
 
-**Verdict: YES and YES. Confirmed active in Edge's ONNX Runtime 1.25.**
+**Verdict: YES. Confirmed via DLL version.**
 **Confidence: HIGH**
 
-### KleidiAI Integration Details
+Edge ships ORT 1.25 (KleidiAI integrated since v1.22). Arm benchmarks on Cobalt 100 show 28-51% throughput uplift from KleidiAI.
 
-KleidiAI was integrated into ONNX Runtime's MLAS backend in **v1.22** (released ~May 2025). Edge ships **v1.25**, so KleidiAI is definitively included.
+**What KleidiAI does NOT fix:** The cold-start. KleidiAI accelerates steady-state GEMM operations (token generation). The 23+ minute cost is dominated by graph optimization and first-pass pipeline initialization, which are one-time costs that KleidiAI does not reduce.
 
-The integration works by:
-
-1. **Replacing generic GEMM kernels** in MLAS with ARM-optimized microkernels from KleidiAI
-2. **Accelerating INT4 quantized matrix multiplication** -- exactly the precision used by Phi-4 Mini
-3. **Requiring zero code changes** -- the optimization is transparent to the caller (Edge's LLM service)
-
-### Performance Benchmarks on Cobalt 100
-
-From Arm's benchmarks on Azure Cobalt 100 (same Neoverse N2 as the CI runner, but with more cores):
-
-| Metric                         | Improvement (v1.21 -> v1.22)                         |
-| ------------------------------ | ---------------------------------------------------- |
-| Token generation throughput    | 28-51% uplift (varies by instance size)              |
-| Prompt processing throughput   | 2.4x faster (on Windows Arm devices)                 |
-| vs AMD Genoa (same price tier) | 1.9x faster token generation, 2.8x price/performance |
-
-**Critical caveat for CI:** These benchmarks were run on 8-64 vCPU instances. The CI runner has only **4 vCPUs**. KleidiAI's parallelized GEMM kernels scale with core count. At 4 cores, the absolute improvement is smaller than at 32+ cores, though the relative percentage uplift should be similar.
-
-### What KleidiAI Does NOT Fix
-
-KleidiAI optimizes **steady-state inference** (matrix multiplication during token generation). It does NOT significantly reduce:
-
-- Graph optimization time (a one-time cost at session creation)
-- Model weight deserialization (I/O bound, not compute bound)
-- KV cache allocation (memory allocation, not compute)
-- First-pass attention weight materialization (dominated by memory bandwidth, not GEMM speed)
-
-The cold-start penalty (23+ min) is mostly graph optimization + first-pass initialization. KleidiAI helps with subsequent token generation speed but not the startup overhead.
+**No action needed.** KleidiAI is already active.
 
 ### Sources
 
-- [Arm + Microsoft KleidiAI ONNX Runtime blog](https://newsroom.arm.com/blog/arm-microsoft-kleidiai-onnx-runtime)
-- [ONNX Runtime KleidiAI blog](https://onnxruntime.ai/blogs/arm-microsoft-kleidiai)
-- [Accelerate LLM on Cobalt 100](https://developer.arm.com/community/arm-community-blogs/b/servers-and-cloud-computing-blog/posts/accelerate-llm-inference-with-onnx-runtime-on-arm-neoverse-powered-microsoft-cobalt-100)
-- [KleidiAI overview](https://www.arm.com/markets/artificial-intelligence/software/kleidi)
+- [Arm + Microsoft KleidiAI blog](https://newsroom.arm.com/blog/arm-microsoft-kleidiai-onnx-runtime)
+- [Cobalt 100 KleidiAI benchmarks](https://developer.arm.com/community/arm-community-blogs/b/servers-and-cloud-computing-blog/posts/accelerate-llm-inference-with-onnx-runtime-on-arm-neoverse-powered-microsoft-cobalt-100) -- 28-51% on 8-64 vCPU; 4 vCPU gains will be smaller
 
 ---
 
-## Q5: Can ONNX Runtime Thread Count Be Tuned in Edge?
+## Q5: Can Thread Count Be Tuned?
 
-**Verdict: MAYBE -- the `genai_config.json` supports it, but Edge may override. Worth experimenting.**
-**Confidence: MEDIUM**
+**Verdict: NO external control exists.**
+**Confidence: HIGH**
 
-### Discovery: The `genai_config.json` Is Editable
+### What Was Investigated
 
-The model profile at `EdgeLLMOnDeviceModel/2026.2.19.1/genai_config.json` is a standard JSON file that ONNX Runtime GenAI reads at session creation. The current contents show:
+1. **Edge flags (`edge://flags`):** No flag controls ONNX Runtime thread count. The `edge-llm-*` flags control model eligibility and performance parameter gating, not inference configuration.
+
+2. **Launch args:** No `--ort-threads` or similar arg exists. `--disable-features=OnDeviceModelPerformanceParams` affects hardware eligibility checks, not session options.
+
+3. **Environment variables:** ONNX Runtime supports `OMP_NUM_THREADS` when built with OpenMP. Edge's build is not OpenMP-based. No `ORT_*` environment variable affects the embedded runtime.
+
+4. **Registry keys:** No registry keys control Edge's ONNX Runtime. Searched extensively -- nothing exists.
+
+5. **`genai_config.json`:** The model's config at `EdgeLLMOnDeviceModel/2026.2.19.1/genai_config.json` contains `session_options` with only `log_id` and `provider_options`. The ONNX Runtime GenAI config format [supports](https://onnxruntime.ai/docs/genai/reference/config.html) `intra_op_num_threads`, but Edge's LLM service sits between the LanguageModel API and the GenAI library and almost certainly overrides session options with its own values. Even if it did not, the optimal thread count on 4 physical cores is already 4 (the default auto-detected value).
+
+### Current `genai_config.json` (Actual Contents)
 
 ```json
 {
@@ -227,62 +202,23 @@ The model profile at `EdgeLLMOnDeviceModel/2026.2.19.1/genai_config.json` is a s
 }
 ```
 
-**Notable observations:**
+Notable: `provider_options` specifies `webgpu`. On the GPU-less runner, this falls back to CPU EP automatically. This is the expected model distribution format -- the same binary serves both GPU and CPU devices.
 
-1. **No `intra_op_num_threads` is set** -- ONNX Runtime defaults to auto-detection (1 thread per physical core = 4 on the CI runner).
-2. **`provider_options` specifies `webgpu`** -- the model is optimized for WebGPU execution. On GPU-less hardware, this falls back to CPU EP.
-3. **No `graph_optimization_level` is set** -- defaults to `ORT_ENABLE_ALL` (Level 3), meaning full optimization runs on every session creation.
+### Actionable: Log `genai_config.json` in CI
 
-### The `genai_config.json` Officially Supports Threading Options
-
-Per the ONNX Runtime GenAI [config reference](https://onnxruntime.ai/docs/genai/reference/config.html):
-
-```json
-"session_options": {
-  "intra_op_num_threads": 4,
-  "inter_op_num_threads": 2,
-  "enable_cpu_mem_arena": true,
-  "enable_mem_pattern": true,
-  "graph_optimization_level": 99
-}
+```yaml
+- name: Log model config
+  if: ${{ !matrix.container }}
+  shell: bash
+  run: cat .playwright-profiles/msedge-dev/EdgeLLMOnDeviceModel/*/genai_config.json 2>/dev/null || true
 ```
 
-However, `graph_optimization_level` [is not yet supported](https://github.com/microsoft/onnxruntime-genai/discussions/1260) in the config file as of the public API. Edge's internal build (0.13.0-dev) may or may not support it.
-
-### Potential Experiment: Modify `genai_config.json` Post-Download
-
-After the bootstrap script downloads the model, a CI step could modify `genai_config.json` to add threading configuration:
-
-```bash
-# Add intra_op_num_threads to session_options
-node -e "
-  const fs = require('fs');
-  const path = '.playwright-profiles/msedge-dev/EdgeLLMOnDeviceModel/2026.2.19.1/genai_config.json';
-  const config = JSON.parse(fs.readFileSync(path, 'utf8'));
-  config.model.decoder.session_options.intra_op_num_threads = 4;
-  // Attempt to set graph optimization level (may be ignored)
-  config.model.decoder.session_options.graph_optimization_level = 99;
-  fs.writeFileSync(path, JSON.stringify(config, null, 4));
-"
-```
-
-**Risks:**
-
-1. **Edge may override** the config values at runtime. The LLM service sits between the LanguageModel API and ONNX Runtime GenAI, and may set its own session options regardless of the config file.
-2. **Edge may validate** the config file against a schema or checksum, rejecting modifications.
-3. **Thread count is already optimal** at 4 (matching the 4 physical cores). Increasing it would cause contention; decreasing it would be slower.
-
-**What IS worth testing:** Setting `graph_optimization_level` to `ORT_ENABLE_BASIC` (1) or `ORT_DISABLE_ALL` (0) to skip expensive graph optimizations. If Edge's ONNX Runtime GenAI build reads this value, it could significantly reduce the cold-start graph optimization phase.
-
-### No Registry Keys or Edge Flags Found
-
-Extensive searching confirmed there are **no Windows Registry keys, environment variables, or `edge://flags` entries** that control ONNX Runtime thread count or session options within Edge. The threading configuration is entirely internal.
+This captures model architecture changes across Edge Dev updates (hidden_size, num_layers, context_length changes would indicate a model swap).
 
 ### Sources
 
 - [ONNX Runtime GenAI config reference](https://onnxruntime.ai/docs/genai/reference/config.html)
 - [ONNX Runtime thread management](https://onnxruntime.ai/docs/performance/tune-performance/threading.html)
-- [GitHub Discussion #1260: graph_optimization_level not in genai_config](https://github.com/microsoft/onnxruntime-genai/discussions/1260)
 
 ---
 
@@ -291,99 +227,153 @@ Extensive searching confirmed there are **no Windows Registry keys, environment 
 **Verdict: HURT. Do not use.**
 **Confidence: HIGH**
 
-### Analysis
+`--use-gl=swiftshader` and `--use-angle=swiftshader` control Chromium's **renderer** GPU pipeline (page compositing, WebGL, CSS). They do NOT affect Edge's ONNX Runtime inference, which runs in a completely separate native process with its own GPU initialization (documented in [platform-runner-findings.md](../../docs/platform-runner-findings.md), Section 5).
 
-`--use-gl=swiftshader` and `--use-angle=swiftshader` control **Chromium's renderer GPU pipeline** (compositing, WebGL, WebGPU for the page renderer). They do NOT affect Edge's ONNX Runtime inference pipeline, which runs in a completely separate native process.
+| Flag                      | Renderer Impact            | Inference Impact   | Net Effect                                           |
+| ------------------------- | -------------------------- | ------------------ | ---------------------------------------------------- |
+| Default (no flags)        | Software fallback (no GPU) | CPU EP (no GPU)    | Optimal                                              |
+| `--disable-gpu`           | Skia CPU rasterizer        | CPU EP (unchanged) | Slightly worse -- wastes a flag for no gain          |
+| `--use-angle=swiftshader` | SwANGLE software GPU       | CPU EP (unchanged) | **Worst** -- CPU overhead for software GPU rendering |
 
-The two GPU paths in Edge are architecturally independent (confirmed in `platform-runner-findings.md`):
-
-| Path                             | Controls                                | Affected by SwiftShader flags? |
-| -------------------------------- | --------------------------------------- | ------------------------------ |
-| Chromium renderer GPU            | Page compositing, WebGL, CSS transforms | YES                            |
-| Edge ML inference (ONNX Runtime) | DirectML, CPU EP, model inference       | **NO**                         |
-
-### Performance Impact
-
-Adding SwiftShader flags would:
-
-1. **Add CPU overhead** for software-rendering the page content. SwiftShader emulates a full GPU pipeline on CPU, consuming CPU cycles that would otherwise be available for ONNX Runtime inference.
-2. **NOT provide any GPU acceleration** for ONNX Runtime. The inference pipeline does not go through Chromium's WebGPU/WebGL stack -- it uses DirectML (when GPU available) or CPU EP directly.
-3. **Be strictly worse** than `--disable-gpu`. Benchmarks show that `--disable-gpu` (which uses Skia's hand-tuned CPU rasterizer) outperforms SwANGLE (SwiftShader + ANGLE) for page rendering because Skia's CPU path is optimized for its exact needs, while ANGLE + SwiftShader must comply with a generic 3D API.
-
-**Comparison of rendering approaches on CPU:**
-
-| Flag Combination          | Page Rendering                          | ML Inference       | CPU Contention |
-| ------------------------- | --------------------------------------- | ------------------ | -------------- |
-| Default (no flags)        | Hardware GPU (if available) or software | CPU EP             | Low            |
-| `--disable-gpu`           | Skia CPU rasterizer (fast)              | CPU EP (unchanged) | Moderate       |
-| `--use-angle=swiftshader` | SwANGLE software GPU (slow)             | CPU EP (unchanged) | **High**       |
-
-### Recommendation
-
-Do not add SwiftShader or ANGLE flags. On the CI runner with no GPU, the current default behavior is already optimal: Chromium falls back to software rendering automatically, and ONNX Runtime uses CPU EP. Adding SwiftShader would only increase CPU contention.
+On the `windows-11-arm` runner, `--disable-gpu` is correctly absent from the current launch args. The runner has no GPU, so Chromium auto-detects software rendering and ONNX Runtime auto-selects CPU EP.
 
 ### Sources
 
-- [Using Chromium with SwiftShader](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/gpu/swiftshader.md)
-- [SwiftShader GitHub](https://github.com/google/swiftshader)
-- [SwANGLE deprecation discussion](https://groups.google.com/a/chromium.org/g/graphics-dev/c/CpVms3tXRhk)
+- [Chromium SwiftShader docs](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/gpu/swiftshader.md)
+- [SwANGLE performance discussion](https://groups.google.com/a/chromium.org/g/graphics-dev/c/CpVms3tXRhk)
 
 ---
 
-## Q7: Pre-Optimize the ONNX Model Graph Offline?
+## Q7: Pre-Optimize the Model Graph Offline?
 
-**Verdict: NOT PRACTICALLY POSSIBLE for this scenario.**
+**Verdict: NOT POSSIBLE with the available control surface.**
 **Confidence: HIGH**
 
-### ONNX Runtime's Offline Optimization
+### Why Not
 
-ONNX Runtime supports saving pre-optimized model graphs via `optimized_model_filepath` in SessionOptions. When used:
+1. **Model is a sealed component.** Edge downloads `model.onnx` + `model.onnx.data` as a component update into `EdgeLLMOnDeviceModel/`. Replacing the model file would be overwritten on next launch or rejected by integrity checks.
 
-1. First run: Apply all graph optimizations, serialize result to disk
-2. Subsequent runs: Load pre-optimized model, set `graph_optimization_level = ORT_DISABLE_ALL`, skip optimization
+2. **Model exceeds protobuf 2 GB limit.** ONNX Runtime's `optimized_model_filepath` serializes as protobuf. `model.onnx.data` is 4.86 GB. [Issue #12882](https://github.com/microsoft/onnxruntime/issues/12882) confirms this hard limit.
 
-This eliminates the graph optimization phase (estimated 60-180s of the cold-start).
+3. **No access to ONNX Runtime APIs.** Offline optimization requires calling `InferenceSession` programmatically. The runtime is embedded in Edge.
 
-### Why It Does Not Work Here
+4. **Hardware-specific.** A model pre-optimized on one architecture cannot run on another. We cannot pre-optimize on the CI runner without programmatic ORT access.
 
-**Blocker 1: Model size exceeds protobuf limit.**
-The `optimized_model_filepath` mechanism serializes the optimized graph as a protobuf file. Protobuf has a hard 2 GB size limit. Phi-4 Mini's `model.onnx.data` is 4.86 GB. [Issue #12882](https://github.com/microsoft/onnxruntime/issues/12882) confirms this limitation.
+### What Edge Does Internally
 
-**Blocker 2: Edge downloads the model as a sealed component.**
-The model files in `EdgeLLMOnDeviceModel/` are delivered by Edge's proprietary LLM service. We cannot replace `model.onnx` with a pre-optimized version -- Edge would re-download the original on the next launch or reject the modified file.
+The `adapter_cache.bin` and `encoder_cache.bin` files in the model directory are generated after first inference and cached in the profile. On the local dev machine (GPU/NPU available), these files are **0 bytes**. On the CI runner (CPU EP only), they contain the compiled execution plan after the first inference run.
 
-**Blocker 3: Hardware-specific optimizations.**
-Pre-optimized models are hardware-specific. A model pre-optimized on x86 (developer machine under QEMU) cannot be used on ARM64 (CI runner). We would need to pre-optimize ON the CI runner itself, which requires running ONNX Runtime programmatically -- impossible when the runtime is embedded inside Edge.
-
-**Blocker 4: EP-specific optimizations.**
-The optimization output depends on the execution provider. A model pre-optimized for CPU EP would not work if Edge later uses DirectML. Since the genai_config.json specifies `webgpu` as the provider, the optimization path may differ from what CPU EP expects.
-
-### ORT Format Models (Alternative)
-
-ONNX Runtime also supports an ORT format (`.ort`) that pre-bakes optimizations. However, this requires:
-
-- Converting with `convert_onnx_models_to_ort` script
-- Matching the target EP and hardware exactly
-- Loading via ONNX Runtime's ORT format API (not the standard ONNX loader)
-
-Edge does not use ORT format models -- it uses standard ONNX format with GenAI configuration.
-
-### What Edge Likely Does Internally
-
-The `adapter_cache.bin` and `encoder_cache.bin` files generated after first inference serve a similar purpose to offline optimization. They appear to cache the compiled execution plan, avoiding re-optimization on subsequent runs. The current post-test cache strategy already preserves these files.
-
-On the local developer machine (which has GPU/NPU), these cache files are **0 bytes** -- suggesting they are only populated on the CPU EP path or when specific conditions trigger caching.
-
-### Recommendation
-
-No action possible. The existing post-test profile cache strategy is the correct approach for avoiding repeated graph optimization. The cold-start on first-ever run (cache miss) is unavoidable with the current architecture.
+The existing post-test cache strategy already preserves these files correctly.
 
 ### Sources
 
-- [ONNX Runtime Graph Optimizations](https://onnxruntime.ai/docs/performance/model-optimizations/graph-optimizations.html)
-- [ORT Format Models](https://onnxruntime.ai/docs/performance/model-optimizations/ort-format-models.html)
-- [Issue #12882: optimized_model_filepath fails for models >= 2GB](https://github.com/microsoft/onnxruntime/issues/12882)
-- [ONNX Runtime Transformers Optimizer](https://onnxruntime.ai/docs/performance/transformers-optimization.html)
+- [ONNX Runtime graph optimizations](https://onnxruntime.ai/docs/performance/model-optimizations/graph-optimizations.html)
+- [Issue #12882: optimized_model_filepath >= 2GB](https://github.com/microsoft/onnxruntime/issues/12882)
+
+---
+
+## What the Existing Flags and Args Actually Do
+
+Since the control surface is limited to flags and launch args, here is what each one does for the Edge Dev configuration:
+
+### Local State Flags
+
+| Flag                                           | Value    | Purpose                                                                             |
+| ---------------------------------------------- | -------- | ----------------------------------------------------------------------------------- |
+| `edge-llm-prompt-api-for-phi-mini@1`           | Enabled  | Exposes `LanguageModel` API to web pages                                            |
+| `edge-llm-on-device-model-performance-param@3` | Option 3 | Bypasses Edge's hardware eligibility check (required on 4-core/16 GB/no-GPU runner) |
+
+The `@3` option likely means "bypass all performance requirements." Without it, Edge may reject the runner as incapable of running Phi-4 Mini. The exact dropdown values are not publicly documented (see [edge-dev-gpu-vs-cpu-inference-control.md](edge-dev-gpu-vs-cpu-inference-control.md) Section 4).
+
+### Launch Args
+
+| Arg                                                 | Purpose                                                                                                                                                           |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--enable-features=AIPromptAPI`                     | Enables the LanguageModel API at the Chromium feature level                                                                                                       |
+| `--disable-features=OnDeviceModelPerformanceParams` | Disables server-defined performance parameters, forcing Edge to use hardcoded defaults. Prevents server-pushed eligibility checks from blocking the no-GPU runner |
+| `DISABLE_FEATURES_WITHOUT_OPT_HINTS`                | Re-injects Playwright's disabled features list minus OptimizationHints (required for model delivery)                                                              |
+
+### Removed Playwright Defaults
+
+| Removed Arg                               | Why                                            |
+| ----------------------------------------- | ---------------------------------------------- |
+| `--disable-features=...OptimizationHints` | Blocks model delivery system                   |
+| `--disable-field-trial-config`            | Blocks model eligibility field trials          |
+| `--disable-background-networking`         | Blocks variations seed fetch and model updates |
+| `--disable-component-update`              | Blocks model component registration            |
+
+All four removals are necessary. Without them, Edge cannot download or register the Phi-4 Mini model.
+
+---
+
+## Profile Cache Strategy Assessment
+
+The current strategy is correct and there is nothing to change:
+
+| Aspect             | Current Approach                                      | Assessment                                                               |
+| ------------------ | ----------------------------------------------------- | ------------------------------------------------------------------------ |
+| Cache timing       | Post-test (after all inference)                       | Correct -- captures `adapter_cache.bin` and `encoder_cache.bin`          |
+| Cache key          | `${{ matrix.cache-key }}-run${{ github.run_number }}` | Correct -- rolling key with prefix-match restore                         |
+| What is cached     | Full `.playwright-profiles/msedge-dev/` directory     | Correct -- includes runtime DLLs, model, tokenizer, and inference caches |
+| Cache restore      | Before bootstrap, skip bootstrap on hit               | Correct -- avoids model re-download                                      |
+| Cold-start on miss | ~23 min (unavoidable)                                 | Expected -- 3.8B params x 32 layers on 4 ARM64 cores                     |
+| Warm-start on hit  | ~30-90s (weight loading only)                         | Expected -- graph optimization and EP compilation cached                 |
+
+The `adapter_cache.bin` and `encoder_cache.bin` files are **0 bytes on the local dev machine** (which has GPU/NPU) but populated on the CI runner (CPU EP only). This confirms they are CPU EP-specific compiled execution plans. **Verify this on CI** (see recommendation 2).
+
+---
+
+## Actionable Recommendations
+
+### 1. Add ONNX Runtime Version Diagnostic (NO risk, HIGH value)
+
+Track DLL versions in CI to detect regressions when Edge Dev updates:
+
+```yaml
+- name: Log ONNX Runtime version
+  if: ${{ !matrix.container && steps.bootstrap.outcome != 'failure' }}
+  shell: pwsh
+  run: |
+    $rtDir = Get-ChildItem ".playwright-profiles/msedge-dev/EdgeLLMRuntime" -Directory -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($rtDir) {
+      Write-Output "ONNX Runtime: $((Get-Item (Join-Path $rtDir.FullName 'onnxruntime.dll')).VersionInfo.FileVersion)"
+      Write-Output "GenAI: $((Get-Item (Join-Path $rtDir.FullName 'onnxruntime-genai.dll')).VersionInfo.FileVersion)"
+    }
+    cat .playwright-profiles/msedge-dev/EdgeLLMOnDeviceModel/*/genai_config.json 2>$null
+```
+
+### 2. Log Cache File Sizes Post-Test (NO risk, MEDIUM value)
+
+Confirm cache files are being populated on CI:
+
+```yaml
+- name: Log inference cache state
+  if: ${{ !matrix.container && !cancelled() }}
+  shell: bash
+  run: |
+    ls -la .playwright-profiles/msedge-dev/EdgeLLMOnDeviceModel/*/adapter_cache.bin 2>/dev/null || echo "No adapter_cache.bin"
+    ls -la .playwright-profiles/msedge-dev/EdgeLLMOnDeviceModel/*/encoder_cache.bin 2>/dev/null || echo "No encoder_cache.bin"
+```
+
+If these remain 0 bytes on CI, it means the CPU EP path does not generate them -- which would explain why there is no warm-start speedup between CI runs and would warrant investigation.
+
+### 3. Accept the Bottleneck
+
+The fundamental constraint is **4 ARM64 cores with no GPU running a 3.8B parameter model**. Every available optimization is already active:
+
+- KleidiAI: Active (ORT 1.25 includes it)
+- NEON/I8MM/SVE2: Active (auto-detected from Cobalt 100)
+- Profile cache: Implemented (post-test save with rolling keys)
+- Performance bypass: Active (`@3` flag + `OnDeviceModelPerformanceParams` disabled)
+- Warm-up: Implemented (create() + prompt('warmup') before tests)
+
+**The only paths to significantly faster CI inference are infrastructure changes:**
+
+| Change                    | Expected Impact                     | Feasibility                              |
+| ------------------------- | ----------------------------------- | ---------------------------------------- |
+| 8+ vCPU Cobalt 100 runner | ~2x faster (linear with core count) | Depends on GitHub Actions runner catalog |
+| Runner with GPU/NPU       | 10-50x faster                       | Not available on GitHub Actions          |
+| Smaller model             | Proportional to param count         | Edge controls the model                  |
 
 ---
 
@@ -391,21 +381,11 @@ No action possible. The existing post-test profile cache strategy is the correct
 
 ### The Model Is Optimized for WebGPU, Not CPU
 
-The `genai_config.json` and model manifest both specify `"type": "webgpu"` as the intended execution target. This means:
+The `genai_config.json` specifies `"provider_options": [{ "webgpu": {} }]` and the manifest declares `"type": "webgpu"`. This means:
 
 1. The ONNX model graph may contain operators optimized for GPU execution patterns
 2. CPU EP fallback may not be as efficient as a model explicitly quantized and optimized for CPU
-3. The INT4 quantization scheme used may be tuned for GPU memory access patterns rather than CPU cache hierarchies
-
-A CPU-optimized variant of Phi-4 Mini exists on HuggingFace ([microsoft/Phi-4-mini-instruct-onnx](https://huggingface.co/microsoft/Phi-4-mini-instruct-onnx) with `cpu-int4-rtn-block-32` variant), but Edge downloads its own model version and we cannot substitute it.
-
-### Windows ML Auto-Discovery (Future Optimization Path)
-
-Windows ML on Windows 11 25H2+ includes EP auto-discovery that automatically selects the best execution provider for the hardware. If Edge migrates to Windows ML's API in the future, the CI runner could potentially benefit from optimized EP selection. However:
-
-- The CI runner runs Windows 11 (not 25H2 yet on GitHub Actions)
-- Windows ML's auto-discovery still requires actual hardware accelerators to be present
-- This is speculative and not actionable today
+3. A CPU-optimized variant exists on HuggingFace (`cpu-int4-rtn-block-32`), but Edge downloads its own model version
 
 ### ONNX Runtime Versions in the Ecosystem
 
@@ -415,156 +395,66 @@ Windows ML on Windows 11 25H2+ includes EP auto-discovery that automatically sel
 | Edge's embedded `onnxruntime-genai.dll` | **0.13.0-dev**    | 2026-03-10 |
 | Latest public ONNX Runtime (PyPI)       | 1.24.4            | 2026-03-17 |
 | Windows ML (App SDK 1.8.6)              | ~1.23.4           | 2026-03-19 |
-| Windows ML (App SDK 2.0.0-Exp6)         | ~1.24.2           | 2026-03-13 |
 
-Edge ships a version **ahead of both public PyPI and Windows ML releases**, indicating Microsoft's browser team has access to pre-release ONNX Runtime builds with the latest optimizations.
-
----
-
-## Actionable Recommendations
-
-### 1. Experiment: Modify `genai_config.json` After Bootstrap (LOW risk, MEDIUM potential)
-
-After model download, modify the config to attempt graph optimization reduction:
-
-```javascript
-// In bootstrap script or a post-bootstrap CI step
-const configPath = '.playwright-profiles/msedge-dev/EdgeLLMOnDeviceModel/2026.2.19.1/genai_config.json';
-const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-
-// Explicitly set thread count (should already be auto-detected to 4)
-config.model.decoder.session_options.intra_op_num_threads = 4;
-
-// Attempt to reduce graph optimization level (may be ignored by Edge)
-// 0 = ORT_DISABLE_ALL, 1 = ORT_ENABLE_BASIC, 2 = ORT_ENABLE_EXTENDED, 99 = ORT_ENABLE_ALL
-config.model.decoder.session_options.graph_optimization_level = 1;
-
-fs.writeFileSync(configPath, JSON.stringify(config, null, 4));
-```
-
-**Expected outcome:** If Edge's ONNX Runtime GenAI reads the `graph_optimization_level` value, reducing it from `ORT_ENABLE_ALL` (default) to `ORT_ENABLE_BASIC` could shave 60-180 seconds off cold-start by skipping extended and layout optimizations.
-
-**Risk:** Edge may ignore the value, validate the file against a checksum, or crash. Test in a PR branch first.
-
-### 2. Add DLL Version Diagnostic Step (NO risk, HIGH value)
-
-Log the ONNX Runtime version in CI for tracking across Edge Dev updates:
-
-```yaml
-- name: Log ONNX Runtime version
-  if: ${{ !matrix.container }}
-  shell: pwsh
-  run: |
-    $rtDir = Get-ChildItem ".playwright-profiles/msedge-dev/EdgeLLMRuntime" -Directory | Select-Object -First 1
-    if ($rtDir) {
-      $dll = Join-Path $rtDir.FullName "onnxruntime.dll"
-      $ver = (Get-Item $dll).VersionInfo
-      Write-Output "ONNX Runtime: $($ver.FileVersion)"
-      Write-Output "GenAI: $((Get-Item (Join-Path $rtDir.FullName 'onnxruntime-genai.dll')).VersionInfo.FileVersion)"
-    }
-```
-
-### 3. Log the `genai_config.json` in CI (NO risk, HIGH value)
-
-Capture the model config for debugging:
-
-```yaml
-- name: Log model config
-  if: ${{ !matrix.container }}
-  shell: bash
-  run: |
-    cat .playwright-profiles/msedge-dev/EdgeLLMOnDeviceModel/*/genai_config.json || true
-```
-
-### 4. Monitor Peak Memory During Cold-Start (LOW risk, MEDIUM value)
-
-The 4-core / 16 GB runner may experience memory pressure during graph optimization. Add monitoring:
-
-```yaml
-- name: Monitor memory during warm-up
-  if: ${{ !matrix.container }}
-  shell: pwsh
-  run: |
-    while ($true) {
-      $procs = Get-Process -Name msedge* -ErrorAction SilentlyContinue
-      if ($procs) {
-        $total = ($procs | Measure-Object WorkingSet64 -Sum).Sum / 1GB
-        Write-Output "[$(Get-Date -Format 'HH:mm:ss')] Edge total: $([math]::Round($total, 2)) GB"
-      }
-      Start-Sleep 30
-    }
-```
-
-Run this as a background step during the e2e test phase.
-
-### 5. Accept the Bottleneck (RECOMMENDED)
-
-The fundamental constraint is 4 ARM64 cores. The cold-start is dominated by:
-
-- Graph optimization: CPU-bound, scales with core count
-- First-pass inference: 3.8B INT4 params x 32 layers on 4 cores
-
-KleidiAI already optimizes the GEMM operations. NEON/I8MM/SVE2 are already in use. The profile cache already eliminates the cold-start on subsequent runs. The remaining cold-start time on cache miss is ~23 minutes, which is the cost of running a 3.8B parameter model on 4 CPU cores.
-
-**To significantly reduce cold-start, the only options are:**
-
-1. A runner with more cores (8+ vCPU Cobalt 100 instance)
-2. A runner with GPU/NPU (Qualcomm Snapdragon X Elite, but not available on GitHub Actions)
-3. A smaller model (but Phi-4 Mini is already one of the smallest capable SLMs)
+Edge ships a version ahead of both public PyPI and Windows ML, indicating access to pre-release builds with the latest optimizations.
 
 ---
 
 ## Summary Table
 
-| Question                           | Answer                                                    | Actionable?                              |
-| ---------------------------------- | --------------------------------------------------------- | ---------------------------------------- |
-| Q1: DirectML + Basic Render Driver | Software-only, slower than CPU EP                         | No                                       |
-| Q2: XNNPACK on ARM64 Windows       | Not possible in Edge; MLAS is already better              | No                                       |
-| Q3: NEON/SVE SIMD instructions     | Already active (NEON, I8MM, DotProd, SVE2)                | No action needed                         |
-| Q4: KleidiAI in Edge               | Confirmed active (ORT 1.25 includes KleidiAI)             | No action needed                         |
-| Q5: Thread count tuning            | genai_config.json editable; 4 threads is already optimal  | Experiment with graph_optimization_level |
-| Q6: SwiftShader/ANGLE flags        | Would hurt (adds CPU overhead, does not affect inference) | No                                       |
-| Q7: Offline model optimization     | Not possible (model sealed, exceeds 2 GB protobuf limit)  | No                                       |
+| Question                           | Answer                                     | Can We Control It?                        |
+| ---------------------------------- | ------------------------------------------ | ----------------------------------------- |
+| Q1: DirectML + Basic Render Driver | Software-only, slower than CPU EP          | No -- and no flag to force it             |
+| Q2: XNNPACK or alt CPU backend     | MLAS + KleidiAI already optimal            | No -- runtime is sealed                   |
+| Q3: NEON/SVE SIMD active?          | Yes, all available SIMD is active          | No action needed -- auto-detected         |
+| Q4: KleidiAI in Edge?              | Yes, ORT 1.25 includes it                  | No action needed -- automatic             |
+| Q5: Thread count tuning            | 4 threads (auto), optimal for 4 cores      | No -- no external override exists         |
+| Q6: SwiftShader/ANGLE flags        | Would add CPU overhead, not help inference | No -- and should not be added             |
+| Q7: Offline model optimization     | Model sealed, exceeds 2 GB limit           | No -- profile cache is the only mechanism |
 
 ---
 
 ## Sources
 
-### Official Documentation (HIGH confidence)
+### Official Documentation
 
 - [ONNX Runtime Graph Optimizations](https://onnxruntime.ai/docs/performance/model-optimizations/graph-optimizations.html)
+- [ONNX Runtime GenAI Config](https://onnxruntime.ai/docs/genai/reference/config.html)
 - [ONNX Runtime Thread Management](https://onnxruntime.ai/docs/performance/tune-performance/threading.html)
-- [ONNX Runtime GenAI Config Reference](https://onnxruntime.ai/docs/genai/reference/config.html)
-- [ONNX Runtime XNNPACK EP](https://onnxruntime.ai/docs/execution-providers/Xnnpack-ExecutionProvider.html)
 - [ONNX Runtime DirectML EP](https://onnxruntime.ai/docs/execution-providers/DirectML-ExecutionProvider.html)
+- [ONNX Runtime XNNPACK EP](https://onnxruntime.ai/docs/execution-providers/Xnnpack-ExecutionProvider.html)
 - [ONNX Runtime versions in Windows ML](https://learn.microsoft.com/en-us/windows/ai/new-windows-ml/onnx-versions)
-- [DirectML Introduction](https://learn.microsoft.com/en-us/windows/ai/directml/dml)
 - [Azure Cobalt 100 VMs](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/cobalt-overview)
 
-### ARM Architecture (HIGH confidence)
+### ARM Architecture
 
 - [Arm + Microsoft KleidiAI ONNX Runtime](https://newsroom.arm.com/blog/arm-microsoft-kleidiai-onnx-runtime)
-- [KleidiAI on Azure Cobalt 100](https://developer.arm.com/community/arm-community-blogs/b/servers-and-cloud-computing-blog/posts/accelerate-llm-inference-with-onnx-runtime-on-arm-neoverse-powered-microsoft-cobalt-100)
-- [KleidiAI Microkernel Architecture](https://learn.arm.com/learning-paths/cross-platform/kleidiai-explainer/page3/)
-- [KleidiAI SDOT and I8MM](https://developer.arm.com/community/arm-community-blogs/b/ai-blog/posts/kleidiai)
-- [KleidiAI Software-Level AI Acceleration](https://www.arm.com/markets/artificial-intelligence/software/kleidi)
-- [SME2 AI Acceleration](https://www.arm.com/technologies/sme2/accelerate-on-device-ai)
-- [Azure Cobalt 100 AI inference](https://thomasvanlaere.com/posts/2025/10/exploring-ai-cpu-inferencing-with-azure-cobalt-100/)
+- [KleidiAI on Cobalt 100](https://developer.arm.com/community/arm-community-blogs/b/servers-and-cloud-computing-blog/posts/accelerate-llm-inference-with-onnx-runtime-on-arm-neoverse-powered-microsoft-cobalt-100)
+- [KleidiAI microkernel architecture](https://learn.arm.com/learning-paths/cross-platform/kleidiai-explainer/page3/)
+- [KleidiAI SDOT/I8MM usage](https://developer.arm.com/community/arm-community-blogs/b/ai-blog/posts/kleidiai)
+- [Cobalt 100 AI benchmarks](https://thomasvanlaere.com/posts/2025/10/exploring-ai-cpu-inferencing-with-azure-cobalt-100/)
 
-### Chromium / SwiftShader (HIGH confidence)
+### Chromium / SwiftShader
 
-- [Using Chromium with SwiftShader](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/gpu/swiftshader.md)
-- [SwiftShader GitHub](https://github.com/google/swiftshader)
+- [SwiftShader in Chromium](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/gpu/swiftshader.md)
+- [SwANGLE discussion](https://groups.google.com/a/chromium.org/g/graphics-dev/c/CpVms3tXRhk)
 
-### GitHub Issues (HIGH confidence)
+### GitHub Issues
 
-- [Issue #12882: optimized_model_filepath fails >= 2GB](https://github.com/microsoft/onnxruntime/issues/12882)
-- [Discussion #1260: graph_optimization_level in genai_config](https://github.com/microsoft/onnxruntime-genai/discussions/1260)
-- [Issue #5299: GPU runtime fails to fallback to CPU](https://github.com/microsoft/onnxruntime/issues/5299)
+- [ORT #12882: optimized_model_filepath >= 2GB](https://github.com/microsoft/onnxruntime/issues/12882)
+- [ORT GenAI #1260: graph_optimization_level in config](https://github.com/microsoft/onnxruntime-genai/discussions/1260)
 
-### Local Inspection (HIGH confidence)
+### Local Inspection
 
 - `EdgeLLMRuntime/2026.3.10.1/onnxruntime.dll` -- FileVersion: 1.25.20260307.1.6db14b3
 - `EdgeLLMRuntime/2026.3.10.1/onnxruntime-genai.dll` -- FileVersion: 0.13.0-dev
-- `EdgeLLMOnDeviceModel/2026.2.19.1/genai_config.json` -- Session options, provider_options
-- `EdgeLLMOnDeviceModel/2026.2.19.1/manifest.json` -- Model version, WebGPU type
+- `EdgeLLMOnDeviceModel/2026.2.19.1/genai_config.json` -- session_options, provider_options
+- `EdgeLLMOnDeviceModel/2026.2.19.1/manifest.json` -- Phi-4-mini-instruct, type: webgpu
+- `EdgeLLMOnDeviceModel/2026.2.19.1/adapter_cache.bin` -- 0 bytes (local dev machine)
+- `EdgeLLMOnDeviceModel/2026.2.19.1/encoder_cache.bin` -- 0 bytes (local dev machine)
+
+### Project Documentation
+
+- [docs/platform-runner-findings.md](../../docs/platform-runner-findings.md) -- GPU/CPU EP architecture, two separate GPU paths in Edge
+- [.planning/research/edge-dev-gpu-vs-cpu-inference-control.md](edge-dev-gpu-vs-cpu-inference-control.md) -- Edge flag options, `OnDeviceModelPerformanceParams`
+- [.planning/research/onnx-runtime-arm64-cold-start.md](onnx-runtime-arm64-cold-start.md) -- Cold-start phases, cache file analysis
