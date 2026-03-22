@@ -7,6 +7,7 @@ on:
       - .node-version
       - package-lock.json
       - .github/docker/Dockerfile
+      - .github/docker/bootstrap-model.mjs
   workflow_dispatch:
 
 permissions:
@@ -16,9 +17,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        browser: [chrome-beta]
     steps:
       - uses: actions/checkout@v6
 
@@ -39,16 +37,33 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: docker/build-push-action@v7
+      # Step 1: Build the base image (Chrome + flags, no model)
+      - name: Build base image
+        uses: docker/build-push-action@v7
         with:
           context: .github/docker
-          target: ${{ matrix.browser }}
-          push: true
+          target: chrome-beta
+          load: true
           build-args: |
             PLAYWRIGHT_VERSION=${{ steps.versions.outputs.playwright }}
             NODE_VERSION=${{ steps.versions.outputs.node }}
-          tags: |
-            ghcr.io/${{ env.REPO }}/playwright-${{ matrix.browser }}:v${{ steps.versions.outputs.playwright }}
-            ghcr.io/${{ env.REPO }}/playwright-${{ matrix.browser }}:latest
-          cache-from: type=gha,scope=playwright-${{ matrix.browser }}
-          cache-to: type=gha,scope=playwright-${{ matrix.browser }},mode=max
+          tags: chrome-beta-base:local
+          cache-from: type=gha,scope=playwright-chrome-beta
+          cache-to: type=gha,scope=playwright-chrome-beta,mode=max
+
+      # Step 2: Run the container with --ipc=host to download model + warm up.
+      # Chrome needs shared memory IPC which isn't available during docker build.
+      - name: Bootstrap model in container
+        run: |
+          docker run --ipc=host --name chrome-bootstrap chrome-beta-base:local \
+            xvfb-run --auto-servernum node /opt/bootstrap-model.mjs
+
+      # Step 3: Commit the container with model baked in and push
+      - name: Commit and push image
+        run: |
+          IMAGE="ghcr.io/${{ env.REPO }}/playwright-chrome-beta"
+          docker commit chrome-bootstrap "$IMAGE:v${{ steps.versions.outputs.playwright }}"
+          docker tag "$IMAGE:v${{ steps.versions.outputs.playwright }}" "$IMAGE:latest"
+          docker push "$IMAGE:v${{ steps.versions.outputs.playwright }}"
+          docker push "$IMAGE:latest"
+          docker rm chrome-bootstrap

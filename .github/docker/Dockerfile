@@ -37,12 +37,10 @@ ARG PLAYWRIGHT_VERSION
 RUN npx -y playwright@${PLAYWRIGHT_VERSION} install chrome-beta && \
     rm -rf /root/.npm/
 
-# Bootstrap Gemini Nano model into a profile that CI copies to .playwright-profiles/.
-# Seeds chrome://flags, launches Chrome with xvfb to trigger model download, and
-# stores the profile at /home/pwuser/.ai-model-profile/chrome-beta.
-# The retry loop handles Chrome's flaky "Browser window not found" in containers.
-RUN npm install -g playwright@${PLAYWRIGHT_VERSION} && \
-    mkdir -p /home/pwuser/.ai-model-profile/chrome-beta && \
+# Seed Local State flags so Chrome enables the LanguageModel API on first launch.
+# The model download happens at runtime via docker run --ipc=host (not during build)
+# because Chrome needs shared memory IPC that isn't available in docker build.
+RUN mkdir -p /home/pwuser/.ai-model-profile/chrome-beta && \
     node -e ' \
       const fs = require("fs"); \
       const path = require("path"); \
@@ -55,49 +53,12 @@ RUN npm install -g playwright@${PLAYWRIGHT_VERSION} && \
         internal_only_uis_enabled: true \
       }; \
       fs.writeFileSync(path.join(profileDir, "Local State"), JSON.stringify(localState, null, 2)); \
-      console.log("[INFO] Seeded Local State flags"); \
     ' && \
-    for attempt in 1 2 3 4 5; do \
-      xvfb-run --auto-servernum node -e ' \
-        const { chromium } = require("playwright"); \
-        (async () => { \
-          const ctx = await chromium.launchPersistentContext( \
-            "/home/pwuser/.ai-model-profile/chrome-beta", \
-            { channel: "chrome-beta", headless: false, \
-              args: ["--no-first-run", "--disable-gpu", \
-                "--enable-features=OptimizationGuideOnDeviceModel,PromptAPIForGeminiNano", \
-                "--disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument"], \
-              ignoreDefaultArgs: [ \
-                "--disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument,OptimizationHints", \
-                "--disable-field-trial-config", "--disable-background-networking", "--disable-component-update"], \
-              timeout: 60000 }); \
-          const page = ctx.pages()[0] || await ctx.newPage(); \
-          await page.goto("chrome://gpu"); \
-          const avail = await page.evaluate(async () => { \
-            if (typeof LanguageModel === "undefined") return "no-api"; \
-            return LanguageModel.availability(); \
-          }); \
-          console.log("[INFO] LanguageModel.availability() =", avail); \
-          if (avail === "downloadable" || avail === "downloading") { \
-            console.log("[INFO] Triggering model download..."); \
-            await page.evaluate(async () => { \
-              const s = await LanguageModel.create({ \
-                monitor: m => m.addEventListener("downloadprogress", e => { \
-                  const pct = ((e.loaded / e.total) * 100).toFixed(1); \
-                  console.log("Download:", pct + "%"); \
-                }) \
-              }); \
-              s.destroy(); \
-            }); \
-          } else if (avail === "available") { \
-            console.log("[INFO] Model already available"); \
-          } \
-          await ctx.close(); \
-          console.log("[OK] Bootstrap complete"); \
-        })().catch(e => { console.error("[ERROR]", e.message); process.exit(1); }); \
-      ' && break || { echo "[WARN] Attempt $attempt failed, retrying..."; sleep 2; }; \
-    done && \
-    chown -R 1001:1001 /home/pwuser/.ai-model-profile && \
-    npm uninstall -g playwright && \
-    rm -rf /root/.npm/
+    chown -R 1001:1001 /home/pwuser/.ai-model-profile
 
+# Install playwright globally and copy bootstrap script for runtime model download.
+# The model download runs via `docker run --ipc=host` (not during build) because
+# Chrome needs shared memory IPC that isn't available in docker build.
+RUN npm install -g playwright@${PLAYWRIGHT_VERSION} && \
+    rm -rf /root/.npm/
+COPY bootstrap-model.mjs /opt/bootstrap-model.mjs
