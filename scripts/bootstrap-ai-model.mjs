@@ -82,6 +82,7 @@ const browserConfig = {
     flags: [
       'edge-llm-prompt-api-for-phi-mini@1',
       'edge-llm-on-device-model-performance-param@3',
+      'edge-llm-on-device-model-debug-logs@1',
     ],
     args: [
       '--no-first-run',

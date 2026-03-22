@@ -143,22 +143,25 @@ jobs:
           path: .playwright-profiles/${{ matrix.browser }}
           key: ${{ matrix.cache-key }}-run${{ github.run_number }}-bootstrap
 
+      - name: Log ONNX Runtime version and model config
+        if: ${{ !matrix.container && steps.bootstrap.outcome != 'failure' }}
+        shell: pwsh
+        run: |
+          $rtDir = Get-ChildItem ".playwright-profiles/${{ matrix.browser }}/EdgeLLMRuntime" -Directory -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($rtDir) {
+            $ort = (Get-Item (Join-Path $rtDir.FullName 'onnxruntime.dll') -ErrorAction SilentlyContinue)
+            $genai = (Get-Item (Join-Path $rtDir.FullName 'onnxruntime-genai.dll') -ErrorAction SilentlyContinue)
+            if ($ort) { Write-Output "ONNX Runtime: $($ort.VersionInfo.FileVersion)" }
+            if ($genai) { Write-Output "GenAI: $($genai.VersionInfo.FileVersion)" }
+          }
+          $configFile = Get-ChildItem ".playwright-profiles/${{ matrix.browser }}/EdgeLLMOnDeviceModel/*/genai_config.json" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($configFile) { Get-Content $configFile.FullName }
+
       - name: Run e2e tests (${{ matrix.e2e-config }})
         if: steps.bootstrap.outcome != 'failure'
         id: e2e-tests
         timeout-minutes: 45
         run: ${{ matrix.xvfb }} npm exec nx -- e2e in-browser-ai-coding-agent-e2e -c ${{ matrix.e2e-config }}
-
-      - name: Kill lingering browser processes
-        if: ${{ !cancelled() && !matrix.container && steps.bootstrap.outcome != 'failure' }}
-        shell: bash
-        run: |
-          # Kill browser processes that may hold the ProcessSingleton lockfile
-          # after e2e tests finish or are killed by timeout
-          taskkill //F //IM msedge.exe 2>/dev/null || true
-          taskkill //F //IM chrome.exe 2>/dev/null || true
-          taskkill //F //IM chrome_crashpad_handler.exe 2>/dev/null || true
-          sleep 2
 
       - name: Run unit tests (${{ matrix.e2e-config }})
         if: ${{ !cancelled() && steps.bootstrap.outcome != 'failure' }}
@@ -183,6 +186,16 @@ jobs:
             }
             fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, md || '_No prompt responses captured_\n');
           "
+
+      - name: Log inference cache state
+        if: ${{ !cancelled() && !matrix.container }}
+        shell: bash
+        run: |
+          echo "=== Inference cache files ==="
+          ls -la .playwright-profiles/${{ matrix.browser }}/EdgeLLMOnDeviceModel/*/adapter_cache.bin 2>/dev/null || echo "No adapter_cache.bin"
+          ls -la .playwright-profiles/${{ matrix.browser }}/EdgeLLMOnDeviceModel/*/encoder_cache.bin 2>/dev/null || echo "No encoder_cache.bin"
+          echo "=== ONNX Runtime DLLs ==="
+          ls -la .playwright-profiles/${{ matrix.browser }}/EdgeLLMRuntime/*/onnxruntime*.dll 2>/dev/null || echo "No ONNX Runtime DLLs"
 
       - name: Save AI model cache (post-test)
         if: ${{ !cancelled() && steps.bootstrap.outcome != 'failure' }}
