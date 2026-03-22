@@ -134,7 +134,7 @@ jobs:
       - name: Bootstrap AI model
         id: bootstrap
         if: steps.model-cache.outputs.cache-hit != 'true'
-        run: ${{ matrix.xvfb }} node scripts/bootstrap-ai-model.mjs --browser ${{ matrix.browser }} --profile .playwright-profiles/${{ matrix.browser }} --timeout 600000
+        run: ${{ matrix.xvfb }} node scripts/bootstrap-ai-model.mjs --browser ${{ matrix.browser }} --profile .playwright-profiles/${{ matrix.browser }} --timeout 600000 ${{ matrix.container && '--disable-gpu' || '' }}
 
       - name: Save AI model cache (post-bootstrap)
         if: ${{ steps.model-cache.outputs.cache-hit != 'true' && steps.bootstrap.outcome == 'success' }}
