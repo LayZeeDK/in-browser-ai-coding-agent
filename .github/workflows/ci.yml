@@ -84,6 +84,7 @@ jobs:
 
       - name: Copy model profile from container image
         run: |
+          mkdir -p .playwright-profiles
           cp -r /home/pwuser/.ai-model-profile/chrome-beta .playwright-profiles/chrome-beta
           echo "Profile contents:"
           ls -la .playwright-profiles/chrome-beta/
