@@ -45,9 +45,9 @@ in-browser-ai-coding-agent/
 │   ├── skills/                       # Nx plugin skills
 │   └── prompts/                      # Custom agent prompts
 │
+├── docs/                              # Detailed analysis (CI, platform, testing)
 ├── .planning/
-│   ├── codebase/                     # This file and architecture docs
-│   └── docs/                         # Detailed analysis (CI, platform, testing)
+│   └── codebase/                     # This file and architecture docs
 │
 ├── .nx/                              # Nx cache (generated)
 ├── .angular/                         # Angular cache (generated)
@@ -98,7 +98,7 @@ in-browser-ai-coding-agent/
 - Key files:
   - `ci.yml` — Main CI pipeline (format, lint, build, e2e, unit tests)
 
-**.planning/docs/:**
+**docs/:**
 
 - Purpose: Detailed architectural analysis and decision records
 - Contains: Markdown documentation
