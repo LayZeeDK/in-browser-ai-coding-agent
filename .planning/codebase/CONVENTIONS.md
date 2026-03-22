@@ -1,219 +1,204 @@
 # Coding Conventions
 
-**Analysis Date:** 2026-03-20
+**Analysis Date:** 2026-03-22
 
 ## Naming Patterns
 
 **Files:**
 
-- Components: `{name}.component.ts` (e.g., `model-status.component.ts`)
-- Services: `{name}.service.ts` (e.g., `language-model.service.ts`)
-- Tests: `{name}.spec.ts` (e.g., `app.spec.ts`)
-- Configuration: `{name}.config.ts` (e.g., `app.config.ts`)
-- Routes: `{name}.routes.ts` (e.g., `app.routes.ts`)
-- E2E tests: `{name}.spec.ts` in e2e directory (e.g., `example.spec.ts`)
+- TypeScript service classes: PascalCase + `.service.ts` suffix (e.g., `language-model.service.ts`)
+- Angular components: PascalCase + `.component.ts` suffix (e.g., `model-status.component.ts`)
+- Test files: Base name + `.spec.ts` suffix (e.g., `language-model.service.spec.ts`)
+- Configuration files: kebab-case + config name (e.g., `playwright.config.ts`, `vitest.config.mts`)
+- Utility/setup files: descriptive camelCase (e.g., `global-setup.ts`, `fixtures.ts`)
 
-**Classes/Exports:**
+**Functions/Methods:**
 
-- Components: PascalCase with "Component" suffix (e.g., `ModelStatusComponent`)
-- Services: PascalCase with "Service" suffix (e.g., `LanguageModelService`)
-- Types: PascalCase (e.g., `ModelAvailability`)
-- Constants: camelCase or PascalCase depending on scope
-
-**Functions:**
-
-- camelCase for all function names (e.g., `checkAvailability`, `bootstrapApplication`)
-- Event handlers and lifecycle hooks use native Angular naming (e.g., `ngOnInit`)
+- camelCase for all functions, methods, and variables
+- Async functions are declared as `async` with full type annotations
+- Getters/computed properties: camelCase, no `get` prefix (e.g., `protected readonly response = signal('')`)
+- Event handlers: `on` + PascalCase action (e.g., `onSubmit()`, `onDownload()`)
 
 **Variables:**
 
-- camelCase for all variables and properties (e.g., `loading`, `availability`)
-- Private fields: camelCase with `private` keyword (e.g., `private readonly languageModel`)
-- Protected fields: camelCase with `protected` keyword (e.g., `protected readonly loading`)
+- camelCase for all variable declarations
+- Signal names match their domain without suffix: `loading`, `availability`, `response`, `error` (not `loadingSignal`)
+- Protected/private members: `private readonly` or `protected readonly` prefix with camelCase name
+- Type/interface-related variables: PascalCase (e.g., `ModelAvailability`)
 
-**Types:**
+**Types & Interfaces:**
 
-- Union types: PascalCase (e.g., `ModelAvailability`)
-- Type names follow domain language
+- PascalCase for all types and interfaces (e.g., `type ModelAvailability`, `interface BrowserInstance`)
+- Type unions: line breaks after `|` for readability with aligned names
+- Generic type parameters: PascalCase (e.g., `<T>`, `<BrowserContext>`)
 
 ## Code Style
 
 **Formatting:**
 
 - Tool: Prettier 3.6.2
-- Config: `.prettierrc`
-- Single quotes enabled: `"singleQuote": true`
+- Key setting: `"singleQuote": true` (single quotes for string literals, not double quotes)
+- Indentation: 2 spaces (Prettier default)
+- Line length: Prettier default (80 chars recommended, 100 char soft limit)
 
 **Linting:**
 
-- Tool: ESLint 9.8.0
-- Config: `eslint.config.mjs` (flat config format)
-- Base configs: `@nx/eslint-plugin` flat configs
-  - `@nx/eslint-plugin/flat/base`
-  - `@nx/eslint-plugin/flat/typescript`
-  - `@nx/eslint-plugin/flat/javascript`
-- Key rules:
-  - `@nx/enforce-module-boundaries`: enabled with dependency constraints
-  - Scope tags: `scope:shared`, `scope:shop`, `scope:api`
-  - Type tags: `type:data`
-
-**TypeScript Strict Mode:**
-
-- Strict mode enabled at all levels
-- `noImplicitOverride`: true
-- `noPropertyAccessFromIndexSignature`: true
-- `noImplicitReturns`: true
-- `noFallthroughCasesInSwitch`: true
-- Angular strict template checking enabled
-- Angular strict injection parameters enabled
+- Tool: ESLint 9.8.0 with Nx plugin + TypeScript ESLint
+- Base configs: `@nx/eslint-plugin` flat config (`flat/base`, `flat/typescript`, `flat/javascript`)
+- Key rules: Module boundary enforcement via `@nx/enforce-module-boundaries`
+- Playwright-specific: `eslint-plugin-playwright` for e2e test best practices
 
 ## Import Organization
 
 **Order:**
 
-1. Angular core/platform packages (e.g., `@angular/core`, `@angular/router`)
-2. Other framework packages (e.g., RxJS with `@angular/common`, `@angular/forms`)
-3. Local application imports (relative paths)
-
-**Example:**
-
-```typescript
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { LanguageModelService } from './language-model.service';
-```
+1. Node.js built-in modules (`node:fs`, `node:path`, `node:crypto`)
+2. Third-party npm packages (`@angular/core`, `@playwright/test`, `vitest`)
+3. Internal application code (relative or aliased imports)
 
 **Path Aliases:**
 
-- Not currently configured in `tsconfig.base.json`
-- Use relative paths or full paths from workspace root
+- No path aliases configured (baseUrl exists but paths object is empty)
+- Use relative imports: `import { ModelStatusComponent } from './model-status.component'`
+- Barrel files: Not used; direct imports from component/service files
+
+**Destructuring:**
+
+- Prefer named imports over default imports: `import { TestBed } from '@angular/core/testing'`
+- Avoid star imports; use specific named imports
 
 ## Error Handling
 
 **Patterns:**
 
-- Try-catch for async operations in component lifecycle hooks (implicit error handling in Bootstrap)
-- Direct error propagation for service methods
-- Async errors handled at component level during initialization
-- Example from `main.ts`:
-  ```typescript
-  bootstrapApplication(App, appConfig).catch((err) => console.error(err));
-  ```
+- Async functions use `try`/`catch` blocks with meaningful error messages
+- Type guards: `e instanceof Error ? e.message : String(e)` for error type checking (see `model-status.component.ts` line 140)
+- Service-level validation: Return early with guard clauses (e.g., `if (!this.isApiSupported) { throw new Error(...) }`)
+- Promise-based: Use `finally` blocks to ensure cleanup (e.g., `session.destroy()` in `language-model.service.ts` line 62)
 
-**UI Error Display:**
+**Blank line placement:**
 
-- No explicit error UI implemented
-- Fallback to safe defaults (e.g., `'unavailable'` for model status)
+- Insert blank line before and after `if`/`else` blocks (control flow separation)
+- Insert blank line before `return` statements (visual break)
+- Skip blank line at start or end of block
+- Consecutive control flow statements may be grouped without separation if logically related
 
 ## Logging
 
-**Framework:** `console` (native browser)
+**Framework:** `console.*` (no logging library; browser context)
 
 **Patterns:**
 
-- Use `console.error()` for critical failures (e.g., bootstrap errors)
-- No custom logging abstraction layer in place
-- No structured logging configured
+- Prefixed console output: `[unit]`, `[unit-response]`, `[e2e]`, `[global-setup]`, `[fixtures]` prefixes identify log source in CI
+- Structured delimiters for parsed content: `[unit-response]...[/unit-response]` wraps model output (square brackets prevent collision with quotes/backticks in output)
+- Diagnostic prefix format: `[component] context: message` (e.g., `[fixtures] chrome-gemini-nano: launching...`)
+- No emoji in output (Windows console compatibility)
 
 ## Comments
 
 **When to Comment:**
 
-- Complex browser feature flag logic (e.g., `vitest.config.mts` Playwright config)
-- Non-obvious business logic related to on-device AI APIs
-- Configuration explanations for unusual setup (e.g., disabled browser features)
+- Document non-obvious architectural decisions (e.g., why ProcessSingleton retry loop exists)
+- Explain complex regex patterns or browser API quirks
+- Mark workarounds with their tracking issue or context
+- Browser-specific behavior differences (Chrome vs Edge)
 
 **JSDoc/TSDoc:**
 
-- Not systematically used
-- TypeScript types serve as documentation (e.g., `ModelAvailability` union type)
+- Used for function documentation in setup/fixture files
+- Document parameter types and return types
+- Example: `async function warmUpModel(instance: BrowserInstance)` with context comment above
+
+**Comments on configuration constants:**
+
+- Required: Playwright constants that must match exactly (`PLAYWRIGHT_DISABLE_FEATURES`, `AI_IGNORE_DEFAULT_ARGS`)
+- Explain why values are used (e.g., "`@1` not `@2` -- Chrome 147 auto-detects CPU via `@1`")
 
 ## Function Design
 
 **Size:**
 
-- Prefer small functions (most functions in this codebase are under 10 lines)
-- Services have single responsibility (e.g., `LanguageModelService` only handles model availability)
+- Small to medium (prefer < 30 lines for testable units)
+- Complex setup: Extract into named helper functions (e.g., `enableInternalDebugPages()`, `warmUpModel()`)
 
 **Parameters:**
 
-- Minimal parameters, prefer dependency injection
-- Services use constructor injection via `@Injectable({ providedIn: 'root' })`
-- Components use `inject()` function for runtime injection (e.g., `private readonly languageModel = inject(LanguageModelService)`)
+- Named parameters preferred; avoid large positional argument lists
+- Optional parameters: Use object destructuring with defaults (e.g., `{ onProgress?: (loaded: number, total: number) => void }`)
+- Timeout/deadline parameters: Use milliseconds (const TIMEOUT_MS = 600_000)
 
 **Return Values:**
 
-- Use type-safe returns (e.g., `Promise<ModelAvailability>` not `Promise<any>`)
-- Prefer union types over nullable returns where appropriate
-- Example: `async checkAvailability(): Promise<ModelAvailability>`
+- Async functions return `Promise<T>` explicitly
+- Errors propagate via exceptions (throw in sync, Promise rejection in async)
+- Type-safe: Use specific union types (e.g., `Promise<ModelAvailability>`) not generic `Promise<any>`
+
+**Async Flow:**
+
+- Use `async`/`await` consistently; avoid `.then()` chains
+- Retry loops: `for` with `try`/`catch` and exponential backoff or fixed delay
+- No global state; parameters drive behavior
 
 ## Module Design
 
 **Exports:**
 
-- Each file has single primary export (class, constant, or interface)
-- Export type definitions alongside implementation in service files
-- Example: `export type ModelAvailability = 'available' | 'downloadable' | 'unavailable'`
+- Named exports preferred: `export class LanguageModelService`, `export type ModelAvailability`
+- Default exports: Only for config files (`export default defineConfig(...)`)
+- Service files: Export the service class + any related types/interfaces
+
+**Barrel Files:**
+
+- Not used in this codebase
+- Import directly from source files: `import { LanguageModelService } from './language-model.service'`
+
+**Service Structure:**
+
+- Singleton pattern: `@Injectable({ providedIn: 'root' })` for application-wide services
+- Method naming: Domain-specific actions (e.g., `checkAvailability()`, `downloadModel()`, `prompt()`)
+- Type exports: Group types at top of service file (e.g., `ModelAvailability` union type)
+
+## Angular-Specific Patterns
 
 **Component Structure:**
 
-- Component imports and providers defined at component level
-- Angular standalone components preferred (no `NgModule` usage)
-- Example from `app.ts`:
-  ```typescript
-  @Component({
-    imports: [ModelStatusComponent, RouterModule],
-    selector: 'app-root',
-    templateUrl: './app.html',
-    styleUrl: './app.css',
-  })
-  ```
+- Standalone components with `imports: [...]` array
+- Inline templates and styles using backtick templates (see `model-status.component.ts`)
+- Signal-based reactive state: `signal()`, `computed()`, no RxJS subscriptions in this app
+- Template control flow: `@if`, `@switch`, `@case` (Angular 17+)
 
-**Service Design:**
+**Dependency Injection:**
 
-- Services are singletons provided at root level: `@Injectable({ providedIn: 'root' })`
-- No constructor dependency chains
+- `inject()` pattern instead of constructor parameters: `private readonly service = inject(ServiceClass)`
+- Guard against missing API with service method checks: `if (!this.isApiSupported) { throw ... }`
 
-## State Management
+**Styling:**
 
-**Angular Signals:**
+- Component-scoped styles in `styles` property
+- Data attributes for testing: `[data-testid="status-result"]`, `[data-status]="availability()"`
+- Conditional CSS classes: `[attr.data-status]="availability()"`
 
-- Used for component state (e.g., `signal(true)` for loading state)
-- Type-safe signal declarations: `protected readonly loading = signal(true)`
-- Updated via `signal.set(value)` method
-- Read via function call: `loading()` in template
+## Test-Specific Conventions
 
-**Reactive Updates:**
+**Vitest (Unit Tests):**
 
-- Signals used instead of RxJS for this codebase
-- Template change detection automatic with signals
-- Example from `model-status.component.ts`:
+- Import from `vitest`: `import { describe, it, expect, beforeEach } from 'vitest'`
+- Test suite structure: `describe('ClassName', () => { it('should...', () => { ... }) })`
+- Test timeouts: `300_000` (5 min) for prompt tests, `30_000` (30 sec) for UI tests, default for others
+- Guard tests: Run first in describe block to fail fast before expensive operations
 
-  ```typescript
-  protected readonly loading = signal(true);
-  protected readonly availability = signal<ModelAvailability>('unavailable');
+**Playwright (E2E Tests):**
 
-  async ngOnInit(): Promise<void> {
-    const status = await this.languageModel.checkAvailability();
-    this.availability.set(status);
-    this.loading.set(false);
-  }
-  ```
+- Custom fixture import: `import { test, expect } from './fixtures'` (not `@playwright/test`)
+- Test naming: `test('should...', async ({ persistentPage }) => { ... })`
+- Timeout override: `test.setTimeout(600_000)` for long-running tests
+- Conditional logic disabling: `// eslint-disable-next-line playwright/no-conditional-in-test` when branching based on model state
 
-## Angular Specifics
+**Test Attributes:**
 
-**Template Syntax:**
-
-- New control flow syntax: `@if`, `@else`, `@switch`, `@case` (Angular 17+)
-- Inline templates preferred for small components
-- Data binding attributes for testing: `[attr.data-status]`, `data-testid`
-
-**Decorators:**
-
-- `@Component`: with `imports` array, `selector`, `template`/`templateUrl`, and `styles`/`styleUrl`
-- `@Injectable`: with `providedIn: 'root'` for singletons
-- No `@Input`, `@Output` decorators used (signals-based approach in newer code)
+- Use `data-testid` for test selectors (not class names or IDs)
+- Query patterns: `page.getByTestId()`, `fixture.nativeElement.querySelector('[data-testid="..."]')`
 
 ---
 
-_Convention analysis: 2026-03-20_
+_Convention analysis: 2026-03-22_
