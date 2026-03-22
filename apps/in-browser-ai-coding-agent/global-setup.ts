@@ -137,12 +137,81 @@ async function warmUpModel(instance: BrowserInstance) {
   try {
     await page.goto(instance.onDeviceInternalsUrl);
 
-    // Trigger model loading and run first inference to warm up.
+    // Trigger model registration so the model system starts loading.
+    // create() is lightweight (no inference) but kicks off the
+    // optimization guide pipeline that Model Status reflects.
+    console.log(
+      `[global-setup] ${instance.name}: triggering LanguageModel.create()`,
+    );
+    await page.evaluate(async () => {
+      if (typeof LanguageModel !== 'undefined') {
+        const session = await LanguageModel.create();
+        session.destroy();
+      }
+    });
+    console.log(
+      `[global-setup] ${instance.name}: model session created and destroyed`,
+    );
+
+    // Step 1: Wait for Model Status tab to report "Ready"
+    const modelStatusTab = page
+      .getByRole('tab', { name: /Model Status/i })
+      .or(page.locator('text=Model Status'));
+
+    if (
+      !(await modelStatusTab.isVisible({ timeout: 10_000 }).catch(() => false))
+    ) {
+      console.warn(
+        `[global-setup] ${instance.name}: Model Status tab not found, skipping`,
+      );
+      return;
+    }
+
+    await modelStatusTab.click();
+    console.log(
+      `[global-setup] ${instance.name}: waiting for model ready state...`,
+    );
+
+    const deadline = Date.now() + 1_200_000;
+
+    while (Date.now() < deadline) {
+      const readyEl = page.getByText(/Foundational model state:\s*Ready/i);
+
+      if (await readyEl.isVisible({ timeout: 30_000 }).catch(() => false)) {
+        console.log(`[global-setup] ${instance.name}: model is ready`);
+
+        break;
+      }
+
+      // Log current state for diagnostics
+      const stateText = await page
+        .locator(':has-text("Foundational model state")')
+        .last()
+        .textContent()
+        .catch(() => '(not found)');
+      console.log(
+        `[global-setup] ${instance.name}: ${stateText?.trim().substring(0, 100)}`,
+      );
+
+      // Only refresh on explicit error — "NO STATE" is a transient
+      // loading state that resolves on its own. Reload lands on the
+      // default "Tools" tab, so re-click Model Status after.
+      const notReady = page.getByText(/Not Ready For Unknown Reason/i);
+
+      if (await notReady.isVisible({ timeout: 1_000 }).catch(() => false)) {
+        console.log(`[global-setup] ${instance.name}: refreshing...`);
+        await page.reload();
+        await modelStatusTab.click();
+      }
+    }
+
+    // Step 2: Warm up the inference pipeline with a prompt.
     // Wrap in Promise.race — page.evaluate has no built-in timeout,
     // so session.prompt() can hang indefinitely if the model fails to load.
     console.log(
       `[global-setup] ${instance.name}: warming up model (first inference may take minutes)...`,
     );
+    const promptStart = Date.now();
     const warmupTimeout = 1_200_000; // 20 min
     await Promise.race([
       page.evaluate(async () => {
@@ -159,50 +228,10 @@ async function warmUpModel(instance: BrowserInstance) {
         ),
       ),
     ]);
-    console.log(`[global-setup] ${instance.name}: warm-up prompt complete`);
-
+    const promptMs = Date.now() - promptStart;
     console.log(
-      `[global-setup] ${instance.name}: waiting for model ready state...`,
+      `[global-setup] ${instance.name}: warm-up prompt complete (${(promptMs / 1000).toFixed(1)}s)`,
     );
-
-    // Click "Model Status" tab — bail if not found (container rendering)
-    const modelStatusTab = page
-      .getByRole('tab', { name: /Model Status/i })
-      .or(page.locator('text=Model Status'));
-
-    if (
-      !(await modelStatusTab.isVisible({ timeout: 10_000 }).catch(() => false))
-    ) {
-      console.warn(
-        `[global-setup] ${instance.name}: Model Status tab not found, skipping`,
-      );
-      return;
-    }
-
-    await modelStatusTab.click();
-
-    // Wait for "Foundational model state: Ready"
-    const deadline = Date.now() + 600_000;
-
-    while (Date.now() < deadline) {
-      const readyEl = page.getByText(/Foundational model state:\s*Ready/i);
-
-      if (await readyEl.isVisible({ timeout: 30_000 }).catch(() => false)) {
-        console.log(`[global-setup] ${instance.name}: model is ready`);
-
-        break;
-      }
-
-      const notReady = page.getByText(/Not Ready For Unknown Reason/i);
-
-      if (await notReady.isVisible({ timeout: 1_000 }).catch(() => false)) {
-        console.log(
-          `[global-setup] ${instance.name}: model not ready, refreshing...`,
-        );
-        await page.reload();
-        await modelStatusTab.click();
-      }
-    }
   } catch (error) {
     console.warn(`[global-setup] ${instance.name}: warm-up failed: ${error}`);
   }

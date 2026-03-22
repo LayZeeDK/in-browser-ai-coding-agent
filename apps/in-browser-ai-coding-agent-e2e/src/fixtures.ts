@@ -138,24 +138,23 @@ export const test = base.extend<
         console.log(`[fixtures] ${projectName}: navigating to ${onDeviceUrl}`);
         await warmupPage.goto(onDeviceUrl);
 
-        // Trigger model loading
+        // Trigger model registration so the model system starts loading.
+        // create() is lightweight (no inference) but kicks off the
+        // optimization guide pipeline that Model Status reflects.
         console.log(
           `[fixtures] ${projectName}: triggering LanguageModel.create()`,
-        );
-        console.log(
-          `[fixtures] ${projectName}: warming up model (first inference may take minutes)...`,
         );
         await warmupPage.evaluate(async () => {
           if (typeof LanguageModel !== 'undefined') {
             const session = await LanguageModel.create();
-            await session.prompt('warmup');
             session.destroy();
           }
         });
-        console.log(`[fixtures] ${projectName}: warm-up prompt complete`);
+        console.log(
+          `[fixtures] ${projectName}: model session created and destroyed`,
+        );
 
-        // Wait for model ready state — bail if Model Status tab
-        // isn't found (page may render differently in containers)
+        // Step 1: Wait for Model Status tab to report "Ready"
         const modelStatusTab = warmupPage
           .getByRole('tab', { name: /Model Status/i })
           .or(warmupPage.locator('text=Model Status'));
@@ -166,7 +165,7 @@ export const test = base.extend<
             .catch(() => false))
         ) {
           console.warn(
-            `[fixtures] ${projectName}: Model Status tab not found, skipping warm-up`,
+            `[fixtures] ${projectName}: Model Status tab not found, skipping`,
           );
         } else {
           await modelStatusTab.click();
@@ -174,7 +173,7 @@ export const test = base.extend<
             `[fixtures] ${projectName}: waiting for model ready state...`,
           );
 
-          const deadline = Date.now() + 600_000;
+          const deadline = Date.now() + 1_200_000;
 
           while (Date.now() < deadline) {
             const readyEl = warmupPage.getByText(
@@ -199,6 +198,9 @@ export const test = base.extend<
               `[fixtures] ${projectName}: ${stateText?.trim().substring(0, 100)}`,
             );
 
+            // Only refresh on explicit error — "NO STATE" is a transient
+            // loading state that resolves on its own. Reload lands on the
+            // default "Tools" tab, so re-click Model Status after.
             const notReady = warmupPage.getByText(
               /Not Ready For Unknown Reason/i,
             );
@@ -212,6 +214,23 @@ export const test = base.extend<
             }
           }
         }
+
+        // Step 2: Warm up the inference pipeline with a prompt
+        console.log(
+          `[fixtures] ${projectName}: warming up model (first inference may take minutes)...`,
+        );
+        const promptStart = Date.now();
+        await warmupPage.evaluate(async () => {
+          if (typeof LanguageModel !== 'undefined') {
+            const session = await LanguageModel.create();
+            await session.prompt('warmup');
+            session.destroy();
+          }
+        });
+        const promptMs = Date.now() - promptStart;
+        console.log(
+          `[fixtures] ${projectName}: warm-up prompt complete (${(promptMs / 1000).toFixed(1)}s)`,
+        );
       } catch (error) {
         console.warn(`[fixtures] ${projectName}: warm-up failed: ${error}`);
       }
