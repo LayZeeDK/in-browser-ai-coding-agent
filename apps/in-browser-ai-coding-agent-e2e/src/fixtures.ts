@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import {
   test as base,
@@ -27,30 +27,42 @@ const AI_IGNORE_DEFAULT_ARGS = [
 const DISABLE_FEATURES_WITHOUT_OPT_HINTS =
   '--disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument';
 
-const browserProfiles: Record<string, { profileDir: string; args: string[] }> =
-  {
-    'chrome-gemini-nano': {
-      profileDir: resolve(workspaceRoot, '.playwright-profiles/chrome-beta'),
-      args: [
-        '--enable-features=OptimizationGuideOnDeviceModel,PromptAPIForGeminiNano',
-        DISABLE_FEATURES_WITHOUT_OPT_HINTS,
-      ],
-    },
-    'edge-phi4-mini': {
-      profileDir: resolve(workspaceRoot, '.playwright-profiles/msedge-dev'),
-      args: [
-        '--enable-features=AIPromptAPI',
-        '--disable-features=OnDeviceModelPerformanceParams',
-        DISABLE_FEATURES_WITHOUT_OPT_HINTS,
-      ],
-    },
-  };
+const browserProfiles: Record<
+  string,
+  { profileDir: string; args: string[]; flags: string[] }
+> = {
+  'chrome-gemini-nano': {
+    profileDir: resolve(workspaceRoot, '.playwright-profiles/chrome-beta'),
+    args: [
+      '--enable-features=OptimizationGuideOnDeviceModel,PromptAPIForGeminiNano',
+      DISABLE_FEATURES_WITHOUT_OPT_HINTS,
+    ],
+    flags: [
+      'optimization-guide-on-device-model@1',
+      'prompt-api-for-gemini-nano@1',
+    ],
+  },
+  'edge-phi4-mini': {
+    profileDir: resolve(workspaceRoot, '.playwright-profiles/msedge-dev'),
+    args: [
+      '--enable-features=AIPromptAPI',
+      '--disable-features=OnDeviceModelPerformanceParams',
+      DISABLE_FEATURES_WITHOUT_OPT_HINTS,
+    ],
+    flags: [
+      'edge-llm-prompt-api-for-phi-mini@1',
+      'edge-llm-on-device-model-performance-param@3',
+      'edge-llm-on-device-model-debug-logs@1',
+    ],
+  },
+};
 
 /**
- * Ensure chrome://on-device-internals is accessible by seeding the
- * internal_only_uis_enabled flag in the profile's Local State file.
+ * Seed the profile's Local State with required chrome://flags entries
+ * and enable internal debug pages. Creates the profile directory if
+ * it doesn't exist (e.g., container with cache miss and no bootstrap).
  */
-function enableInternalDebugPages(profileDir: string) {
+function seedLocalState(profileDir: string, flags: string[]) {
   const localStatePath = join(profileDir, 'Local State');
   let state: Record<string, unknown> = {};
 
@@ -62,10 +74,30 @@ function enableInternalDebugPages(profileDir: string) {
     }
   }
 
-  if (!state['internal_only_uis_enabled']) {
-    state['internal_only_uis_enabled'] = true;
-    writeFileSync(localStatePath, JSON.stringify(state, null, 2));
+  // Seed chrome://flags entries
+  if (!state['browser']) {
+    state['browser'] = {};
   }
+
+  const browser = state['browser'] as Record<string, unknown>;
+  const existing = (browser['enabled_labs_experiments'] as string[]) || [];
+  const existingNames = new Set(existing.map((f: string) => f.split('@')[0]));
+
+  for (const flag of flags) {
+    const name = flag.split('@')[0];
+
+    if (!existingNames.has(name)) {
+      existing.push(flag);
+    }
+  }
+
+  browser['enabled_labs_experiments'] = existing;
+
+  // Enable internal debug pages
+  state['internal_only_uis_enabled'] = true;
+
+  mkdirSync(profileDir, { recursive: true });
+  writeFileSync(localStatePath, JSON.stringify(state, null, 2));
 }
 
 /**
@@ -96,7 +128,7 @@ export const test = base.extend<
       }
 
       // Seed internal debug pages flag before launching
-      enableInternalDebugPages(profile.profileDir);
+      seedLocalState(profile.profileDir, profile.flags);
 
       // Retry launch — Chrome's ProcessSingleton on Windows may reject
       // the launch if a previous chrome_crashpad_handler is still running
@@ -301,6 +333,7 @@ export const test = base.extend<
               await notReady.isVisible({ timeout: 1_000 }).catch(() => false)
             ) {
               console.log(`[fixtures] ${projectName}: refreshing...`);
+              await warmupPage.waitForTimeout(2_000);
               await warmupPage.reload();
               await modelStatusTab.click();
             }

@@ -151,11 +151,12 @@ jobs:
 
       - name: Bootstrap AI model
         id: bootstrap
-        if: ${{ steps.model-cache.outputs.cache-hit != 'true' && !matrix.container }}
+        if: steps.model-cache.outputs.cache-hit != 'true'
+        continue-on-error: true
         run: ${{ matrix.xvfb }} node scripts/bootstrap-ai-model.mjs --browser ${{ matrix.browser }} --profile .playwright-profiles/${{ matrix.browser }} --timeout 600000 --perf-param ${{ matrix.perf-param }}
 
       - name: Save AI model cache (post-bootstrap)
-        if: ${{ !matrix.container && steps.model-cache.outputs.cache-hit != 'true' && steps.bootstrap.outcome == 'success' }}
+        if: ${{ steps.model-cache.outputs.cache-hit != 'true' && steps.bootstrap.outcome == 'success' }}
         uses: actions/cache/save@v5
         with:
           path: .playwright-profiles/${{ matrix.browser }}
