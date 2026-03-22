@@ -134,6 +134,13 @@ jobs:
         if: steps.model-cache.outputs.cache-hit != 'true'
         run: ${{ matrix.xvfb }} node scripts/bootstrap-ai-model.mjs --browser ${{ matrix.browser }} --profile .playwright-profiles/${{ matrix.browser }} --timeout 600000
 
+      - name: Save AI model cache (post-bootstrap)
+        if: steps.model-cache.outputs.cache-hit != 'true' && steps.bootstrap.outcome == 'success'
+        uses: actions/cache/save@v5
+        with:
+          path: .playwright-profiles/${{ matrix.browser }}
+          key: ${{ matrix.cache-key }}
+
       - name: Run e2e tests (${{ matrix.project }})
         if: steps.bootstrap.outcome != 'failure'
         id: e2e-tests
