@@ -204,20 +204,35 @@ jobs:
         id: model-cache
         with:
           path: .playwright-profiles/msedge-dev
-          key: msedge-dev-ai-model-windows11-arm-v4-run${{ github.run_number }}
+          key: msedge-dev-e2e-edge-v1-run${{ github.run_number }}
           restore-keys: |
-            msedge-dev-ai-model-windows11-arm-v4-run
-            msedge-dev-ai-model-windows11-arm-v4
+            msedge-dev-e2e-edge-v1-run
+            msedge-dev-e2e-edge-v1
 
       - name: Bootstrap AI model
         id: bootstrap
         if: steps.model-cache.outputs.cache-hit != 'true'
         run: node scripts/bootstrap-ai-model.mjs --browser msedge-dev --profile .playwright-profiles/msedge-dev --timeout 600000 --perf-param 3
 
+      - name: Save AI model cache (post-bootstrap)
+        if: ${{ steps.model-cache.outputs.cache-hit != 'true' && steps.bootstrap.outcome == 'success' }}
+        uses: actions/cache/save@v5
+        with:
+          path: .playwright-profiles/msedge-dev
+          key: msedge-dev-e2e-edge-v1-run${{ github.run_number }}-bootstrap
+
       - name: Run e2e tests
         if: steps.bootstrap.outcome != 'failure'
+        id: e2e-tests
         timeout-minutes: 60
         run: npm exec nx -- e2e in-browser-ai-coding-agent-e2e -c edge
+
+      - name: Save AI model cache (post-test)
+        if: steps.e2e-tests.outcome == 'success'
+        uses: actions/cache/save@v5
+        with:
+          path: .playwright-profiles/msedge-dev
+          key: msedge-dev-e2e-edge-v1-run${{ github.run_number }}
 
   test-edge:
     runs-on: windows-11-arm
@@ -259,10 +274,10 @@ jobs:
         id: model-cache
         with:
           path: .playwright-profiles/msedge-dev
-          key: msedge-dev-ai-model-windows11-arm-v4-run${{ github.run_number }}
+          key: msedge-dev-test-edge-v1-run${{ github.run_number }}
           restore-keys: |
-            msedge-dev-ai-model-windows11-arm-v4-run
-            msedge-dev-ai-model-windows11-arm-v4
+            msedge-dev-test-edge-v1-run
+            msedge-dev-test-edge-v1
 
       - name: Bootstrap AI model
         id: bootstrap
@@ -274,7 +289,7 @@ jobs:
         uses: actions/cache/save@v5
         with:
           path: .playwright-profiles/msedge-dev
-          key: msedge-dev-ai-model-windows11-arm-v4-run${{ github.run_number }}-bootstrap
+          key: msedge-dev-test-edge-v1-run${{ github.run_number }}-bootstrap
 
       - name: Log ONNX Runtime version and model config
         if: steps.bootstrap.outcome != 'failure'
@@ -329,4 +344,4 @@ jobs:
         uses: actions/cache/save@v5
         with:
           path: .playwright-profiles/msedge-dev
-          key: msedge-dev-ai-model-windows11-arm-v4-run${{ github.run_number }}
+          key: msedge-dev-test-edge-v1-run${{ github.run_number }}
