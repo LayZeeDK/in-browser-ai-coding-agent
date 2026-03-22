@@ -61,47 +61,12 @@ jobs:
       - run: npm ci
       - run: npm exec nx -- run-many -t lint typecheck build
 
-  test:
+  test-chrome:
     needs: ghcr
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - browser: chrome-beta
-            e2e-config: chrome
-            test-target: test-chrome
-            perf-param: '3'
-            cache-key: chrome-beta-cpu-container-v3
-            runner: ubuntu-latest
-            xvfb: 'xvfb-run --auto-servernum'
-            container: true
-          - browser: msedge-dev
-            e2e-config: edge
-            test-target: test-edge
-            perf-param: '3'
-            cache-key: msedge-dev-ai-model-windows11-arm-v3
-            runner: windows-11-arm
-            xvfb: ''
-            container: false
-          - browser: msedge-dev
-            e2e-config: edge
-            test-target: test-edge
-            perf-param: '1'
-            cache-key: msedge-dev-perf1-windows11-arm-v3
-            runner: windows-11-arm
-            xvfb: ''
-            container: false
-          - browser: msedge-dev
-            e2e-config: edge
-            test-target: test-edge
-            perf-param: '2'
-            cache-key: msedge-dev-perf2-windows11-arm-v3
-            runner: windows-11-arm
-            xvfb: ''
-            container: false
-    # Container only for jobs that opt in; no-op otherwise
-    container: ${{ matrix.container && fromJSON(format('{{"image":"{0}-{1}:latest","options":"--ipc=host --user 1001"}}', needs.ghcr.outputs.image, matrix.browser)) || '' }}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ needs.ghcr.outputs.image }}-chrome-beta:latest
+      options: --ipc=host --user 1001
     steps:
       - uses: actions/checkout@v6
         with:
@@ -113,11 +78,75 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version-file: '.node-version'
-          cache: ${{ matrix.container && 'npm' || '' }}
+          cache: 'npm'
 
-      # Windows ARM: cache node_modules directly, skip npm ci on hit
+      - run: npm ci
+
+      - name: Copy model profile from container image
+        run: |
+          cp -r /home/pwuser/.ai-model-profile/chrome-beta .playwright-profiles/chrome-beta
+          echo "Profile contents:"
+          ls -la .playwright-profiles/chrome-beta/
+
+      - name: Run e2e tests
+        id: e2e-tests
+        timeout-minutes: 45
+        run: xvfb-run --auto-servernum npm exec nx -- e2e in-browser-ai-coding-agent-e2e -c chrome
+
+      - name: Kill lingering Chrome processes
+        if: ${{ !cancelled() }}
+        run: |
+          pkill -9 -f chrome 2>/dev/null || true
+          sleep 2
+
+      - name: Run unit tests
+        if: ${{ !cancelled() }}
+        id: unit-tests
+        timeout-minutes: 45
+        run: |
+          set -o pipefail
+          xvfb-run --auto-servernum npm exec nx -- test-chrome in-browser-ai-coding-agent 2>&1 | tee unit-test-output.log
+
+      - name: Write prompt responses to job summary
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: |
+          node -e "
+            const fs = require('fs');
+            const log = fs.readFileSync('unit-test-output.log', 'utf8').replace(/\x1b\[[0-9;]*m/g, '');
+            const re = /\[unit\] (.+?): \"(.+?)\"\n\[unit-response\]([\s\S]*?)\[\/unit-response\]/g;
+            let md = '', m;
+            while ((m = re.exec(log))) {
+              md += '### Unit Test ' + m[1] + '\n\n**Prompt:** ' + m[2] + '\n\n**Response:** ' + m[3] + '\n\n';
+            }
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, md || '_No prompt responses captured_\n');
+          "
+
+  test-edge:
+    runs-on: windows-11-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - perf-param: '3'
+            cache-key: msedge-dev-ai-model-windows11-arm-v3
+          - perf-param: '1'
+            cache-key: msedge-dev-perf1-windows11-arm-v3
+          - perf-param: '2'
+            cache-key: msedge-dev-perf2-windows11-arm-v3
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - uses: nrwl/nx-set-shas@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.node-version'
+
       - name: Restore node_modules cache
-        if: ${{ !matrix.container }}
         id: node-modules
         uses: actions/cache/restore@v5
         with:
@@ -125,89 +154,69 @@ jobs:
           key: ${{ runner.os }}-${{ runner.arch }}-node-modules-${{ hashFiles('package-lock.json') }}
 
       - name: Install dependencies
-        if: ${{ matrix.container || steps.node-modules.outputs.cache-hit != 'true' }}
+        if: steps.node-modules.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: Save node_modules cache
-        if: ${{ !matrix.container && steps.node-modules.outputs.cache-hit != 'true' }}
+        if: steps.node-modules.outputs.cache-hit != 'true'
         uses: actions/cache/save@v5
         with:
           path: node_modules
           key: ${{ runner.os }}-${{ runner.arch }}-node-modules-${{ hashFiles('package-lock.json') }}
 
-      - name: Install ${{ matrix.browser }}
-        if: ${{ !matrix.container }}
-        run: npx playwright install ${{ matrix.browser }} --with-deps
+      - name: Install msedge-dev
+        run: npx playwright install msedge-dev --with-deps
 
       - name: Restore AI model cache
         uses: actions/cache/restore@v5
         id: model-cache
         with:
-          path: .playwright-profiles/${{ matrix.browser }}
+          path: .playwright-profiles/msedge-dev
           key: ${{ matrix.cache-key }}-run${{ github.run_number }}
           restore-keys: |
             ${{ matrix.cache-key }}-run
             ${{ matrix.cache-key }}
 
-      - name: Copy pre-bootstrapped profile from image
-        if: ${{ matrix.container && steps.model-cache.outputs.cache-hit != 'true' }}
-        run: |
-          if [ -d /home/pwuser/.ai-model-profile/${{ matrix.browser }} ]; then
-            cp -r /home/pwuser/.ai-model-profile/${{ matrix.browser }} .playwright-profiles/${{ matrix.browser }}
-            echo "Copied pre-bootstrapped profile from image"
-          fi
-
       - name: Bootstrap AI model
         id: bootstrap
-        if: ${{ steps.model-cache.outputs.cache-hit != 'true' && !matrix.container }}
-        run: ${{ matrix.xvfb }} node scripts/bootstrap-ai-model.mjs --browser ${{ matrix.browser }} --profile .playwright-profiles/${{ matrix.browser }} --timeout 600000 --perf-param ${{ matrix.perf-param }}
+        if: steps.model-cache.outputs.cache-hit != 'true'
+        run: node scripts/bootstrap-ai-model.mjs --browser msedge-dev --profile .playwright-profiles/msedge-dev --timeout 600000 --perf-param ${{ matrix.perf-param }}
 
       - name: Save AI model cache (post-bootstrap)
         if: ${{ steps.model-cache.outputs.cache-hit != 'true' && steps.bootstrap.outcome == 'success' }}
         uses: actions/cache/save@v5
         with:
-          path: .playwright-profiles/${{ matrix.browser }}
+          path: .playwright-profiles/msedge-dev
           key: ${{ matrix.cache-key }}-run${{ github.run_number }}-bootstrap
 
       - name: Log ONNX Runtime version and model config
-        if: ${{ !matrix.container && steps.bootstrap.outcome != 'failure' }}
+        if: steps.bootstrap.outcome != 'failure'
         shell: pwsh
         run: |
-          $rtDir = Get-ChildItem ".playwright-profiles/${{ matrix.browser }}/EdgeLLMRuntime" -Directory -ErrorAction SilentlyContinue | Select-Object -First 1
+          $rtDir = Get-ChildItem ".playwright-profiles/msedge-dev/EdgeLLMRuntime" -Directory -ErrorAction SilentlyContinue | Select-Object -First 1
           if ($rtDir) {
             $ort = (Get-Item (Join-Path $rtDir.FullName 'onnxruntime.dll') -ErrorAction SilentlyContinue)
             $genai = (Get-Item (Join-Path $rtDir.FullName 'onnxruntime-genai.dll') -ErrorAction SilentlyContinue)
             if ($ort) { Write-Output "ONNX Runtime: $($ort.VersionInfo.FileVersion)" }
             if ($genai) { Write-Output "GenAI: $($genai.VersionInfo.FileVersion)" }
           }
-          $configFile = Get-ChildItem ".playwright-profiles/${{ matrix.browser }}/EdgeLLMOnDeviceModel/*/genai_config.json" -ErrorAction SilentlyContinue | Select-Object -First 1
+          $configFile = Get-ChildItem ".playwright-profiles/msedge-dev/EdgeLLMOnDeviceModel/*/genai_config.json" -ErrorAction SilentlyContinue | Select-Object -First 1
           if ($configFile) { Get-Content $configFile.FullName }
 
-      - name: Run e2e tests (${{ matrix.e2e-config }})
+      - name: Run e2e tests
         if: steps.bootstrap.outcome != 'failure'
         id: e2e-tests
         timeout-minutes: 45
-        run: ${{ matrix.xvfb }} npm exec nx -- e2e in-browser-ai-coding-agent-e2e -c ${{ matrix.e2e-config }}
+        run: npm exec nx -- e2e in-browser-ai-coding-agent-e2e -c edge
 
-      - name: Kill lingering Chrome processes
-        if: ${{ !cancelled() && matrix.container }}
-        shell: bash
-        run: |
-          # Chrome's ProcessSingleton holds the profile lockfile after close.
-          # Required for Chrome containers; Edge on Windows does NOT need this
-          # (Edge releases the lockfile cleanly, and killing may truncate
-          # async ONNX Runtime cache writes).
-          pkill -9 -f chrome 2>/dev/null || true
-          sleep 2
-
-      - name: Run unit tests (${{ matrix.e2e-config }})
+      - name: Run unit tests
         if: ${{ !cancelled() && steps.bootstrap.outcome != 'failure' }}
         id: unit-tests
         timeout-minutes: 45
         shell: bash
         run: |
           set -o pipefail
-          ${{ matrix.xvfb }} npm exec nx -- ${{ matrix.test-target }} in-browser-ai-coding-agent 2>&1 | tee unit-test-output.log
+          npm exec nx -- test-edge in-browser-ai-coding-agent 2>&1 | tee unit-test-output.log
 
       - name: Write prompt responses to job summary
         if: ${{ !cancelled() && steps.bootstrap.outcome != 'failure' }}
@@ -225,18 +234,18 @@ jobs:
           "
 
       - name: Log inference cache state
-        if: ${{ !cancelled() && !matrix.container }}
+        if: ${{ !cancelled() }}
         shell: bash
         run: |
           echo "=== Inference cache files ==="
-          ls -la .playwright-profiles/${{ matrix.browser }}/EdgeLLMOnDeviceModel/*/adapter_cache.bin 2>/dev/null || echo "No adapter_cache.bin"
-          ls -la .playwright-profiles/${{ matrix.browser }}/EdgeLLMOnDeviceModel/*/encoder_cache.bin 2>/dev/null || echo "No encoder_cache.bin"
+          ls -la .playwright-profiles/msedge-dev/EdgeLLMOnDeviceModel/*/adapter_cache.bin 2>/dev/null || echo "No adapter_cache.bin"
+          ls -la .playwright-profiles/msedge-dev/EdgeLLMOnDeviceModel/*/encoder_cache.bin 2>/dev/null || echo "No encoder_cache.bin"
           echo "=== ONNX Runtime DLLs ==="
-          ls -la .playwright-profiles/${{ matrix.browser }}/EdgeLLMRuntime/*/onnxruntime*.dll 2>/dev/null || echo "No ONNX Runtime DLLs"
+          ls -la .playwright-profiles/msedge-dev/EdgeLLMRuntime/*/onnxruntime*.dll 2>/dev/null || echo "No ONNX Runtime DLLs"
 
       - name: Save AI model cache (post-test)
         if: ${{ !cancelled() && steps.bootstrap.outcome != 'failure' }}
         uses: actions/cache/save@v5
         with:
-          path: .playwright-profiles/${{ matrix.browser }}
+          path: .playwright-profiles/msedge-dev
           key: ${{ matrix.cache-key }}-run${{ github.run_number }}
