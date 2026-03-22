@@ -13,17 +13,9 @@ concurrency:
 permissions:
   actions: read
   contents: read
-  packages: read
+  packages: write
 
 jobs:
-  ghcr:
-    runs-on: ubuntu-latest
-    outputs:
-      image: ${{ steps.image.outputs.base }}
-    steps:
-      - id: image
-        run: echo "base=ghcr.io/${GITHUB_REPOSITORY,,}/playwright" >> "$GITHUB_OUTPUT"
-
   format:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
@@ -61,11 +53,67 @@ jobs:
       - run: npm ci
       - run: npm exec nx -- run-many -t lint typecheck build
 
+  build-chrome-image:
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Extract versions
+        id: versions
+        run: |
+          echo "playwright=$(node -e "console.log(require('./package-lock.json').packages['node_modules/playwright-core'].version)")" >> "$GITHUB_OUTPUT"
+          echo "node=$(cat .node-version)" >> "$GITHUB_OUTPUT"
+
+      - name: Image metadata
+        id: meta
+        run: echo "image=ghcr.io/${GITHUB_REPOSITORY,,}/playwright-chrome-beta" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v4
+
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Step 1: Build base image (Chrome + deps + flags, no model)
+      - name: Build base image
+        uses: docker/build-push-action@v7
+        with:
+          context: .github/docker
+          target: chrome-beta
+          load: true
+          build-args: |
+            PLAYWRIGHT_VERSION=${{ steps.versions.outputs.playwright }}
+            NODE_VERSION=${{ steps.versions.outputs.node }}
+          tags: chrome-beta-base:local
+          cache-from: type=gha,scope=playwright-chrome-beta
+          cache-to: type=gha,scope=playwright-chrome-beta,mode=max
+
+      # Step 2: Run container with --ipc=host to download model + warm up.
+      # Chrome needs shared memory IPC which isn't available during docker build.
+      - name: Bootstrap model in container
+        run: |
+          docker run --ipc=host --name chrome-bootstrap chrome-beta-base:local \
+            xvfb-run --auto-servernum node /opt/bootstrap-model.mjs
+
+      # Step 3: Commit the container with model baked in and push
+      - name: Commit and push image
+        run: |
+          IMAGE="${{ steps.meta.outputs.image }}"
+          docker commit chrome-bootstrap "$IMAGE:v${{ steps.versions.outputs.playwright }}"
+          docker tag "$IMAGE:v${{ steps.versions.outputs.playwright }}" "$IMAGE:latest"
+          docker push "$IMAGE:v${{ steps.versions.outputs.playwright }}"
+          docker push "$IMAGE:latest"
+          docker rm chrome-bootstrap
+
   test-chrome:
-    needs: ghcr
+    needs: build-chrome-image
     runs-on: ubuntu-latest
     container:
-      image: ${{ needs.ghcr.outputs.image }}-chrome-beta:latest
+      image: ${{ needs.build-chrome-image.outputs.image }}:latest
       options: --ipc=host --user 1001
     steps:
       - uses: actions/checkout@v6
