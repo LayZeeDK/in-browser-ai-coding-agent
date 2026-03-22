@@ -105,8 +105,8 @@ Phi-4 Mini is a larger model (3.8B parameters) that benefits from NPU/GPU accele
 **`windows-latest` (Windows Server 2025, x86_64):**
 This was tried and removed. `windows-latest` resolves to Windows Server 2025, which is a Server SKU, not Desktop. Phi-4 Mini only supports Windows 10/11 Desktop. On Windows Server, the model download silently times out without an error -- the on-device model system simply does not function on Server SKUs. There is no error message; the model just never becomes available.
 
-**macOS runners (`macos-14`, `macos-15`, `macos-15-intel`, `macos-26-intel`):**
-macOS was extensively tested with multiple runner types and many combinations of launch flags: `--in-process-gpu`, `--no-sandbox`, `--disable-gpu-sandbox`, `--headless=new`, `--disable-software-rasterizer`. All configurations failed.
+**macOS runners (6 matrix entries tested: `macos-14`, `macos-15`, `macos-15-intel`, `macos-26-intel` with various flag combinations):**
+macOS was extensively tested across 6 matrix entries combining 4 runner types with many combinations of launch flags: `--in-process-gpu`, `--no-sandbox`, `--disable-gpu-sandbox`, `--headless=new`, `--disable-software-rasterizer`. All configurations failed.
 
 The `--in-process-gpu --no-sandbox` flags prevented browser crashes on launch (the default configuration crashed immediately), but revealed a deeper issue: Edge explicitly rejects the macOS device with `InvalidStateError`. The underlying problem is that ONNX Runtime -- the inference engine used by both Chrome and Edge's on-device model systems -- crashes on insufficient GPU VRAM instead of gracefully falling back to CPU. GitHub-hosted macOS runners, while using Apple Silicon with unified memory, do not expose enough GPU VRAM for the model to load. The ONNX Runtime code path has no CPU fallback on macOS, unlike the Chrome 140+ CPU inference support on Linux.
 
@@ -231,14 +231,16 @@ The model profile accumulates optimization artifacts over successive runs. After
 
 By saving a new cache after every run (post-test), these progressively-accumulated artifacts are preserved. The `restore-keys` prefix matching ensures the latest cache is always restored, even though the exact key never matches (because the run number is new). GitHub automatically evicts the oldest caches when the repository cache budget (10 GB) is exceeded.
 
-**Why save post-test (not post-bootstrap)?**
+**Why only post-test save (bootstrap save was removed):**
 
 ```yaml
 - name: Save AI model cache (post-test)
   if: ${{ !cancelled() && steps.bootstrap.outcome != 'failure' }}
 ```
 
-The cache is saved after tests complete, not just after bootstrap. This is because the ONNX Runtime inference artifacts (`adapter_cache.bin`, `encoder_cache.bin`, compiled model shards) are generated during actual inference -- which happens during test runs. Saving post-test captures these artifacts, making subsequent runs start with a fully warmed cache.
+An earlier version of the workflow had a separate cache save step immediately after bootstrap. This was removed because it captured an incomplete profile -- the model was downloaded but the ONNX Runtime inference artifacts (`adapter_cache.bin`, `encoder_cache.bin`, compiled model shards) had not yet been generated. Those artifacts are only created during actual inference, which happens during test runs. Restoring a bootstrap-only cache still required an 11+ minute warm-up on the next run because the inference engine had to recompile from scratch.
+
+The current design saves the cache only once, after all tests complete. This captures the fully-warmed profile including all inference artifacts. The save is gated on `steps.bootstrap.outcome != 'failure'` (not `== 'success'`) so it runs both when bootstrap succeeded and when bootstrap was skipped due to a cache hit -- ensuring the post-test artifacts from this run are captured regardless of how the profile was initially loaded.
 
 ### 5.4 No Edge Dev Browser Cache
 

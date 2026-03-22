@@ -104,11 +104,21 @@ The `setupFile` approach had two problems:
 
 The `global-setup.ts` file lives at `apps/in-browser-ai-coding-agent/global-setup.ts`, not inside `src/`. This is not arbitrary. The Angular compiler (via `@angular/build` and its underlying esbuild/TypeScript pipeline) processes all `.ts` files within `src/`. The global setup imports Node.js modules (`node:fs`, `node:path`) and Playwright, which are not available in the browser and have no Angular-compatible type definitions. Placing the file inside `src/` would cause the Angular compiler to reject it with errors about unresolved modules. The file lives at the app root, alongside `vitest.config.mts`, where it is only consumed by Vitest's Node.js runtime.
 
-### Why Warm Up?
+### Why Warm Up? The Three Levels of Model Readiness
 
-On-device AI models have a cold-start penalty. The first inference after browser launch loads the model weights into memory (or onto the NPU/GPU), compiles the ONNX execution graph, and allocates inference buffers. For Phi-4 Mini on ARM64, this cold-start can take **11+ minutes**. Subsequent inferences are fast (seconds). Without warm-up, the first test that calls `LanguageModel.create()` would absorb the entire cold-start latency, likely timing out.
+On-device AI models have three distinct levels of readiness, and reaching a higher level is not implied by reaching a lower one:
 
-The global setup front-loads this cost: it launches the browser, navigates to `chrome://on-device-internals` (or `edge://on-device-internals`), runs a warm-up prompt, verifies the model reaches "Ready" state, and then closes the browser. When Vitest later opens the same persistent context for tests, the model is already warm.
+| Level                                 | Check                                                                                   | What It Means                                                                                                                                                                   | Cold-Start Eliminated?                                                                            |
+| ------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| 1. **Files on disk**                  | `LanguageModel.availability()` returns `'available'`                                    | Model weight files exist in the profile directory. The browser knows the model component is registered.                                                                         | No. The inference pipeline has not been initialized.                                              |
+| 2. **Registered with the system**     | `chrome://on-device-internals` Model Status tab shows "Foundational model state: Ready" | The optimization guide service has acknowledged the model and its metadata. The model is eligible for use.                                                                      | No. The ONNX execution graph has not been compiled, weights have not been loaded into memory/NPU. |
+| 3. **Inference pipeline initialized** | A `session.prompt()` call completes successfully                                        | The ONNX execution graph is compiled, model weights are loaded into memory (or onto the NPU/GPU), tokenizer is initialized, and the first inference pass has warmed all caches. | **Yes.** Subsequent `session.prompt()` calls are fast (seconds, not minutes).                     |
+
+The global setup must reach **level 3** because levels 1 and 2 are insufficient. A test that calls `LanguageModel.create()` after only reaching level 1 or 2 will still pay the full cold-start penalty -- ONNX graph compilation, weight loading, and first-pass cache warming. For Phi-4 Mini on ARM64, this cold-start can take **11+ minutes**. Subsequent inferences after level 3 are fast (seconds).
+
+This is why the global setup execution flow runs a warm-up prompt (`await session.prompt('warmup')`) and does not stop at merely checking availability or the internals page. The warm-up prompt is the only way to force the browser through the entire initialization pipeline.
+
+The global setup front-loads this cost: it launches the browser, navigates to `chrome://on-device-internals` (or `edge://on-device-internals`), runs a warm-up prompt (reaching level 3), verifies the model reaches "Ready" state on the internals page (confirming level 2), and then closes the browser. When Vitest later opens the same persistent context for tests, the model is already warm -- the ONNX graph compilation and weight loading are cached in the persistent profile.
 
 ### Execution Flow
 
@@ -123,11 +133,12 @@ The global setup front-loads this cost: it launches the browser, navigates to `c
 
 3. Navigate to on-device-internals page
 
-4. Run warm-up inference
+4. Run warm-up inference (reaches level 3)
    - page.evaluate(() => { const s = await LanguageModel.create(); await s.prompt('warmup'); s.destroy(); })
    - This triggers model loading + first inference
+   - Only this step eliminates cold-start for subsequent test prompts
 
-5. Wait for "Foundational model state: Ready"
+5. Wait for "Foundational model state: Ready" (confirms level 2)
    - Click "Model Status" tab
    - Poll for text matching /Foundational model state:\s*Ready/i
    - 600s deadline (10 minutes)
@@ -461,7 +472,7 @@ Phi-4 Mini's first inference after a fresh profile launch takes **11 or more min
 
 **Mitigation:** The 600-second global setup deadline and 300-second per-test timeouts accommodate this. CI matrix jobs for Edge/Phi-4 Mini are expected to be significantly slower than Chrome/Gemini Nano jobs.
 
-**Detection:** If the global setup logs `Model warm-up skipped for edge-phi4-mini: <timeout>`, subsequent prompt tests will absorb the cold-start and likely time out. The guard tests ("should have a model that is available, downloading, or downloadable") will pass (the API is present), but the prompt test will fail with a timeout.
+**Detection:** If the global setup logs `Model warm-up skipped for edge-phi4-mini: <timeout>`, subsequent prompt tests will absorb the cold-start and likely time out. The guard tests ("should have a model that is available, downloading, or downloadable") will pass (the API is present, i.e. readiness level 1), but the prompt test will fail with a timeout because the model has not reached readiness level 3 (inference pipeline initialized).
 
 ### Chrome ProcessSingleton on Windows
 
@@ -499,7 +510,7 @@ if (await notReady.isVisible({ timeout: 1_000 }).catch(() => false)) {
 | `app.spec.ts`                    | App component     | Renders title, displays model-status component                                            | Default                               |
 | `language-model.service.spec.ts` | Service           | API support detection, availability guard, prompt response                                | 300s for prompt                       |
 | `model-status.component.spec.ts` | Component         | Loading state, availability guard, prompt input/submit, prompt response with error racing | 30s for availability, 300s for prompt |
-| `global-setup.ts`                | Warm-up (Node.js) | Model loading, first inference, ready state verification                                  | 600s deadline                         |
+| `global-setup.ts`                | Warm-up (Node.js) | Model loading, first inference (level 3 readiness), ready state verification              | 600s deadline                         |
 
 ---
 
