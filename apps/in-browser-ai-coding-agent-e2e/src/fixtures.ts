@@ -146,9 +146,7 @@ export const test = base.extend<
         const toolsSnapshot = await warmupPage.locator('body').ariaSnapshot();
         const toolsLines = toolsSnapshot
           .split('\n')
-          .filter((l: string) =>
-            /performance class|model directory|version/i.test(l),
-          );
+          .filter((l: string) => /performance class|model directory/i.test(l));
         console.log(`[fixtures] ${projectName}: on-device-internals (Tools):`);
 
         for (const line of toolsLines) {
@@ -173,7 +171,9 @@ export const test = base.extend<
           const statusLines = statusSnapshot
             .split('\n')
             .filter((l: string) =>
-              /model state|crash count|version|adaptation/i.test(l),
+              /model state|crash count|^.*row "k\w+|OPTIMIZATION_TARGET/i.test(
+                l,
+              ),
             );
           console.log(
             `[fixtures] ${projectName}: on-device-internals (Model Status):`,
@@ -184,7 +184,8 @@ export const test = base.extend<
           }
         }
 
-        // Capture GPU/NPU diagnostics
+        // Capture GPU diagnostics — graphics features, driver info,
+        // device performance (memory, cores, D3D level, GPU/NPU)
         const gpuUrl =
           workerInfo.project.use.channel === 'msedge-dev'
             ? 'edge://gpu'
@@ -195,7 +196,7 @@ export const test = base.extend<
         const gpuLines = gpuSnapshot
           .split('\n')
           .filter((l: string) =>
-            /gpu0|gpu1|npu|webnn|directml|d3d1[12] feature|driver.*version|has discrete|graphics feature|hardware accelerated|canvas:|compositing:|rasterization:|video decode:|webgl:|webgpu:/i.test(
+            /gpu0|gpu1|npu|webnn|directml|d3d1[12] feature|driver d3d|has discrete|software rendering|physical memory|disk space|hardware concurrency|commit limit|canvas:|compositing:|rasterization:|video decode:|webgl:|webgpu:/i.test(
               l,
             ),
           );

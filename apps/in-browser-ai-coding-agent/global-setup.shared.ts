@@ -166,9 +166,7 @@ async function warmUpModel(instance: BrowserInstance) {
     const toolsSnapshot = await page.locator('body').ariaSnapshot();
     const toolsLines = toolsSnapshot
       .split('\n')
-      .filter((l: string) =>
-        /performance class|model directory|version/i.test(l),
-      );
+      .filter((l: string) => /performance class|model directory/i.test(l));
     console.log(
       `[global-setup] ${instance.name}: on-device-internals (Tools):`,
     );
@@ -191,7 +189,7 @@ async function warmUpModel(instance: BrowserInstance) {
       const statusLines = statusSnapshot
         .split('\n')
         .filter((l: string) =>
-          /model state|crash count|version|adaptation/i.test(l),
+          /model state|crash count|^.*row "k\w+|OPTIMIZATION_TARGET/i.test(l),
         );
       console.log(
         `[global-setup] ${instance.name}: on-device-internals (Model Status):`,
@@ -202,7 +200,8 @@ async function warmUpModel(instance: BrowserInstance) {
       }
     }
 
-    // Capture GPU/NPU diagnostics
+    // Capture GPU diagnostics — graphics features, driver info,
+    // device performance (memory, cores, D3D level, GPU/NPU)
     const gpuUrl =
       instance.channel === 'msedge-dev' ? 'edge://gpu' : 'chrome://gpu';
     await page.goto(gpuUrl);
@@ -211,7 +210,7 @@ async function warmUpModel(instance: BrowserInstance) {
     const gpuLines = gpuSnapshot
       .split('\n')
       .filter((l: string) =>
-        /gpu0|gpu1|npu|webnn|directml|d3d1[12] feature|driver.*version|has discrete|graphics feature|hardware accelerated|canvas:|compositing:|rasterization:|video decode:|webgl:|webgpu:/i.test(
+        /gpu0|gpu1|npu|webnn|directml|d3d1[12] feature|driver d3d|has discrete|software rendering|physical memory|disk space|hardware concurrency|commit limit|canvas:|compositing:|rasterization:|video decode:|webgl:|webgpu:/i.test(
           l,
         ),
       );
