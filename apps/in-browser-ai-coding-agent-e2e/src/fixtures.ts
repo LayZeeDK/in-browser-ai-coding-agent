@@ -141,20 +141,50 @@ export const test = base.extend<
         console.log(`[fixtures] ${projectName}: navigating to ${onDeviceUrl}`);
         await warmupPage.goto(onDeviceUrl);
 
-        // Log hardware diagnostics for CI debugging
+        // Log on-device-internals diagnostics (Tools tab is default)
         await warmupPage.waitForTimeout(3_000);
-        const perfClass = await warmupPage
-          .getByText(/device performance class/i)
-          .textContent()
-          .catch(() => null);
-
-        if (perfClass) {
-          console.log(
-            `[fixtures] ${projectName}: ${perfClass.trim()} [${elapsed()}]`,
+        const toolsSnapshot = await warmupPage.locator('body').ariaSnapshot();
+        const toolsLines = toolsSnapshot
+          .split('\n')
+          .filter((l: string) =>
+            /performance class|model directory|version/i.test(l),
           );
+        console.log(`[fixtures] ${projectName}: on-device-internals (Tools):`);
+
+        for (const line of toolsLines) {
+          console.log(`  ${line.trim()}`);
         }
 
-        // Capture GPU info for CI hardware comparison
+        // Click Model Status tab for model state + crash count
+        const diagModelStatusTab = warmupPage
+          .getByRole('tab', { name: /Model Status/i })
+          .or(warmupPage.locator('text=Model Status'));
+
+        if (
+          await diagModelStatusTab
+            .isVisible({ timeout: 5_000 })
+            .catch(() => false)
+        ) {
+          await diagModelStatusTab.click();
+          await warmupPage.waitForTimeout(1_000);
+          const statusSnapshot = await warmupPage
+            .locator('body')
+            .ariaSnapshot();
+          const statusLines = statusSnapshot
+            .split('\n')
+            .filter((l: string) =>
+              /model state|crash count|version|adaptation/i.test(l),
+            );
+          console.log(
+            `[fixtures] ${projectName}: on-device-internals (Model Status):`,
+          );
+
+          for (const line of statusLines) {
+            console.log(`  ${line.trim()}`);
+          }
+        }
+
+        // Capture GPU/NPU diagnostics
         const gpuUrl =
           workerInfo.project.use.channel === 'msedge-dev'
             ? 'edge://gpu'
@@ -165,15 +195,14 @@ export const test = base.extend<
         const gpuLines = gpuSnapshot
           .split('\n')
           .filter((l: string) =>
-            /gpu0|npu|webnn|directml|feature level|perf/i.test(l),
+            /gpu0|gpu1|npu|webnn|directml|d3d1[12] feature|driver.*version|has discrete|graphics feature|hardware accelerated|canvas:|compositing:|rasterization:|video decode:|webgl:|webgpu:/i.test(
+              l,
+            ),
           );
+        console.log(`[fixtures] ${projectName}: GPU diagnostics:`);
 
-        if (gpuLines.length > 0) {
-          console.log(`[fixtures] ${projectName}: GPU diagnostics:`);
-
-          for (const line of gpuLines) {
-            console.log(`  ${line.trim()}`);
-          }
+        for (const line of gpuLines) {
+          console.log(`  ${line.trim()}`);
         }
 
         // Return to on-device internals for the rest of the warm-up

@@ -161,20 +161,48 @@ async function warmUpModel(instance: BrowserInstance) {
   try {
     await page.goto(instance.onDeviceInternalsUrl);
 
-    // Log hardware diagnostics for CI debugging
+    // Log on-device-internals diagnostics (Tools tab is default)
     await page.waitForTimeout(3_000);
-    const perfClass = await page
-      .getByText(/device performance class/i)
-      .textContent()
-      .catch(() => null);
-
-    if (perfClass) {
-      console.log(
-        `[global-setup] ${instance.name}: ${perfClass.trim()} [${elapsed()}]`,
+    const toolsSnapshot = await page.locator('body').ariaSnapshot();
+    const toolsLines = toolsSnapshot
+      .split('\n')
+      .filter((l: string) =>
+        /performance class|model directory|version/i.test(l),
       );
+    console.log(
+      `[global-setup] ${instance.name}: on-device-internals (Tools):`,
+    );
+
+    for (const line of toolsLines) {
+      console.log(`  ${line.trim()}`);
     }
 
-    // Capture GPU info for CI hardware comparison
+    // Click Model Status tab for model state + crash count
+    const diagModelStatusTab = page
+      .getByRole('tab', { name: /Model Status/i })
+      .or(page.locator('text=Model Status'));
+
+    if (
+      await diagModelStatusTab.isVisible({ timeout: 5_000 }).catch(() => false)
+    ) {
+      await diagModelStatusTab.click();
+      await page.waitForTimeout(1_000);
+      const statusSnapshot = await page.locator('body').ariaSnapshot();
+      const statusLines = statusSnapshot
+        .split('\n')
+        .filter((l: string) =>
+          /model state|crash count|version|adaptation/i.test(l),
+        );
+      console.log(
+        `[global-setup] ${instance.name}: on-device-internals (Model Status):`,
+      );
+
+      for (const line of statusLines) {
+        console.log(`  ${line.trim()}`);
+      }
+    }
+
+    // Capture GPU/NPU diagnostics
     const gpuUrl =
       instance.channel === 'msedge-dev' ? 'edge://gpu' : 'chrome://gpu';
     await page.goto(gpuUrl);
@@ -183,15 +211,14 @@ async function warmUpModel(instance: BrowserInstance) {
     const gpuLines = gpuSnapshot
       .split('\n')
       .filter((l: string) =>
-        /gpu0|npu|webnn|directml|feature level|perf/i.test(l),
+        /gpu0|gpu1|npu|webnn|directml|d3d1[12] feature|driver.*version|has discrete|graphics feature|hardware accelerated|canvas:|compositing:|rasterization:|video decode:|webgl:|webgpu:/i.test(
+          l,
+        ),
       );
+    console.log(`[global-setup] ${instance.name}: GPU diagnostics:`);
 
-    if (gpuLines.length > 0) {
-      console.log(`[global-setup] ${instance.name}: GPU diagnostics:`);
-
-      for (const line of gpuLines) {
-        console.log(`  ${line.trim()}`);
-      }
+    for (const line of gpuLines) {
+      console.log(`  ${line.trim()}`);
     }
 
     // Return to on-device internals for the rest of the warm-up
