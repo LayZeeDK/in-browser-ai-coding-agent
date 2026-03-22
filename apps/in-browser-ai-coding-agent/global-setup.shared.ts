@@ -314,33 +314,10 @@ async function warmUpModel(instance: BrowserInstance) {
       }
     }
 
-    // Step 2: Warm up the inference pipeline with a prompt.
-    // Wrap in Promise.race — page.evaluate has no built-in timeout,
-    // so session.prompt() can hang indefinitely if the model fails to load.
-    console.log(
-      `[global-setup] ${instance.name}: warming up model (first inference may take minutes)...`,
-    );
-    const promptStart = Date.now();
-    const warmupTimeout = 1_200_000; // 20 min
-    await Promise.race([
-      page.evaluate(async () => {
-        if (typeof LanguageModel !== 'undefined') {
-          const session = await LanguageModel.create();
-          await session.prompt('warmup');
-          session.destroy();
-        }
-      }),
-      new Promise<never>((_, reject) =>
-        setTimeout(
-          () => reject(new Error('Warm-up prompt timed out')),
-          warmupTimeout,
-        ),
-      ),
-    ]);
-    const promptMs = Date.now() - promptStart;
-    console.log(
-      `[global-setup] ${instance.name}: warm-up prompt complete (${(promptMs / 1000).toFixed(1)}s)`,
-    );
+    // NOTE: Inference warm-up moved to browser-warmup.ts (Vitest setupFile)
+    // which runs in the SAME browser process as tests. Previously, warm-up
+    // ran here in a separate browser that was closed before tests started,
+    // wasting 20+ min of ONNX compilation on every CI run.
   } catch (error) {
     console.warn(`[global-setup] ${instance.name}: warm-up failed: ${error}`);
   }

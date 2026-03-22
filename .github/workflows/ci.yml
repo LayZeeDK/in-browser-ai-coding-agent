@@ -164,6 +164,75 @@ jobs:
             fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, md || '_No prompt responses captured_\n');
           "
 
+  e2e-edge:
+    runs-on: windows-11-arm
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - uses: nrwl/nx-set-shas@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.node-version'
+
+      - name: Restore node_modules cache
+        id: node-modules
+        uses: actions/cache/restore@v5
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-${{ runner.arch }}-node-modules-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        if: steps.node-modules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Save node_modules cache
+        if: steps.node-modules.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-${{ runner.arch }}-node-modules-${{ hashFiles('package-lock.json') }}
+
+      - name: Install msedge-dev
+        run: npx playwright install msedge-dev --with-deps
+
+      - name: Restore AI model cache
+        uses: actions/cache/restore@v5
+        id: model-cache
+        with:
+          path: .playwright-profiles/msedge-dev
+          key: msedge-dev-ai-model-windows11-arm-v3-run${{ github.run_number }}
+          restore-keys: |
+            msedge-dev-ai-model-windows11-arm-v3-run
+            msedge-dev-ai-model-windows11-arm-v3
+
+      - name: Bootstrap AI model
+        id: bootstrap
+        if: steps.model-cache.outputs.cache-hit != 'true'
+        run: node scripts/bootstrap-ai-model.mjs --browser msedge-dev --profile .playwright-profiles/msedge-dev --timeout 600000 --perf-param 3
+
+      - name: Save AI model cache (post-bootstrap)
+        if: ${{ steps.model-cache.outputs.cache-hit != 'true' && steps.bootstrap.outcome == 'success' }}
+        uses: actions/cache/save@v5
+        with:
+          path: .playwright-profiles/msedge-dev
+          key: msedge-dev-ai-model-windows11-arm-v3-run${{ github.run_number }}-bootstrap
+
+      - name: Run e2e tests
+        if: steps.bootstrap.outcome != 'failure'
+        timeout-minutes: 60
+        run: npm exec nx -- e2e in-browser-ai-coding-agent-e2e -c edge
+
+      - name: Save AI model cache (post-test)
+        if: ${{ !cancelled() && steps.bootstrap.outcome != 'failure' }}
+        uses: actions/cache/save@v5
+        with:
+          path: .playwright-profiles/msedge-dev
+          key: msedge-dev-ai-model-windows11-arm-v3-run${{ github.run_number }}-e2e
+
   test-edge:
     runs-on: windows-11-arm
     steps:
@@ -235,16 +304,10 @@ jobs:
           $configFile = Get-ChildItem ".playwright-profiles/msedge-dev/EdgeLLMOnDeviceModel/*/genai_config.json" -ErrorAction SilentlyContinue | Select-Object -First 1
           if ($configFile) { Get-Content $configFile.FullName }
 
-      - name: Run e2e tests
-        if: steps.bootstrap.outcome != 'failure'
-        id: e2e-tests
-        timeout-minutes: 45
-        run: npm exec nx -- e2e in-browser-ai-coding-agent-e2e -c edge
-
       - name: Run unit tests
-        if: ${{ !cancelled() && steps.bootstrap.outcome != 'failure' }}
+        if: steps.bootstrap.outcome != 'failure'
         id: unit-tests
-        timeout-minutes: 45
+        timeout-minutes: 60
         shell: bash
         run: |
           set -o pipefail

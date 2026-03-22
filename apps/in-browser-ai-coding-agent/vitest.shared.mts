@@ -88,6 +88,10 @@ export function createVitestConfig(options?: {
   return defineConfig({
     test: {
       globalSetup: [globalSetup],
+      // Warm up the model in the SAME browser process that runs tests.
+      // globalSetup runs diagnostics in a separate browser (closed before
+      // tests), so the actual inference warm-up must happen here.
+      setupFiles: [`${appRoot}/browser-warmup.ts`],
       // Persistent context cannot be shared across parallel sessions
       fileParallelism: false,
       // No retries — each retry would re-launch the browser and re-warm the
