@@ -82,10 +82,6 @@ const browserConfig = {
     flags: [
       'edge-llm-prompt-api-for-phi-mini@1',
       'edge-llm-on-device-model-performance-param@3',
-      // Disable unused features to reduce model adaptation loading overhead
-      'edge-llm-summarization-api-for-phi-mini@2',
-      'edge-llm-writer-api-for-phi-mini@2',
-      'edge-llm-rewriter-api-for-phi-mini@2',
     ],
     args: [
       '--no-first-run',
