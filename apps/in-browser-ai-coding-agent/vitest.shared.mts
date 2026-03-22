@@ -62,19 +62,22 @@ export const allInstances = [
   },
 ];
 
+const appRoot = 'apps/in-browser-ai-coding-agent';
+
 /**
  * Creates a Vitest config for on-device AI browser testing.
  *
- * @param instanceFilter - Optional instance name to select a single browser.
- *   When set, only that instance is tested and the global-setup only warms
- *   up that browser's model. When omitted, all instances run.
+ * @param options.instanceFilter - Instance name to select a single browser.
+ *   When omitted, all instances run.
+ * @param options.globalSetup - Path to the globalSetup file that warms up
+ *   the matching browser(s). Defaults to the all-browsers setup.
  */
-export function createVitestConfig(instanceFilter?: string) {
-  // Propagate the filter to global-setup.ts so it only warms up
-  // the selected browser instance (avoids warming up unused models).
-  if (instanceFilter) {
-    process.env['VITEST_BROWSER_INSTANCE'] = instanceFilter;
-  }
+export function createVitestConfig(options?: {
+  instanceFilter?: string;
+  globalSetup?: string;
+}) {
+  const { instanceFilter, globalSetup = `${appRoot}/global-setup.ts` } =
+    options ?? {};
 
   const instances = instanceFilter
     ? allInstances.filter((i) => i.name === instanceFilter)
@@ -82,7 +85,7 @@ export function createVitestConfig(instanceFilter?: string) {
 
   return defineConfig({
     test: {
-      globalSetup: ['apps/in-browser-ai-coding-agent/global-setup.ts'],
+      globalSetup: [globalSetup],
       // Persistent context cannot be shared across parallel sessions
       fileParallelism: false,
       // No retries — each retry would re-launch the browser and re-warm the
