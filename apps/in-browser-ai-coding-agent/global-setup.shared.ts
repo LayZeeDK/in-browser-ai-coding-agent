@@ -72,13 +72,13 @@ export async function warmUpInstances(instances: BrowserInstance[]) {
     }
 
     // Skip if already warmed in this process (same PID = same Vitest run)
-    const markerPath = join(instance.profileDir, '.warmup-pid');
+    const markerPath = join(instance.profileDir, '.setup-pid');
 
     if (existsSync(markerPath)) {
       try {
         if (readFileSync(markerPath, 'utf8') === pid) {
           console.log(
-            `[global-setup] ${instance.name}: already warmed (pid ${pid}), skipping`,
+            `[global-setup] ${instance.name}: diagnostics already ran (pid ${pid}), skipping`,
           );
 
           continue;
