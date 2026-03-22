@@ -36,6 +36,7 @@ export const allInstances = [
       persistentContext: resolve('.playwright-profiles/chrome-beta'),
       launchOptions: {
         channel: 'chrome-beta',
+        headless: false,
         args: [
           '--enable-features=OptimizationGuideOnDeviceModel,PromptAPIForGeminiNano',
           DISABLE_FEATURES_WITHOUT_OPT_HINTS,
@@ -51,6 +52,7 @@ export const allInstances = [
       persistentContext: resolve('.playwright-profiles/msedge-dev'),
       launchOptions: {
         channel: 'msedge-dev',
+        headless: false,
         args: [
           '--enable-features=AIPromptAPI',
           '--disable-features=OnDeviceModelPerformanceParams',
