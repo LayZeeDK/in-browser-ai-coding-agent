@@ -141,6 +141,44 @@ export const test = base.extend<
         console.log(`[fixtures] ${projectName}: navigating to ${onDeviceUrl}`);
         await warmupPage.goto(onDeviceUrl);
 
+        // Log hardware diagnostics for CI debugging
+        await warmupPage.waitForTimeout(3_000);
+        const perfClass = await warmupPage
+          .getByText(/device performance class/i)
+          .textContent()
+          .catch(() => null);
+
+        if (perfClass) {
+          console.log(
+            `[fixtures] ${projectName}: ${perfClass.trim()} [${elapsed()}]`,
+          );
+        }
+
+        // Capture GPU info for CI hardware comparison
+        const gpuUrl =
+          workerInfo.project.use.channel === 'msedge-dev'
+            ? 'edge://gpu'
+            : 'chrome://gpu';
+        await warmupPage.goto(gpuUrl);
+        await warmupPage.waitForTimeout(3_000);
+        const gpuSnapshot = await warmupPage.locator('body').ariaSnapshot();
+        const gpuLines = gpuSnapshot
+          .split('\n')
+          .filter((l: string) =>
+            /gpu0|npu|webnn|directml|feature level|perf/i.test(l),
+          );
+
+        if (gpuLines.length > 0) {
+          console.log(`[fixtures] ${projectName}: GPU diagnostics:`);
+
+          for (const line of gpuLines) {
+            console.log(`  ${line.trim()}`);
+          }
+        }
+
+        // Return to on-device internals for the rest of the warm-up
+        await warmupPage.goto(onDeviceUrl);
+
         // Trigger model registration so the model system starts loading.
         // create() is lightweight (no inference) but kicks off the
         // optimization guide pipeline that Model Status reflects.
