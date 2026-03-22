@@ -1,3 +1,143 @@
+# In-Browser AI Coding Agent
+
+Angular 21 app using the W3C LanguageModel API to run AI inference entirely in the browser. No cloud APIs — models run on-device via Chrome Beta (Gemini Nano) or Edge Dev (Phi-4 Mini).
+
+## Prerequisites
+
+- Node 24 (see `.node-version`)
+- npm (not pnpm/yarn — `package-lock.json` is committed)
+- Chrome Beta or Edge Dev (branded browsers required for LanguageModel API)
+
+## Local Dev Setup
+
+After `npm install`, the app runs without AI models (`npm start`). To enable on-device inference locally:
+
+```bash
+# Bootstrap Chrome Beta with Gemini Nano
+node scripts/bootstrap-ai-model.mjs --browser chrome-beta --profile .playwright-profiles/chrome-beta
+
+# Or Edge Dev with Phi-4 Mini
+node scripts/bootstrap-ai-model.mjs --browser msedge-dev --profile .playwright-profiles/msedge-dev
+```
+
+The bootstrap script seeds browser flags in the profile's `Local State` file, launches the browser, and triggers model download. First run downloads multi-GB model files into `.playwright-profiles/` (gitignored). Subsequent runs reuse the cached profile.
+
+## Commands
+
+All tasks run through Nx. Prefix with `npm exec` (or use the `package.json` scripts):
+
+```bash
+npm install                     # install dependencies (sets up .githooks via prepare)
+npm start                       # dev server (nx serve in-browser-ai-coding-agent)
+npm run build                   # production build
+npm run lint                    # ESLint (--max-warnings=0)
+npm run typecheck               # TypeScript type checking
+npm test                        # unit tests (Vitest browser mode — needs branded browser)
+npm run e2e                     # E2E tests (Playwright — needs branded browser + AI model)
+npm run format                  # Prettier format
+npm run format:check            # Prettier check
+npm run ci                      # full CI pipeline locally
+```
+
+## Project Structure
+
+```
+apps/
+  in-browser-ai-coding-agent/           # Angular app
+    src/app/
+      language-model.service.ts          # LanguageModel API wrapper service
+      model-status.component.ts          # Model status display component
+      app.ts                             # Root component
+      app.config.ts                      # Angular app configuration
+      app.routes.ts                      # Route definitions
+    global-setup.ts                      # Vitest global setup — model warm-up
+    vitest.config.mts                    # Vitest browser mode config
+  in-browser-ai-coding-agent-e2e/       # Playwright E2E tests
+    src/
+      fixtures.ts                        # Worker-scoped persistent context fixture
+      example.spec.ts                    # Basic app tests
+      prompt.spec.ts                     # Real inference tests
+    playwright.config.ts                 # Playwright config (2 projects: chrome + edge)
+scripts/
+  bootstrap-ai-model.mjs                # Model download + profile setup (CI + local)
+  rebase-format.sh                      # Rebase helper with format fixes
+docs/                                   # Architecture documentation (see Deep Reference)
+eslint.config.mjs                       # Root ESLint config (Nx flat config)
+nx.json                                 # Nx workspace config (plugins, targets, generators)
+vitest.workspace.ts                     # Vitest workspace — discovers per-project configs
+tsconfig.base.json                      # Shared TypeScript paths and compiler options
+```
+
+## Gotchas
+
+- **Pre-commit hook auto-formats**: `.githooks/pre-commit` runs `nx format` on staged files and re-stages them. Commits may silently include formatting changes
+- **Unit tests need real browsers**: Vitest browser mode with `@vitest/browser-playwright` — JSDOM won't work (no LanguageModel API)
+- **E2E imports from `./fixtures`**: Never import from `@playwright/test` directly — tests must use the shared persistent context (see Critical Constraints below)
+
+## Troubleshooting
+
+| Error                                                          | Cause                                                                       | Fix                                                                                               |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `Browser window not found`                                     | Chrome's `chrome_crashpad_handler` holds profile lockfile after close       | Kill `chrome_crashpad_handler` process, or wait ~30s. Retry loop handles this automatically in CI |
+| `UnknownError: Other generic failures occurred`                | `optimization-guide-on-device-model@2` forces GPU backend on no-GPU machine | Use `@1` (not `@2`) — Chrome 140+ auto-detects CPU                                                |
+| `Not Ready For Unknown Reason` on `edge://on-device-internals` | Transient Edge model loading race                                           | Refresh the page — resolves in ~1s. Fixtures handle this automatically                            |
+| `InvalidStateError: The device is unable to create a session`  | macOS GPU VRAM insufficient, no CPU fallback in ONNX Runtime CoreML         | Not fixable — macOS is not supported (see platform findings)                                      |
+| Tests timeout at 240-300s                                      | Model not warm — first `session.prompt()` takes 11+ min on ARM64            | Run bootstrap script first, or let e2e warm-up complete before unit tests                         |
+| Model download never starts on Windows Server                  | Server SKU rejected by Edge model delivery                                  | Use Windows 10/11 Desktop, not Server 2025                                                        |
+
+## Content Search
+
+Use `git grep` for searching tracked files. Use `rg` only for untracked/ignored files.
+
+# Code Style
+
+## TypeScript
+
+- Strict type checking is enabled — do not weaken it
+- Prefer type inference when the type is obvious; avoid redundant annotations
+- Never use `any`; use `unknown` when the type is uncertain
+
+## Angular Components
+
+- All components are standalone (Angular 21+ default) — never set `standalone: true` in decorators
+- Set `changeDetection: ChangeDetectionStrategy.OnPush` in every `@Component`
+- Use `input()` and `output()` functions, not `@Input`/`@Output` decorators
+- Use `host` object in `@Component`/`@Directive` for host bindings — never `@HostBinding`/`@HostListener`
+- Keep components single-responsibility; prefer inline templates for small components
+- Use `NgOptimizedImage` for all static images (does not work for inline base64)
+
+## State and Reactivity
+
+- Use signals for local component state; use `computed()` for derived state
+- Update signals with `set` or `update` — never `mutate`
+- Keep state transformations pure and predictable
+
+## Templates
+
+- Use native control flow (`@if`, `@for`, `@switch`) — never `*ngIf`, `*ngFor`, `*ngSwitch`
+- Use `class` bindings, not `ngClass`; use `style` bindings, not `ngStyle`
+- Use the `async` pipe for observables
+- Do not assume browser globals (e.g., `new Date()`) are available in templates
+
+## Forms
+
+- Use Reactive forms, not Template-driven forms
+
+## Services
+
+- Single responsibility per service
+- Use `providedIn: 'root'` for singleton services
+- Use the `inject()` function, not constructor injection
+
+## Routing
+
+- Lazy-load feature routes
+
+## Accessibility
+
+- Must pass all AXE checks
+- Must meet WCAG AA: focus management, color contrast, ARIA attributes
+
 # CI and Testing Architecture
 
 ## Critical Constraints
