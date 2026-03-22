@@ -70,13 +70,13 @@ jobs:
         include:
           - browser: chrome-beta
             project: chrome-gemini-nano
-            cache-key: chrome-beta-cpu-container-v1
+            cache-key: chrome-beta-cpu-container-v2
             runner: ubuntu-latest
             xvfb: 'xvfb-run --auto-servernum'
             container: true
           - browser: msedge-dev
             project: edge-phi4-mini
-            cache-key: msedge-dev-ai-model-windows11-arm-v1
+            cache-key: msedge-dev-ai-model-windows11-arm-v2
             runner: windows-11-arm
             xvfb: ''
             container: false
