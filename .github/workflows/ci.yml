@@ -204,10 +204,10 @@ jobs:
         id: model-cache
         with:
           path: .playwright-profiles/msedge-dev
-          key: msedge-dev-ai-model-windows11-arm-v3-run${{ github.run_number }}
+          key: msedge-dev-ai-model-windows11-arm-v4-run${{ github.run_number }}
           restore-keys: |
-            msedge-dev-ai-model-windows11-arm-v3-run
-            msedge-dev-ai-model-windows11-arm-v3
+            msedge-dev-ai-model-windows11-arm-v4-run
+            msedge-dev-ai-model-windows11-arm-v4
 
       - name: Bootstrap AI model
         id: bootstrap
@@ -259,10 +259,10 @@ jobs:
         id: model-cache
         with:
           path: .playwright-profiles/msedge-dev
-          key: msedge-dev-ai-model-windows11-arm-v3-run${{ github.run_number }}
+          key: msedge-dev-ai-model-windows11-arm-v4-run${{ github.run_number }}
           restore-keys: |
-            msedge-dev-ai-model-windows11-arm-v3-run
-            msedge-dev-ai-model-windows11-arm-v3
+            msedge-dev-ai-model-windows11-arm-v4-run
+            msedge-dev-ai-model-windows11-arm-v4
 
       - name: Bootstrap AI model
         id: bootstrap
@@ -274,7 +274,7 @@ jobs:
         uses: actions/cache/save@v5
         with:
           path: .playwright-profiles/msedge-dev
-          key: msedge-dev-ai-model-windows11-arm-v3-run${{ github.run_number }}-bootstrap
+          key: msedge-dev-ai-model-windows11-arm-v4-run${{ github.run_number }}-bootstrap
 
       - name: Log ONNX Runtime version and model config
         if: steps.bootstrap.outcome != 'failure'
@@ -329,4 +329,4 @@ jobs:
         uses: actions/cache/save@v5
         with:
           path: .playwright-profiles/msedge-dev
-          key: msedge-dev-ai-model-windows11-arm-v3-run${{ github.run_number }}
+          key: msedge-dev-ai-model-windows11-arm-v4-run${{ github.run_number }}
