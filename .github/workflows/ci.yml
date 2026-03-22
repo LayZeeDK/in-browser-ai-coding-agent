@@ -140,12 +140,6 @@ jobs:
         timeout-minutes: 45
         run: xvfb-run --auto-servernum npm exec nx -- e2e in-browser-ai-coding-agent-e2e -c chrome
 
-      - name: Kill lingering Chrome processes
-        if: ${{ !cancelled() }}
-        run: |
-          pkill -9 -f chrome 2>/dev/null || true
-          sleep 2
-
       - name: Run unit tests
         if: ${{ !cancelled() }}
         id: unit-tests

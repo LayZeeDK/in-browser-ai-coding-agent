@@ -64,19 +64,22 @@
     "test": {
       "executor": "@angular/build:unit-test",
       "options": {
-        "runnerConfig": "apps/in-browser-ai-coding-agent/vitest.config.mts"
+        "runnerConfig": "apps/in-browser-ai-coding-agent/vitest.config.mts",
+        "headless": false
       }
     },
     "test-chrome": {
       "executor": "@angular/build:unit-test",
       "options": {
-        "runnerConfig": "apps/in-browser-ai-coding-agent/vitest.config.chrome.mts"
+        "runnerConfig": "apps/in-browser-ai-coding-agent/vitest.config.chrome.mts",
+        "headless": false
       }
     },
     "test-edge": {
       "executor": "@angular/build:unit-test",
       "options": {
-        "runnerConfig": "apps/in-browser-ai-coding-agent/vitest.config.edge.mts"
+        "runnerConfig": "apps/in-browser-ai-coding-agent/vitest.config.edge.mts",
+        "headless": false
       }
     },
     "serve-static": {

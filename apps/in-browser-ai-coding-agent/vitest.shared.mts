@@ -99,6 +99,10 @@ export function createVitestConfig(options?: {
         : ['default'],
       browser: {
         enabled: true,
+        // LanguageModel API requires headed mode — headless Chrome exits
+        // immediately. Vitest defaults to headless in CI and overrides
+        // launchOptions.headless, so it must be set here.
+        headless: false,
         instances,
         trace: process.env['CI'] ? 'on-first-retry' : 'off',
       },
