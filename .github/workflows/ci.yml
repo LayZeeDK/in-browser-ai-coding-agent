@@ -139,19 +139,15 @@ jobs:
         id: model-cache
         with:
           path: .playwright-profiles/${{ matrix.browser }}
-          key: ${{ matrix.cache-key }}
+          key: ${{ matrix.cache-key }}-run${{ github.run_number }}
+          restore-keys: |
+            ${{ matrix.cache-key }}-run
+            ${{ matrix.cache-key }}
 
       - name: Bootstrap AI model
         id: bootstrap
         if: steps.model-cache.outputs.cache-hit != 'true'
         run: ${{ matrix.xvfb }} node scripts/bootstrap-ai-model.mjs --browser ${{ matrix.browser }} --profile .playwright-profiles/${{ matrix.browser }} --timeout 600000
-
-      - name: Save AI model cache
-        if: steps.model-cache.outputs.cache-hit != 'true' && steps.bootstrap.outcome == 'success'
-        uses: actions/cache/save@v5
-        with:
-          path: .playwright-profiles/${{ matrix.browser }}
-          key: ${{ matrix.cache-key }}
 
       - name: Run e2e tests (${{ matrix.project }})
         if: steps.bootstrap.outcome != 'failure'
@@ -184,3 +180,10 @@ jobs:
             }
             fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, md || '_No prompt responses captured_\n');
           "
+
+      - name: Save AI model cache (post-test)
+        if: ${{ !cancelled() }}
+        uses: actions/cache/save@v5
+        with:
+          path: .playwright-profiles/${{ matrix.browser }}
+          key: ${{ matrix.cache-key }}-run${{ github.run_number }}
