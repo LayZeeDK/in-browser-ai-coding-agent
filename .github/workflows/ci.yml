@@ -214,24 +214,10 @@ jobs:
         if: steps.model-cache.outputs.cache-hit != 'true'
         run: node scripts/bootstrap-ai-model.mjs --browser msedge-dev --profile .playwright-profiles/msedge-dev --timeout 600000 --perf-param 3
 
-      - name: Save AI model cache (post-bootstrap)
-        if: ${{ steps.model-cache.outputs.cache-hit != 'true' && steps.bootstrap.outcome == 'success' }}
-        uses: actions/cache/save@v5
-        with:
-          path: .playwright-profiles/msedge-dev
-          key: msedge-dev-ai-model-windows11-arm-v3-run${{ github.run_number }}-bootstrap
-
       - name: Run e2e tests
         if: steps.bootstrap.outcome != 'failure'
         timeout-minutes: 60
         run: npm exec nx -- e2e in-browser-ai-coding-agent-e2e -c edge
-
-      - name: Save AI model cache (post-test)
-        if: ${{ !cancelled() && steps.bootstrap.outcome != 'failure' }}
-        uses: actions/cache/save@v5
-        with:
-          path: .playwright-profiles/msedge-dev
-          key: msedge-dev-ai-model-windows11-arm-v3-run${{ github.run_number }}-e2e
 
   test-edge:
     runs-on: windows-11-arm
@@ -339,7 +325,7 @@ jobs:
           ls -la .playwright-profiles/msedge-dev/EdgeLLMRuntime/*/onnxruntime*.dll 2>/dev/null || echo "No ONNX Runtime DLLs"
 
       - name: Save AI model cache (post-test)
-        if: ${{ !cancelled() && steps.bootstrap.outcome != 'failure' }}
+        if: steps.unit-tests.outcome == 'success'
         uses: actions/cache/save@v5
         with:
           path: .playwright-profiles/msedge-dev
