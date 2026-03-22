@@ -24,6 +24,7 @@ const { values } = parseArgs({
     timeout: { type: 'string', default: '300000' },
     headless: { type: 'boolean', default: false },
     'disable-gpu': { type: 'boolean', default: false },
+    'perf-param': { type: 'string', default: '3' },
     'extra-arg': { type: 'string', multiple: true, default: [] },
   },
   allowPositionals: true,
@@ -81,7 +82,7 @@ const browserConfig = {
     internalPage: 'edge://gpu',
     flags: [
       'edge-llm-prompt-api-for-phi-mini@1',
-      'edge-llm-on-device-model-performance-param@3',
+      `edge-llm-on-device-model-performance-param@${values['perf-param']}`,
       'edge-llm-on-device-model-debug-logs@1',
     ],
     args: [

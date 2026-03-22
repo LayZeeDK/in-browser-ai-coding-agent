@@ -189,7 +189,9 @@ async function warmUpModel(instance: BrowserInstance) {
       const statusLines = statusSnapshot
         .split('\n')
         .filter((l: string) =>
-          /model state|crash count|^.*row "k\w+|OPTIMIZATION_TARGET/i.test(l),
+          /model state|crash count|^.*row "k\w+|OPTIMIZATION_TARGET|device capable|disk space|enterprise|enabled by|installing|recently used|retention|VRAM/i.test(
+            l,
+          ),
         );
       console.log(
         `[global-setup] ${instance.name}: on-device-internals (Model Status):`,

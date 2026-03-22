@@ -171,7 +171,7 @@ export const test = base.extend<
           const statusLines = statusSnapshot
             .split('\n')
             .filter((l: string) =>
-              /model state|crash count|^.*row "k\w+|OPTIMIZATION_TARGET/i.test(
+              /model state|crash count|^.*row "k\w+|OPTIMIZATION_TARGET|device capable|disk space|enterprise|enabled by|installing|recently used|retention|VRAM/i.test(
                 l,
               ),
             );

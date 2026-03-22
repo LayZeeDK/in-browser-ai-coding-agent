@@ -71,6 +71,7 @@ jobs:
           - browser: chrome-beta
             e2e-config: chrome
             test-target: test-chrome
+            perf-param: '3'
             cache-key: chrome-beta-cpu-container-v3
             runner: ubuntu-latest
             xvfb: 'xvfb-run --auto-servernum'
@@ -78,7 +79,24 @@ jobs:
           - browser: msedge-dev
             e2e-config: edge
             test-target: test-edge
+            perf-param: '3'
             cache-key: msedge-dev-ai-model-windows11-arm-v3
+            runner: windows-11-arm
+            xvfb: ''
+            container: false
+          - browser: msedge-dev
+            e2e-config: edge
+            test-target: test-edge
+            perf-param: '1'
+            cache-key: msedge-dev-perf1-windows11-arm-v3
+            runner: windows-11-arm
+            xvfb: ''
+            container: false
+          - browser: msedge-dev
+            e2e-config: edge
+            test-target: test-edge
+            perf-param: '2'
+            cache-key: msedge-dev-perf2-windows11-arm-v3
             runner: windows-11-arm
             xvfb: ''
             container: false
@@ -134,7 +152,7 @@ jobs:
       - name: Bootstrap AI model
         id: bootstrap
         if: ${{ steps.model-cache.outputs.cache-hit != 'true' && !matrix.container }}
-        run: ${{ matrix.xvfb }} node scripts/bootstrap-ai-model.mjs --browser ${{ matrix.browser }} --profile .playwright-profiles/${{ matrix.browser }} --timeout 600000
+        run: ${{ matrix.xvfb }} node scripts/bootstrap-ai-model.mjs --browser ${{ matrix.browser }} --profile .playwright-profiles/${{ matrix.browser }} --timeout 600000 --perf-param ${{ matrix.perf-param }}
 
       - name: Save AI model cache (post-bootstrap)
         if: ${{ !matrix.container && steps.model-cache.outputs.cache-hit != 'true' && steps.bootstrap.outcome == 'success' }}
