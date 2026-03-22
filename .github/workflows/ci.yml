@@ -71,14 +71,14 @@ jobs:
           - browser: chrome-beta
             e2e-config: chrome
             test-target: test-chrome
-            cache-key: chrome-beta-cpu-container-v2
+            cache-key: chrome-beta-cpu-container-v3
             runner: ubuntu-latest
             xvfb: 'xvfb-run --auto-servernum'
             container: true
           - browser: msedge-dev
             e2e-config: edge
             test-target: test-edge
-            cache-key: msedge-dev-ai-model-windows11-arm-v2
+            cache-key: msedge-dev-ai-model-windows11-arm-v3
             runner: windows-11-arm
             xvfb: ''
             container: false
@@ -136,6 +136,13 @@ jobs:
         if: steps.model-cache.outputs.cache-hit != 'true'
         run: ${{ matrix.xvfb }} node scripts/bootstrap-ai-model.mjs --browser ${{ matrix.browser }} --profile .playwright-profiles/${{ matrix.browser }} --timeout 600000
 
+      - name: Save AI model cache (post-bootstrap)
+        if: ${{ steps.model-cache.outputs.cache-hit != 'true' && steps.bootstrap.outcome == 'success' }}
+        uses: actions/cache/save@v5
+        with:
+          path: .playwright-profiles/${{ matrix.browser }}
+          key: ${{ matrix.cache-key }}-run${{ github.run_number }}-bootstrap
+
       - name: Run e2e tests (${{ matrix.e2e-config }})
         if: steps.bootstrap.outcome != 'failure'
         id: e2e-tests
@@ -178,7 +185,7 @@ jobs:
           "
 
       - name: Save AI model cache (post-test)
-        if: ${{ !cancelled() && steps.bootstrap.outcome != 'failure' }}
+        if: ${{ !cancelled() && steps.e2e-tests.outcome == 'success' }}
         uses: actions/cache/save@v5
         with:
           path: .playwright-profiles/${{ matrix.browser }}
