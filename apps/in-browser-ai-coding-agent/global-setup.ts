@@ -137,13 +137,18 @@ async function warmUpModel(instance: BrowserInstance) {
   try {
     await page.goto(instance.onDeviceInternalsUrl);
 
-    // Trigger model loading
+    // Trigger model loading and run first inference to warm up
+    console.log(
+      `[global-setup] ${instance.name}: warming up model (first inference may take minutes)...`,
+    );
     await page.evaluate(async () => {
       if (typeof LanguageModel !== 'undefined') {
         const session = await LanguageModel.create();
+        await session.prompt('warmup');
         session.destroy();
       }
     });
+    console.log(`[global-setup] ${instance.name}: warm-up prompt complete`);
 
     console.log(
       `[global-setup] ${instance.name}: waiting for model ready state...`,

@@ -142,12 +142,17 @@ export const test = base.extend<
         console.log(
           `[fixtures] ${projectName}: triggering LanguageModel.create()`,
         );
+        console.log(
+          `[fixtures] ${projectName}: warming up model (first inference may take minutes)...`,
+        );
         await warmupPage.evaluate(async () => {
           if (typeof LanguageModel !== 'undefined') {
             const session = await LanguageModel.create();
+            await session.prompt('warmup');
             session.destroy();
           }
         });
+        console.log(`[fixtures] ${projectName}: warm-up prompt complete`);
 
         // Wait for model ready state — bail if Model Status tab
         // isn't found (page may render differently in containers)
