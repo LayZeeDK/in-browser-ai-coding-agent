@@ -140,7 +140,7 @@ jobs:
         if: steps.bootstrap.outcome != 'failure'
         id: e2e-tests
         timeout-minutes: 45
-        run: ${{ matrix.xvfb }} npm exec nx -- e2e in-browser-ai-coding-agent-e2e -- --project=${{ matrix.project }}
+        run: ${{ matrix.xvfb }} npm exec nx -- e2e in-browser-ai-coding-agent-e2e -c ${{ matrix.project }}
 
       - name: Kill lingering browser processes
         if: ${{ !cancelled() && !matrix.container && steps.bootstrap.outcome != 'failure' }}
