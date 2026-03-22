@@ -219,7 +219,7 @@ export const test = base.extend<
       await use(context);
       await context.close();
     },
-    { scope: 'worker', timeout: 1_200_000 },
+    { scope: 'worker', timeout: 2_400_000 },
   ],
 
   // Test-scoped: provides a fresh page from the shared context

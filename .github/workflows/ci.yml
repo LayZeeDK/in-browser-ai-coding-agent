@@ -140,6 +140,17 @@ jobs:
         timeout-minutes: 45
         run: ${{ matrix.xvfb }} npm exec nx -- e2e in-browser-ai-coding-agent-e2e -- --project=${{ matrix.project }}
 
+      - name: Kill lingering browser processes
+        if: ${{ !cancelled() && !matrix.container && steps.bootstrap.outcome != 'failure' }}
+        shell: bash
+        run: |
+          # Kill browser processes that may hold the ProcessSingleton lockfile
+          # after e2e tests finish or are killed by timeout
+          taskkill //F //IM msedge.exe 2>/dev/null || true
+          taskkill //F //IM chrome.exe 2>/dev/null || true
+          taskkill //F //IM chrome_crashpad_handler.exe 2>/dev/null || true
+          sleep 2
+
       - name: Run unit tests (${{ matrix.project }})
         if: ${{ !cancelled() && steps.bootstrap.outcome != 'failure' }}
         id: unit-tests

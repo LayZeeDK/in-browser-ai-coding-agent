@@ -137,17 +137,28 @@ async function warmUpModel(instance: BrowserInstance) {
   try {
     await page.goto(instance.onDeviceInternalsUrl);
 
-    // Trigger model loading and run first inference to warm up
+    // Trigger model loading and run first inference to warm up.
+    // Wrap in Promise.race — page.evaluate has no built-in timeout,
+    // so session.prompt() can hang indefinitely if the model fails to load.
     console.log(
       `[global-setup] ${instance.name}: warming up model (first inference may take minutes)...`,
     );
-    await page.evaluate(async () => {
-      if (typeof LanguageModel !== 'undefined') {
-        const session = await LanguageModel.create();
-        await session.prompt('warmup');
-        session.destroy();
-      }
-    });
+    const warmupTimeout = 1_200_000; // 20 min
+    await Promise.race([
+      page.evaluate(async () => {
+        if (typeof LanguageModel !== 'undefined') {
+          const session = await LanguageModel.create();
+          await session.prompt('warmup');
+          session.destroy();
+        }
+      }),
+      new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new Error('Warm-up prompt timed out')),
+          warmupTimeout,
+        ),
+      ),
+    ]);
     console.log(`[global-setup] ${instance.name}: warm-up prompt complete`);
 
     console.log(

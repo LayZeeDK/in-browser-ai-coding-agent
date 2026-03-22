@@ -15,9 +15,9 @@ export default defineConfig({
   ...preset,
   // Persistent browser contexts cannot be shared across parallel workers
   workers: 1,
-  // Chrome Beta's ProcessSingleton on Windows can cause the first
-  // launchPersistentContext to fail — retry handles this gracefully
-  retries: 2,
+  // Retries create new workers, each needing a full 12+ min model warm-up
+  // on ARM64. ProcessSingleton is handled by the fixture's 5-attempt retry.
+  retries: process.env['CI'] ? 0 : 2,
   reporter: [
     ...(
       (Array.isArray(preset.reporter)
