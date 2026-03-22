@@ -82,6 +82,7 @@ tsconfig.base.json                      # Shared TypeScript paths and compiler o
 - **Unit tests need real browsers**: Vitest browser mode with `@vitest/browser-playwright` — JSDOM won't work (no LanguageModel API)
 - **E2E imports from `./fixtures`**: Never import from `@playwright/test` directly — tests must use the shared persistent context (see Critical Constraints below)
 - **`@angular/build:unit-test` ignores Nx configurations**: `runnerConfig` resolves from base `options` only — configuration overrides are silently ignored. Use separate targets (`test-chrome`, `test-edge`) instead of `test -c chrome-gemini-nano`
+- **`@angular/build:unit-test` forces headless in CI**: When `process.env.CI` is set and `headless` is not explicitly configured, the builder forces `headless: true` on all browser instances. LanguageModel API requires headed mode. Set `"headless": false` in the executor options in `project.json`
 
 ## Troubleshooting
 
