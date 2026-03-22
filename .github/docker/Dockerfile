@@ -101,7 +101,3 @@ RUN npm install -g playwright@${PLAYWRIGHT_VERSION} && \
     npm uninstall -g playwright && \
     rm -rf /root/.npm/
 
-FROM base AS msedge-dev
-ARG PLAYWRIGHT_VERSION
-RUN npx -y playwright@${PLAYWRIGHT_VERSION} install msedge-dev && \
-    rm -rf /root/.npm/
