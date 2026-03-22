@@ -32,7 +32,9 @@ npm start                       # dev server (nx serve in-browser-ai-coding-agen
 npm run build                   # production build
 npm run lint                    # ESLint (--max-warnings=0)
 npm run typecheck               # TypeScript type checking
-npm test                        # unit tests (Vitest browser mode — needs branded browser)
+npm test                        # unit tests — both browsers (Vitest browser mode)
+npm exec nx -- test-chrome in-browser-ai-coding-agent  # Chrome Beta / Gemini Nano only
+npm exec nx -- test-edge in-browser-ai-coding-agent    # Edge Dev / Phi-4 Mini only
 npm run e2e                     # E2E tests (Playwright — needs branded browser + AI model)
 npm run format                  # Prettier format
 npm run format:check            # Prettier check
@@ -50,8 +52,14 @@ apps/
       app.ts                             # Root component
       app.config.ts                      # Angular app configuration
       app.routes.ts                      # Route definitions
-    global-setup.ts                      # Vitest global setup — model warm-up
-    vitest.config.mts                    # Vitest browser mode config
+    global-setup.ts                      # Vitest global setup — warms all browsers
+    global-setup.chrome.ts               # Vitest global setup — Chrome only
+    global-setup.edge.ts                 # Vitest global setup — Edge only
+    global-setup.shared.ts               # Shared warm-up logic (browser instances, polling)
+    vitest.config.mts                    # Vitest config — both browsers (default)
+    vitest.config.chrome.mts             # Vitest config — Chrome only (test-chrome target)
+    vitest.config.edge.mts               # Vitest config — Edge only (test-edge target)
+    vitest.shared.mts                    # Shared Vitest config factory
   in-browser-ai-coding-agent-e2e/       # Playwright E2E tests
     src/
       fixtures.ts                        # Worker-scoped persistent context fixture
@@ -73,6 +81,7 @@ tsconfig.base.json                      # Shared TypeScript paths and compiler o
 - **Pre-commit hook auto-formats**: `.githooks/pre-commit` runs `nx format` on staged files and re-stages them. Commits may silently include formatting changes
 - **Unit tests need real browsers**: Vitest browser mode with `@vitest/browser-playwright` — JSDOM won't work (no LanguageModel API)
 - **E2E imports from `./fixtures`**: Never import from `@playwright/test` directly — tests must use the shared persistent context (see Critical Constraints below)
+- **`@angular/build:unit-test` ignores Nx configurations**: `runnerConfig` resolves from base `options` only — configuration overrides are silently ignored. Use separate targets (`test-chrome`, `test-edge`) instead of `test -c chrome-gemini-nano`
 
 ## Troubleshooting
 
@@ -152,7 +161,11 @@ Use `git grep` for searching tracked files. Use `rg` only for untracked/ignored 
 ## Design Decisions
 
 - **E2E before unit tests**: E2E warm-up initializes inference pipeline; unit tests reuse warm model. Cache saved post-test (not post-bootstrap) to capture inference artifacts (`adapter_cache.bin`, `encoder_cache.bin`)
-- **Three-way warm-up duplication is intentional**: bootstrap, e2e fixture, Vitest global-setup each warm up independently — each is a separate entry point that might run alone
+- **Three-way warm-up is intentional**: bootstrap, e2e fixture, Vitest global-setup each warm up independently — each is a separate entry point that might run alone
+- **Warm-up order matters**: (1) `LanguageModel.create()` triggers model registration, (2) wait for Model Status "Ready" on the internals page, (3) `session.prompt('warmup')` runs first inference. Without step 1, Model Status stays "NO STATE" indefinitely. Without step 2, the prompt absorbs the full cold-start (~12 min vs ~35s)
+- **"NO STATE" is transient — don't refresh**: On `edge://on-device-internals` Model Status tab, "NO STATE" means the model is loading. Wait patiently. Only refresh on "Not Ready For Unknown Reason"
+- **Retries disabled in CI**: Playwright retries create new workers, each needing a full 12+ min model warm-up on ARM64. ProcessSingleton is handled by the fixture's 5-attempt retry loop instead
+- **Per-browser Nx targets, not configurations**: `@angular/build:unit-test` ignores Nx configuration overrides for `runnerConfig`. Separate targets (`test-chrome`, `test-edge`) with distinct Vitest config files provide proper cache isolation
 - **`@1` not `@2` for `optimization-guide-on-device-model`**: `@2` (BypassPerfRequirement) predates Chrome 140 CPU support, forces GPU backend on no-GPU machines
 - **ONNX Runtime is Edge profile component**: DLLs download into profile dir, not browser install. Profile cache must include runtime + model + tokenizer
 - **`open: 'never'` in HTML reporter**: Opening report launches Chrome Stable, triggering ProcessSingleton name-based conflict with test browser
@@ -164,6 +177,8 @@ Use `git grep` for searching tracked files. Use `rg` only for untracked/ignored 
 - Per-test browser fixtures: close-relaunch triggers ProcessSingleton every test
 - Vitest `setupFiles`: runs in browser context, no `launchPersistentContext()` API access
 - macOS runners (Intel + M1): GPU VRAM insufficient, no CPU-only fallback
+- Nx configurations for `runnerConfig`: `@angular/build:unit-test` resolves from base options only, silently ignoring configuration overrides
+- Vitest/Playwright retries in CI: each retry recreates the worker-scoped fixture, triggering a full 12+ min model warm-up on ARM64 — 3 retries x 15 min exceeds the 45-min step timeout
 
 ## Deep Reference
 
