@@ -224,7 +224,7 @@ jobs:
       - name: Run e2e tests
         if: steps.bootstrap.outcome != 'failure'
         id: e2e-tests
-        timeout-minutes: 60
+        timeout-minutes: 120
         run: npm exec nx -- e2e in-browser-ai-coding-agent-e2e -c edge
 
       - name: Save AI model cache (post-test)
@@ -308,7 +308,7 @@ jobs:
       - name: Run unit tests
         if: steps.bootstrap.outcome != 'failure'
         id: unit-tests
-        timeout-minutes: 60
+        timeout-minutes: 120
         shell: bash
         run: |
           set -o pipefail
