@@ -181,6 +181,17 @@ jobs:
         timeout-minutes: 45
         run: ${{ matrix.xvfb }} npm exec nx -- e2e in-browser-ai-coding-agent-e2e -c ${{ matrix.e2e-config }}
 
+      - name: Kill lingering Chrome processes
+        if: ${{ !cancelled() && matrix.container }}
+        shell: bash
+        run: |
+          # Chrome's ProcessSingleton holds the profile lockfile after close.
+          # Required for Chrome containers; Edge on Windows does NOT need this
+          # (Edge releases the lockfile cleanly, and killing may truncate
+          # async ONNX Runtime cache writes).
+          pkill -9 -f chrome 2>/dev/null || true
+          sleep 2
+
       - name: Run unit tests (${{ matrix.e2e-config }})
         if: ${{ !cancelled() && steps.bootstrap.outcome != 'failure' }}
         id: unit-tests
