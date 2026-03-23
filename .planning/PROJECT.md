@@ -40,6 +40,7 @@ A non-technical user types a description of what they want and gets working, wel
 - [ ] Single HTML file output (inline CSS/JS), with option to split into separate files if research shows benefit
 - [ ] Loading/progress indicator during code generation
 - [ ] Generated output usable and well-designed enough for non-technical users
+- [ ] Synthetic user prompt corpus — curated set of prompts at varying complexity (landing pages, forms, games, dashboards) for benchmarking model quality, regression testing pipeline changes, and warming CI inference cache
 - [ ] CI-compatible warm-up strategy for code generation prompts (cache warm inference state between workflow runs)
 
 ### Out of Scope
@@ -92,7 +93,7 @@ Research is needed to determine actual code generation quality for each model. T
 ## Constraints
 
 - **Browser requirement**: Chrome Beta 138+ or Edge Dev 138+ with feature flags enabled — no fallback to standard browsers
-- **No GPU dependency**: Must work on CPU/NPU only — local machine has no capable GPU, CI runners have no GPU at all
+- **Light GPU/NPU okay, CI has neither**: Local machine (Snapdragon X Elite) has Adreno iGPU + Hexagon NPU — ONNX Runtime (Edge/Phi-4 Mini) leverages NPU well; Chrome/Gemini Nano likely uses CPU (XNNPACK) even locally. CI runners (ubuntu-latest, windows-11-arm) have zero GPU/NPU — must fall back to pure CPU inference
 - **CI time budget**: Phi-4 Mini CI runs take hours; Chrome/Gemini Nano CI is the fast feedback loop for iteration
 - **On-device only**: No cloud APIs for inference — this is a hard architectural constraint, not a cost optimization
 - **Model size**: Gemini Nano ~4 GB, Phi-4 Mini ~2.3 GB on disk — users must download models before first use
