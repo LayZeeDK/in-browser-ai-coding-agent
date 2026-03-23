@@ -6,6 +6,7 @@
  * inference warm-up happens in browser-warmup.ts (setupFile) which
  * runs in the same browser process as tests.
  */
+// eslint-disable-next-line @nx/enforce-module-boundaries -- Vite module runner requires relative import
 import {
   allProfiles,
   seedLocalState,

@@ -1,6 +1,7 @@
+import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
-// Relative import required — Vite processes config files without tsconfig path aliases
+// eslint-disable-next-line @nx/enforce-module-boundaries -- Nx plugins parse config before Vite plugins resolve tsconfig paths
 import {
   allProfiles,
   getLaunchOptions,
@@ -38,6 +39,7 @@ export function createVitestConfig(options?: {
     : allInstances;
 
   return defineConfig({
+    plugins: [nxViteTsPaths()],
     test: {
       globalSetup: [globalSetup],
       // Warm up the model in the SAME browser process that runs tests.
