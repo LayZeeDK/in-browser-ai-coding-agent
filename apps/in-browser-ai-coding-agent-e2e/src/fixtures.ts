@@ -68,8 +68,11 @@ export const test = base.extend<
       }
 
       // Warm up the model — same approach as browser-warmup.ts (unit tests).
-      // No navigation to internal pages — just create a session and prompt.
+      // Navigate to the app first — LanguageModel API requires a secure context
+      // (not available on about:blank which has no origin).
       const warmupPage = context.pages()[0] || (await context.newPage());
+      const baseURL = workerInfo.project.use.baseURL || 'http://localhost:4200';
+      await warmupPage.goto(baseURL);
       const start = Date.now();
 
       try {
