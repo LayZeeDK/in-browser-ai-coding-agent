@@ -46,7 +46,8 @@ Thumbs.db
 .github/instructions/nx.instructions.md
 
 .angular
-.claude
+.claude/*.local.json
+.claude/*.local.md
 .playwright-cli
 .playwright-mcp
 .playwright-profiles
