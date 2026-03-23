@@ -9,6 +9,7 @@
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { workspaceRoot } from '@nx/devkit';
 
 /**
  * Playwright's exact --disable-features default arg. Must match exactly
@@ -48,7 +49,7 @@ export const allProfiles: BrowserProfile[] = [
   {
     name: 'chrome-gemini-nano',
     channel: 'chrome-beta',
-    profileDir: resolve('.playwright-profiles/chrome-beta'),
+    profileDir: resolve(workspaceRoot, '.playwright-profiles/chrome-beta'),
     onDeviceInternalsUrl: 'chrome://on-device-internals',
     args: [
       '--enable-features=OptimizationGuideOnDeviceModel,PromptAPIForGeminiNano',
@@ -62,7 +63,7 @@ export const allProfiles: BrowserProfile[] = [
   {
     name: 'edge-phi4-mini',
     channel: 'msedge-dev',
-    profileDir: resolve('.playwright-profiles/msedge-dev'),
+    profileDir: resolve(workspaceRoot, '.playwright-profiles/msedge-dev'),
     onDeviceInternalsUrl: 'edge://on-device-internals',
     args: [
       '--enable-features=AIPromptAPI',
