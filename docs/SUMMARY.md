@@ -166,12 +166,12 @@ CI Workflow
 
 ### Caching Strategy
 
-| Cache                  | Scope              | Key Strategy                                                                                                         |
-| ---------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| npm download cache     | Ubuntu (container) | `setup-node` with `cache: 'npm'`                                                                                     |
-| node_modules direct    | Windows ARM only   | Keyed to `runner.os + runner.arch + package-lock.json` hash; skip `npm ci` on hit                                    |
-| AI model profile       | Both runners       | Rolling key with `run_number` suffix; `restore-keys` prefix matching; saved post-test to capture inference artifacts |
-| Docker container image | Chrome Beta only   | Rebuilt on Node/Playwright/Dockerfile changes; versioned + `:latest` tags                                            |
+| Cache                  | Scope            | Key Strategy                                                                                                                                              |
+| ---------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| npm download cache     | All jobs         | `setup-node` with `cache: 'npm'`; secondary layer on Windows ARM (primary on Ubuntu)                                                                      |
+| node_modules direct    | Windows ARM only | Keyed to `runner.os + runner.arch + .node-version + package-lock.json` hash; `restore-keys` for incremental install on partial hit; two-step npm approach |
+| AI model profile       | Both runners     | Rolling key with `run_number` suffix; `restore-keys` prefix matching; saved post-test to capture inference artifacts                                      |
+| Docker container image | Chrome Beta only | Rebuilt on Node/Playwright/Dockerfile changes; versioned + `:latest` tags                                                                                 |
 
 ### Feature Flags
 

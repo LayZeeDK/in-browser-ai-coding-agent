@@ -166,7 +166,7 @@ Build layer caching uses GitHub Actions cache (`type=gha`), scoped per browser t
 
 The CI uses four distinct caching strategies, each tuned to a specific bottleneck.
 
-### 5.1 npm Download Cache (Ubuntu jobs)
+### 5.1 npm Download Cache (All jobs)
 
 ```yaml
 - uses: actions/setup-node@v6
@@ -174,26 +174,49 @@ The CI uses four distinct caching strategies, each tuned to a specific bottlenec
     cache: 'npm'
 ```
 
-On ubuntu-latest (both inside and outside the container), `setup-node` caches npm's HTTP download cache (`~/.npm`). This does not cache `node_modules` -- it caches the tarballs so that `npm ci` does not re-download them from the registry. `npm ci` still runs every time to ensure a clean install from `package-lock.json`.
+All jobs use `setup-node` with `cache: 'npm'`, which caches npm's HTTP download cache (`~/.npm` on Linux, `%LocalAppData%\npm-cache` on Windows). This does not cache `node_modules` -- it caches the tarballs so that `npm` does not re-download them from the registry.
 
-For the test job specifically, the cache parameter is conditionally set: `cache: ${{ matrix.container && 'npm' || '' }}`. When `container` is `true`, npm download caching is enabled. When `false` (Windows ARM), it is disabled because the Windows ARM job uses direct `node_modules` caching instead (see below).
+On ubuntu-latest, this is the only npm caching layer -- `npm ci` runs every time inside the Docker container, and the download cache makes it fast (~30-60s).
 
-### 5.2 node_modules Direct Cache (Windows ARM only)
+On windows-11-arm, this is a **secondary** cache layer that complements the primary `node_modules` cache (see below). It helps when `node_modules` is completely cold (no cache entry at all).
+
+### 5.2 node_modules Direct Cache with Incremental Install (Windows ARM)
 
 ```yaml
 - name: Restore node_modules cache
-  if: ${{ !matrix.container }}
+  id: node-modules
   uses: actions/cache/restore@v5
   with:
     path: node_modules
-    key: ${{ runner.os }}-${{ runner.arch }}-node-modules-${{ hashFiles('package-lock.json') }}
+    key: ${{ runner.os }}-${{ runner.arch }}-node${{ hashFiles('.node-version') }}-nm-${{ hashFiles('package-lock.json') }}
+    restore-keys: |
+      ${{ runner.os }}-${{ runner.arch }}-node${{ hashFiles('.node-version') }}-nm-
+
+- name: Validate lockfile
+  if: steps.node-modules.outputs.cache-hit != 'true'
+  run: npm ci --dry-run --ignore-scripts
+
+- name: Install dependencies
+  if: steps.node-modules.outputs.cache-hit != 'true'
+  run: npm install --no-save --prefer-offline
 ```
 
-**Why direct `node_modules` caching instead of npm download cache?**
+**Why this approach instead of `npm ci`?**
 
-`npm ci` on `windows-11-arm` (ARM64) is slow -- significantly slower than on x86_64 Linux. The bottleneck is not downloading tarballs but extracting and linking them. Native modules may also need compilation. By caching the entire `node_modules` directory keyed to `package-lock.json`, the job skips `npm ci` entirely on cache hits.
+`npm ci` on `windows-11-arm` takes **499-568 seconds** -- even with a warm npm download cache. The bottleneck is not downloading but extracting and linking ~1,466 packages on Windows NTFS, which is 10-15x slower than Linux. `npm ci` always deletes `node_modules/` before installing, so caching `node_modules` with `npm ci` only helps on exact cache hits (skip install entirely). Any lockfile change triggers a full 8-10 minute rebuild.
 
-The key includes `runner.os` and `runner.arch` to prevent cross-platform cache pollution. The separate `restore` and `save` actions (instead of the unified `actions/cache`) provide fine-grained control: `npm ci` is skipped when `cache-hit == 'true'`, and `save` only runs on misses to avoid redundant uploads.
+The two-step approach replaces `npm ci` with `npm ci --dry-run` (lockfile validation, ~2s) + `npm install --no-save` (incremental install). Combined with `restore-keys` prefix matching, a lockfile change restores the most recent `node_modules/` and patches only the delta -- **~10 seconds** instead of **~500 seconds**.
+
+**Cache key design:**
+
+- `runner.os` + `runner.arch`: Prevents cross-platform cache pollution
+- `hashFiles('.node-version')`: Invalidates on Node.js version changes (ABI safety)
+- `hashFiles('package-lock.json')`: Invalidates on dependency changes
+- `restore-keys` prefix: Matches any previous cache for the same OS/arch/Node, enabling incremental updates
+
+The cache `save` step is placed at the **end of the job** (after tests) to avoid blocking test execution. The `!cancelled()` guard ensures the cache is saved even if tests fail.
+
+**Research:** [npm-incremental-frozen-lockfile-install.md](../.planning/research/npm-incremental-frozen-lockfile-install.md) documents why npm lacks a single command for incremental + frozen-lockfile install, and why the two-step workaround is necessary.
 
 ### 5.3 AI Model Profile Cache
 

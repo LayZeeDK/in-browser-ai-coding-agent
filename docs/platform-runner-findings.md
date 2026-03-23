@@ -416,51 +416,84 @@ Edge Dev on `windows-11-arm` does not exhibit the profile lock problem. Likely r
 
 ## 7. npm/node_modules Caching
 
-### What `actions/setup-node` `cache: 'npm'` Actually Caches
+### Dual-Layer Caching Strategy (Windows ARM)
 
-The `cache: 'npm'` option caches only the **npm download cache** (`%LocalAppData%\npm-cache` on Windows, `~/.npm` on Linux) -- NOT `node_modules/`. This means `npm ci` still runs on every workflow invocation:
+The Windows ARM jobs use two complementary cache layers:
 
-1. Deletes `node_modules/` entirely.
-2. Resolves all 1,657 packages from `package-lock.json`.
-3. Extracts each tarball from the download cache into `node_modules/`.
-4. Runs install scripts for native modules (@swc/core, esbuild, nx, @parcel/watcher, lmdb, etc.).
-5. Builds `node_modules/.package-lock.json`.
-
-Cost: 1-3 minutes even with a warm download cache.
-
-### Recommended Optimization: Cache node_modules Directly
+1. **Primary: `node_modules` direct cache** with `restore-keys` -- skips install entirely on exact hit, enables incremental install on partial hit
+2. **Secondary: npm download cache** via `setup-node` with `cache: 'npm'` -- speeds up full installs when `node_modules` cache is completely cold
 
 ```yaml
 - uses: actions/setup-node@v6
   with:
     node-version-file: '.node-version'
-    cache: '' # Disable built-in npm cache
+    cache: 'npm' # Secondary: npm download cache
 
-- name: Cache node_modules
-  id: cache-node-modules
-  uses: actions/cache@v5
+- name: Restore node_modules cache
+  id: node-modules
+  uses: actions/cache/restore@v5
   with:
     path: node_modules
-    key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
-    # No restore-keys -- partial match would be stale
+    key: ${{ runner.os }}-${{ runner.arch }}-node${{ hashFiles('.node-version') }}-nm-${{ hashFiles('package-lock.json') }}
+    restore-keys: |
+      ${{ runner.os }}-${{ runner.arch }}-node${{ hashFiles('.node-version') }}-nm-
+
+# Two-step install: validate lockfile, then incremental update
+- name: Validate lockfile
+  if: steps.node-modules.outputs.cache-hit != 'true'
+  run: npm ci --dry-run --ignore-scripts
 
 - name: Install dependencies
-  if: steps.cache-node-modules.outputs.cache-hit != 'true'
-  run: npm ci
+  if: steps.node-modules.outputs.cache-hit != 'true'
+  run: npm install --no-save --prefer-offline
 ```
 
-### Performance Comparison
+### Why Two-Step Instead of `npm ci`
 
-| Strategy                             | Cache Hit Time | Cache Miss Time | Storage     |
-| ------------------------------------ | -------------- | --------------- | ----------- |
-| `setup-node` npm cache (current)     | ~1-3 min       | ~2-4 min        | ~300 MB     |
-| **node_modules cache (recommended)** | **~10-20 sec** | **~2-4 min**    | **~300 MB** |
+`npm ci` always deletes `node_modules/` before installing -- by design. On `windows-11-arm`, this takes **499-568 seconds** even with a warm npm download cache, because Windows ARM filesystem I/O is dramatically slower than Linux for extracting ~1,466 packages.
+
+npm lacks a single command equivalent to `pnpm install --frozen-lockfile` or `yarn install --immutable` that combines frozen lockfile enforcement with incremental install. The two-step workaround splits the guarantees:
+
+- **`npm ci --dry-run --ignore-scripts`**: Validates lockfile integrity (fails if `package.json` and `package-lock.json` are out of sync) without deleting `node_modules/`. Completes in ~2s.
+- **`npm install --no-save --prefer-offline`**: Diffs the actual `node_modules/` against the lockfile via Arborist and only installs changed packages. Never modifies `package-lock.json`.
+
+### Why `restore-keys` Works Here (Unlike With `npm ci`)
+
+The previous guidance ("do not use `restore-keys` with `node_modules/` caching") was correct when using `npm ci` -- a partial match would restore stale modules that `npm ci` would immediately delete and rebuild.
+
+With the two-step approach, `restore-keys` is the key optimization. When the lockfile changes:
+
+1. `restore-keys` prefix match restores the most recent `node_modules/` (from the previous lockfile)
+2. `npm install --no-save` diffs the stale tree against the new lockfile and patches only the delta
+3. Result: **~10 seconds** instead of **~500 seconds**
+
+`actions/setup-node`'s npm download cache also uses `restore-keys` internally, so even the secondary cache benefits from partial matches.
+
+### Performance Comparison (Benchmarked on windows-11-arm CI)
+
+| Scenario                                 | `npm ci` (old) | Two-step + `restore-keys` (new) |
+| ---------------------------------------- | -------------- | ------------------------------- |
+| **Exact cache hit** (lockfile unchanged) | ~15s (skip)    | ~15s (skip)                     |
+| **Partial hit** (lockfile changed)       | **499-568s**   | **~10s**                        |
+| **Full miss** (no node_modules at all)   | 499-568s       | ~448s                           |
 
 ### Platform-Specific Notes
 
-**On `windows-11-arm`:** Caching `node_modules/` directly is the clear winner. The runner has ARM64-native optional dependencies (~10 packages with `win32-arm64-msvc` variants). Extracting and rebuilding these from tarballs on every run is the most expensive part of `npm ci`. The cache key includes `runner.os` ("Windows") to prevent cross-platform contamination. Skipping `npm ci` on cache hit saves 1-3 minutes per run.
+**On `windows-11-arm`:** `npm ci` is **10-15x slower** than on Linux for the same project (499-568s vs ~30-60s). The bottleneck is Windows NTFS filesystem I/O: extracting ~1,466 packages and running install scripts for native modules. The two-step incremental approach avoids this entirely on partial cache hits.
 
-**On `ubuntu-latest`:** The npm download cache is fast enough for the Docker container workflow (npm ci runs inside the container with a warm download cache). Direct `node_modules/` caching is still beneficial but the delta is smaller.
+**On `ubuntu-latest`:** The npm download cache via `setup-node` with `cache: 'npm'` is sufficient. `npm ci` runs inside the Docker container and completes in ~30-60 seconds. The overhead of the two-step approach is not justified.
+
+### Cache Key Design
+
+```
+key:          Windows-ARM64-node<hash(.node-version)>-nm-<hash(package-lock.json)>
+restore-keys: Windows-ARM64-node<hash(.node-version)>-nm-
+```
+
+- **`runner.os` + `runner.arch`**: Prevents cross-platform cache pollution (Linux vs Windows, x64 vs ARM64)
+- **`hashFiles('.node-version')`**: Invalidates cache on Node.js major/minor version changes (native module ABI). Uses file hash instead of resolved version to avoid churn on patch updates
+- **`hashFiles('package-lock.json')`**: Invalidates on any dependency change
+- **`restore-keys` prefix**: Matches any previous cache for the same OS/arch/Node combination
 
 ### Cache Storage Budget
 
@@ -468,19 +501,20 @@ Cost: 1-3 minutes even with a warm download cache.
 | ----------------------------------------------------- | ------------------------- |
 | Linux node_modules                                    | ~200-300 MB               |
 | Windows node_modules                                  | ~200-300 MB               |
+| Windows npm download cache                            | ~200-300 MB               |
 | Edge Dev AI model profile (including onnxruntime.dll) | ~500 MB - 2 GB            |
 | Chrome Beta AI model profile                          | ~500 MB - 2 GB            |
-| **Total**                                             | **~1.4 - 4.6 GB**         |
+| **Total**                                             | **~1.6 - 4.9 GB**         |
 
-Well within the 10 GB GitHub Actions cache limit. The AI model caches are the largest consumers, not `node_modules/`.
+Well within the 10 GB GitHub Actions cache limit. The AI model caches are the largest consumers.
 
 ### Pitfalls
 
-1. **Do not use `restore-keys`** with `node_modules/` caching. A partial match restores stale modules that npm ci would delete anyway -- wasting the restore time.
-2. **Disable `actions/setup-node` built-in caching** (`cache: ''`) when using manual `actions/cache` to avoid double-caching and wasted storage.
-3. **Include Node.js version in cache key** if upgrading Node.js without changing the lockfile (native modules may be ABI-incompatible).
+1. **`npm install --no-save` does not validate lockfile sync.** That is why the `npm ci --dry-run` validation step is required before it. Without validation, a desynchronized `package.json`/`package-lock.json` would silently install incorrect versions.
+2. **`npm install` may trigger the [lockfile idempotency bug](https://github.com/npm/cli/issues/3652)** (trivial whitespace/metadata changes). The `--no-save` flag suppresses lockfile writes, mitigating this.
+3. **Cache save is moved to end of job** to avoid blocking test execution. The `!cancelled()` guard ensures the cache is saved even if tests fail.
 
-**Research file:** [npm-ci-caching-optimization.md](../research/npm-ci-caching-optimization.md)
+**Research files:** [npm-ci-caching-optimization.md](../.planning/research/npm-ci-caching-optimization.md), [npm-incremental-frozen-lockfile-install.md](../.planning/research/npm-incremental-frozen-lockfile-install.md)
 
 ---
 

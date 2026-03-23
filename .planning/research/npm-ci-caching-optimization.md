@@ -152,11 +152,27 @@ This project has extensive ARM64 Windows native optional dependencies in `packag
 | Correctness risk         | Low -- exact lockfile hash ensures exact match      |
 | Complexity               | Low (3 extra YAML lines)                            |
 
-### Strategy C: Cache both npm download cache AND `node_modules/`
+### Strategy C: Dual-layer caching (npm download cache + `node_modules/` with `restore-keys`)
 
-This is redundant. If `node_modules/` cache hits, the npm download cache is never used. If `node_modules/` cache misses, `npm ci` fetches from the registry (fast enough). The double cache wastes cache storage.
+**UPDATE (2026-03-23):** The original verdict ("Do not use") was wrong. It assumed cache-miss `npm ci` takes ~2-4 min on all platforms. On `windows-11-arm`, `npm ci` takes **499-568 seconds** -- the npm download cache provides negligible benefit because the bottleneck is filesystem I/O, not network downloads.
 
-**Verdict: Do not use.**
+The dual-layer approach is now **the recommended strategy for Windows ARM**:
+
+1. **Primary: `node_modules` cache with `restore-keys`** -- exact hit skips install; partial hit (stale `node_modules` from previous lockfile) enables incremental install via `npm install --no-save`
+2. **Secondary: `setup-node` npm download cache** -- helps only on full miss (no `node_modules` at all)
+3. **Two-step install** instead of `npm ci`: `npm ci --dry-run --ignore-scripts` validates lockfile integrity, then `npm install --no-save --prefer-offline` does incremental install
+
+Benchmarked on `windows-11-arm` CI runner:
+
+| Scenario                       | `npm ci` (Strategy B) | Strategy C (two-step + restore-keys) |
+| ------------------------------ | --------------------- | ------------------------------------ |
+| Exact cache hit                | ~15s (skip)           | ~15s (skip)                          |
+| Partial hit (lockfile changed) | **499-568s**          | **~10s**                             |
+| Full miss (no node_modules)    | 499-568s              | ~448s                                |
+
+The `restore-keys` approach works here because `npm install --no-save` does incremental diffing via Arborist (unlike `npm ci` which deletes `node_modules` first). See [npm-incremental-frozen-lockfile-install.md](npm-incremental-frozen-lockfile-install.md) for the full analysis.
+
+**Verdict: Recommended for Windows ARM. Not needed for Linux (where `npm ci` is fast enough).**
 
 ### Strategy D: Cache npm download cache via `actions/cache` directly (instead of setup-node)
 
@@ -182,12 +198,20 @@ This gives more control over cache keys (e.g., adding `restore-keys` for partial
 
 ### Comparison Matrix
 
+**Linux (`ubuntu-latest`):**
+
 | Strategy                  | Cache Hit Time | Cache Miss Time | Storage     | Correctness   | Complexity |
 | ------------------------- | -------------- | --------------- | ----------- | ------------- | ---------- |
 | A: setup-node npm cache   | ~1-3 min       | ~2-4 min        | ~300 MB     | Perfect       | Minimal    |
 | **B: node_modules cache** | **~15 sec**    | **~2-4 min**    | **~300 MB** | **Excellent** | **Low**    |
-| C: Both caches            | ~15 sec        | ~2-4 min        | ~600 MB     | Excellent     | Medium     |
-| D: Manual npm cache       | ~1-3 min       | ~2-4 min        | ~300 MB     | Perfect       | Low        |
+
+**Windows ARM (`windows-11-arm`) -- benchmarked:**
+
+| Strategy                                   | Exact Hit | Partial Hit (lockfile changed) | Full Miss | Storage     | Correctness   |
+| ------------------------------------------ | --------- | ------------------------------ | --------- | ----------- | ------------- |
+| A: setup-node npm cache + `npm ci`         | N/A       | **499-568s**                   | **570s**  | ~300 MB     | Perfect       |
+| B: node_modules cache + `npm ci`           | ~15 sec   | **499-568s**                   | 499-568s  | ~300 MB     | Excellent     |
+| **C: Dual-layer + two-step (implemented)** | **~15s**  | **~10s**                       | **~448s** | **~600 MB** | **Excellent** |
 
 ---
 
