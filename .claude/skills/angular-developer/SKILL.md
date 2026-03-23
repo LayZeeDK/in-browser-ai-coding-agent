@@ -82,11 +82,38 @@ When implementing dependency injection in Angular, follow these guidelines:
 - **Injection Context**: Where `inject()` is allowed, `runInInjectionContext`, and `assertInInjectionContext`. Read [injection-context.md](references/injection-context.md)
 - **Hierarchical Injectors**: The `EnvironmentInjector` vs `ElementInjector`, resolution rules, modifiers (`optional`, `skipSelf`), and `providers` vs `viewProviders`. Read [hierarchical-injectors.md](references/hierarchical-injectors.md)
 
-## Angular Aria
+## Security
 
-When building accessible custom components for any of the following patterns: Accordion, Listbox, Combobox, Menu, Tabs, Toolbar, Tree, Grid, consult the following reference:
+When implementing security features, handling user input, or configuring CSP/Trusted Types, consult the following reference:
 
+- **Security Best Practices**: XSS prevention, sanitization, CSP, Trusted Types, XSRF/CSRF, SSRF, AOT compiler security. Read [security.md](references/security.md)
+
+If you require deeper documentation, visit the [Angular Security guide](https://angular.dev/best-practices/security).
+
+## Accessibility
+
+When building accessible applications, consult the following references:
+
+- **General Accessibility**: ARIA attributes, focus management, routing a11y, `@defer` a11y, Angular CDK a11y tools. Read [accessibility.md](references/accessibility.md)
 - **Angular Aria Components**: Building headless, accessible components (Accordion, Listbox, Combobox, Menu, Tabs, Toolbar, Tree, Grid) and styling ARIA attributes. Read [angular-aria.md](references/angular-aria.md)
+
+If you require deeper documentation, visit the [Angular Accessibility guide](https://angular.dev/best-practices/a11y).
+
+## Error Handling
+
+When implementing error handling patterns, consult the following reference:
+
+- **Unhandled Errors**: `ErrorHandler`, global error listeners, `TestBed` error behavior, `resource()` error patterns. Read [error-handling.md](references/error-handling.md)
+
+If you require deeper documentation, visit the [Angular Error Handling guide](https://angular.dev/best-practices/error-handling).
+
+## Performance
+
+When optimizing application performance, consult the following reference:
+
+- **Performance Overview**: Lazy-loaded routes, `@defer`, `NgOptimizedImage`, SSR/hydration, zoneless change detection, `OnPush`, slow computations, zone pollution, Chrome DevTools profiling. Read [performance.md](references/performance.md)
+
+If you require deeper documentation, visit the [Angular Performance guide](https://angular.dev/best-practices/performance).
 
 ## Routing
 
