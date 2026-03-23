@@ -8,6 +8,18 @@ An Angular 21 application that lets non-technical users describe what they want 
 
 A non-technical user types a description of what they want and gets working, well-designed HTML/CSS/JS rendered in a preview — without needing any implementation knowledge.
 
+## Current Milestone: v1.0 Prompt-to-preview
+
+**Goal:** Transform the existing LanguageModel API integration into a complete prompt-to-preview coding agent with multi-pass pipeline, split-pane UI, sandboxed preview, and quality hardening.
+
+**Target features:**
+
+- Multi-pass code generation pipeline (planning pass + code gen pass) with model-specific DI
+- Split-pane UI (prompt input, generated code, live preview) with prompt templates
+- Sandboxed iframe preview with viewport toggle
+- Copy/download export and non-technical error handling
+- Synthetic prompt corpus for benchmarking and CI warm-up
+
 ## Requirements
 
 ### Validated
@@ -114,4 +126,4 @@ Research is needed to determine actual code generation quality for each model. T
 
 ---
 
-_Last updated: 2026-03-23 after initialization_
+_Last updated: 2026-03-23 after milestone v1.0 start_
