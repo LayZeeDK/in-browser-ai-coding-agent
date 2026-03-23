@@ -1,8 +1,10 @@
 # Testing and CI Infrastructure Summary
 
 **Project:** in-browser-ai-coding-agent
-**Date:** 2026-03-22
+**Date:** 2026-03-23 (updated from 2026-03-22)
 **Confidence:** HIGH -- all findings are empirically verified through CI runs and corroborated by browser source code analysis.
+
+> **Session 3 update (2026-03-23):** Major architecture changes. CI split from 1 matrix job into 4 independent jobs (`e2e-chrome`, `test-chrome`, `e2e-edge`, `test-edge`). Unit test warm-up moved from globalSetup (separate browser, wasted) to `browser-warmup.ts` setupFile (same browser as tests). E2e fixture simplified (no diagnostics navigation). Shared browser config extracted to `@layzeedk/browser-profiles` Nx lib. See `AGENTS.md` for current architecture.
 
 ---
 
@@ -10,9 +12,7 @@
 
 This project tests an Angular application that runs AI models entirely inside the browser using the W3C LanguageModel API. Two browser/model combinations are supported: Chrome Beta with Gemini Nano (CPU inference via XNNPACK on Linux) and Edge Dev with Phi-4 Mini (CPU inference via ONNX Runtime on Windows ARM64). The models are multi-gigabyte, require specific feature flags and persistent browser profiles, and have cold-start times measured in minutes. This makes the testing infrastructure fundamentally different from a typical web application: the browsers are not interchangeable rendering engines but the AI runtime itself.
 
-The CI pipeline runs on two GitHub Actions runners -- `ubuntu-latest` (containerized, for Chrome Beta) and `windows-11-arm` (bare runner, for Edge Dev). Both e2e tests (Playwright) and unit tests (Vitest browser mode) execute real model inference against real on-device models. There are no cloud APIs, no mocks, no simulations -- the tests launch actual branded browsers, load real on-device language models, and perform real inference. The architecture is constrained by three hard problems: Chrome's ProcessSingleton lockfile prevents rapid browser relaunches, Phi-4 Mini has an 11+ minute cold-start on ARM64, and macOS runners are entirely incompatible due to insufficient GPU memory with no CPU fallback in ONNX Runtime's CoreML execution provider. Every design decision -- worker-scoped fixtures, retry loops, model warm-up sequences, profile caching -- exists to work within these constraints.
-
-The recommended approach is fully implemented and working. The key risk is fragility around model availability: Chrome and Edge's on-device model systems are pre-release features with transient failure modes ("Not Ready For Unknown Reason") that require polling and retrying. The infrastructure handles this today, but changes in browser behavior across Chrome Beta and Edge Dev releases could require ongoing maintenance.
+The CI pipeline runs on two GitHub Actions runners -- `ubuntu-latest` (containerized, for Chrome Beta) and `windows-11-arm` (bare runner, for Edge Dev) across four independent test jobs. Both e2e tests (Playwright) and unit tests (Vitest browser mode) execute real model inference against real on-device models. There are no cloud APIs, no mocks, no simulations -- the tests launch actual branded browsers, load real on-device language models, and perform real inference. The architecture is constrained by three hard problems: Chrome's ProcessSingleton lockfile prevents rapid browser relaunches, Phi-4 Mini has a 23-110 minute cold-start on ARM64 CI, and macOS runners are entirely incompatible due to insufficient GPU memory with no CPU fallback in ONNX Runtime's CoreML execution provider. Every design decision -- worker-scoped fixtures, retry loops, in-browser warm-up, profile caching -- exists to work within these constraints.
 
 ## Key Findings
 
@@ -20,14 +20,15 @@ The recommended approach is fully implemented and working. The key risk is fragi
 
 > Detail: [ci-workflow-architecture.md](ci-workflow-architecture.md)
 
-The CI workflow has four jobs: `ghcr` (container image name resolution), `format` (PR-only formatting check), `lint-typecheck-build` (static analysis and production build), and `test` (matrix job running e2e and unit tests with real AI models). The first three are fast and stateless. The test job is the expensive one.
+The CI workflow has seven jobs: `build-chrome-image` (Docker image), `format` (PR-only), `lint-typecheck-build` (static analysis + build), and four independent test jobs (`e2e-chrome`, `test-chrome`, `e2e-edge`, `test-edge`). Chrome jobs run in Docker containers on `ubuntu-latest`. Edge jobs run on bare `windows-11-arm` runners.
 
 **Core design decisions:**
 
-- **Two-entry test matrix** with `fail-fast: false` -- Chrome and Edge run independently; a failure in one does not suppress results from the other.
-- **E2e runs before unit tests** -- e2e serves as model warm-up; unit tests benefit from a pre-warmed inference engine. The e2e fixture runs `session.prompt('warmup')` which triggers the full inference pipeline initialization (11+ minutes on ARM), so by the time unit tests run, the model's ONNX Runtime session, weights, and KV cache are already in memory.
-- **Unit tests run even if e2e fails** -- gated only on bootstrap success (`steps.bootstrap.outcome != 'failure'`), not on e2e outcome.
-- **Rolling model cache** -- cache key includes `run_number` for immutable GHA cache entries; `restore-keys` prefix matching implements a rolling cache pattern. The cache is saved **post-test** (not post-bootstrap) because inference-time artifacts (`adapter_cache.bin`, `encoder_cache.bin`, compiled model shards) are generated during actual inference and must be captured for subsequent runs to start warm.
+- **Four independent test jobs** -- each browser/test-type combination runs on its own VM. No shared disk state, no ProcessSingleton conflicts between e2e and unit tests.
+- **E2e and unit tests warm up independently** -- each job runs its own warm-up in its own browser process. ONNX compilation is per-process, so sharing warm-up across jobs is not possible.
+- **Cache saved only on success** -- `steps.unit-tests.outcome == 'success'` prevents saving corrupt profiles from timed-out runs (browser killed mid-ONNX write).
+- **Separate cache namespaces** -- `msedge-dev-e2e-edge-v1-*` and `msedge-dev-test-edge-v1-*` prevent race conditions between parallel jobs.
+- **120-min step timeout for Edge** -- ONNX cold-start on ARM64 CI takes 23-110 min depending on co-tenant load.
 
 ### E2E Test Architecture
 
@@ -35,15 +36,12 @@ The CI workflow has four jobs: `ghcr` (container image name resolution), `format
 
 E2e tests use Playwright with a **worker-scoped persistent context** -- the browser launches once per worker and stays alive for all tests. Combined with `workers: 1`, this means exactly one browser process for the entire test run.
 
-**Why worker-scoped fixture (and not alternatives):** Three other approaches were tried and failed. `globalSetup` (commit `4f4326d`) ran warm-up in a separate Node.js process, which launched its own browser and then closed it -- when test workers tried to launch against the same profile, Chrome's ProcessSingleton rejected the second launch because `chrome_crashpad_handler` from the globalSetup browser was still holding the lockfile. Per-test fixtures meant closing and relaunching the browser for each test, directly triggering ProcessSingleton conflicts. Vitest's `setupFiles` runs in the browser context and has no access to Playwright's `launchPersistentContext()` API. The worker-scoped fixture avoids the close-relaunch cycle entirely: the browser launches once and stays alive for all tests.
-
 **Key patterns:**
 
-- **Worker-scoped fixture** solves ProcessSingleton: no close-relaunch cycle between tests.
-- **5-attempt retry loop with 2s delay** handles residual lockfile contention from `chrome_crashpad_handler`.
-- **`retries: 2` unconditionally** (not just CI) because ProcessSingleton flakiness affects local development equally.
-- **All tests import from `./fixtures`**, not `@playwright/test`, to ensure every test uses the shared persistent context. Importing from `@playwright/test` caused Playwright to launch a second managed Chrome instance alongside the persistent one, triggering ProcessSingleton conflicts.
-- **`internal_only_uis_enabled` seeded in Local State** before browser launch to bypass the gate page on `chrome://on-device-internals`. This flag is seeded in three places (bootstrap script, e2e fixture, Vitest global-setup) for redundancy -- each entry point must ensure the flag is set regardless of whether previous entry points ran. Programmatic seeding was chosen because clicking the enable button in Docker containers crashes the browser (the button opens a new tab in Chrome's default profile, escaping the Playwright context).
+- **Worker-scoped fixture** solves ProcessSingleton: no close-relaunch cycle between tests. 5-attempt retry loop with 2s delay handles residual lockfile contention.
+- **Simplified warm-up**: fixture navigates to the app URL, then runs `LanguageModel.create()` + `session.prompt('warmup')` via `page.evaluate()`. No navigation to internal pages — the LanguageModel API is available on any secure-context page.
+- **`seedLocalState()` from `@layzeedk/browser-profiles`** seeds chrome://flags and creates the profile directory before browser launch. Single source of truth shared with unit tests.
+- **All tests import from `./fixtures`**, not `@playwright/test`, to ensure every test uses the shared persistent context.
 
 ### Unit Test Architecture
 
@@ -53,11 +51,13 @@ Unit tests run in **real branded browsers** via Vitest browser mode with `@vites
 
 **Key patterns:**
 
-- **Persistent contexts** via `@vitest/browser-playwright` v4.1.0's `persistentContext` option preserve cached model files across runs.
-- **Global setup warm-up** (`global-setup.ts`) front-loads the cold-start cost before any test runs. Critically, the warm-up must run `session.prompt('warmup')` -- not just `LanguageModel.create()` followed by `session.destroy()`. `create()` only loads model files into memory; the first actual `prompt()` call triggers additional pipeline initialization (tokenizer setup, attention weight materialization, KV cache allocation) which takes 11+ minutes on ARM. This was discovered the hard way: removing the warm-up prompt caused test timeouts, and it was restored in commit `7aa55ad`.
-- **Model availability guard tests** fail fast with diagnostic messages when the environment is misconfigured, instead of timing out after 240 seconds.
+- **Persistent contexts** via `@vitest/browser-playwright`'s `persistentContext` option preserve cached model files across runs.
+- **`browser-warmup.ts` setupFile** warms the model in the **same browser process** as tests. This is critical: ONNX compilation state is per-process. The previous approach (globalSetup launching a separate browser) wasted 20+ min of compilation — the browser closed before tests started, losing all compilation state.
+- **`globalSetup` only seeds profiles**: calls `seedLocalState()` from `@layzeedk/browser-profiles` (file operations — creates directory, seeds flags). No browser is launched.
+- **`globalThis.__vitest_warmup_done` flag** prevents redundant warm-up across test files (Vitest `setupFiles` run per file, not once globally).
+- **Model availability guard tests** fail fast with diagnostic messages when the environment is misconfigured.
 - **Prompt error detection** uses a CSS selector race (`prompt-response` OR `prompt-error`) to fail immediately with the actual error instead of waiting for a timeout.
-- **300-second test timeouts** accommodate Phi-4 Mini worst-case cold-start on ARM64 CI.
+- **600-second test timeouts** accommodate Phi-4 Mini on ARM64 CI.
 
 ### Platform and Runner Compatibility
 
@@ -107,11 +107,11 @@ Chromium enforces single-process access to a user data directory via a lockfile.
 
 **Mitigations:** Worker-scoped fixtures (no close-relaunch cycle), 5-attempt retry loops with 2s delay, `retries: 2` in both Playwright and Vitest configs.
 
-### 2. Phi-4 Mini Cold-Start (11+ minutes on ARM64)
+### 2. Phi-4 Mini Cold-Start (23-110 minutes on CI ARM64)
 
-First `session.prompt()` call after a fresh profile launch requires ONNX Runtime to compile the execution graph and load ~4 GB of model weights. `LanguageModel.create()` alone completes quickly -- the 11+ minute cost is specifically on the first inference call, which triggers tokenizer setup, attention weight materialization, and KV cache allocation.
+First `session.prompt()` call after a fresh profile launch requires ONNX Runtime to compile the execution graph and load ~4 GB of model weights. `LanguageModel.create()` alone completes in <1s -- the cost is specifically on the first inference call. The wide range (23-110 min) is due to co-tenant interference on shared Azure Cobalt 100 runners (4 vCPU, no GPU, software rendering only).
 
-**Mitigations:** Warm-up runs `session.prompt('warmup')` (not just create+destroy) to front-load the full pipeline initialization. Rolling profile cache preserves `adapter_cache.bin` and `encoder_cache.bin` across CI runs. 300-second per-test timeouts, 600-second global setup deadline, 20-minute e2e fixture timeout.
+**Mitigations:** `browser-warmup.ts` (Vitest setupFile) and e2e fixture both run `session.prompt('warmup')` in the test browser process. No timeout on the warm-up — the CI step timeout (120 min) is the backstop. Rolling profile cache preserves `adapter_cache.bin` and `encoder_cache.bin` across CI runs. Cache saved only on success to avoid persisting corrupt state.
 
 ### 3. macOS Incompatibility
 
@@ -132,46 +132,51 @@ The LanguageModel API only exists in branded Chromium channels (Chrome Beta, Edg
 ```
 CI Workflow
   |
-  +-- ghcr (resolve container image name)
-  +-- format (PR-only, parallel with lint)
-  +-- lint-typecheck-build (parallel with format)
-  +-- test (matrix: chrome-beta + msedge-dev)
-        |
-        +-- Restore model profile cache
-        +-- Bootstrap AI model (cache miss only)
-        +-- E2E tests (Playwright, worker-scoped persistent context)
-        |     +-- Fixture: warm-up model via on-device-internals
-        |     |     +-- LanguageModel.create() + session.prompt('warmup')
-        |     |     +-- Wait for "Foundational model state: Ready"
-        |     +-- example.spec.ts (basic app tests)
-        |     +-- prompt.spec.ts (real inference, logs to GITHUB_STEP_SUMMARY)
-        +-- Unit tests (Vitest browser mode, persistent context)
-        |     +-- global-setup.ts: warm-up model independently
-        |     |     +-- Same warm-up sequence (fast -- model already warm from e2e)
-        |     +-- language-model.service.spec.ts (API + prompt tests)
-        |     +-- model-status.component.spec.ts (component + prompt tests)
-        +-- Save model profile cache (post-test, captures inference artifacts)
+  +-- build-chrome-image (Docker image for Chrome Beta)
+  +-- format (PR-only)
+  +-- lint-typecheck-build
+  +-- e2e-chrome (ubuntu-latest container)
+  |     +-- Fixture: navigate to app, LanguageModel.create() + session.prompt('warmup')
+  |     +-- example.spec.ts, prompt.spec.ts
+  +-- test-chrome (ubuntu-latest container)
+  |     +-- globalSetup: seedLocalState() (file ops only, no browser)
+  |     +-- browser-warmup.ts (setupFile): warm up in Vitest's browser
+  |     +-- 3 test files (13 tests)
+  +-- e2e-edge (windows-11-arm)
+  |     +-- Restore model cache, bootstrap (cache miss only)
+  |     +-- Fixture: navigate to app, LanguageModel.create() + session.prompt('warmup')
+  |     +-- example.spec.ts, prompt.spec.ts
+  |     +-- Save model cache (success only)
+  +-- test-edge (windows-11-arm)
+        +-- Restore model cache, bootstrap (cache miss only)
+        +-- globalSetup: seedLocalState() (file ops only, no browser)
+        +-- browser-warmup.ts (setupFile): warm up in Vitest's browser
+        +-- 3 test files (13 tests)
+        +-- Save model cache (success only)
 ```
 
 ### Timeouts
 
-| Context                       | Timeout         | Reason                                     |
-| ----------------------------- | --------------- | ------------------------------------------ |
-| Bootstrap model download      | 10 min (600s)   | Large model download over network          |
-| E2E fixture warm-up           | 20 min (1,200s) | First-time model download + compilation    |
-| Global setup warm-up          | 10 min (600s)   | Model compilation on cold profile          |
-| Per-test prompt inference     | 5 min (300s)    | Phi-4 Mini worst-case cold-start           |
-| Element wait (component test) | 4 min (240s)    | Leaves 60s buffer within 300s test timeout |
-| CI step timeout               | 45 min          | Outer safety net against hangs             |
+| Context                       | Timeout            | Reason                                 |
+| ----------------------------- | ------------------ | -------------------------------------- |
+| Bootstrap model download      | 10 min (600s)      | Large model download over network      |
+| E2E fixture (worker scope)    | 3h (10,800,000ms)  | Matches CI step timeout                |
+| Per-test prompt inference     | 10 min (600s)      | Phi-4 Mini worst-case on ARM64         |
+| Element wait (component test) | 10 min (600,000ms) | Matches test timeout                   |
+| CI step timeout (Chrome)      | 45 min             | Chrome warm-up is fast (~38s)          |
+| CI step timeout (Edge)        | 180 min            | Edge ONNX cold-start takes 23-110+ min |
 
 ### Caching Strategy
 
-| Cache                  | Scope            | Key Strategy                                                                                                                                              |
-| ---------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| npm download cache     | All jobs         | `setup-node` with `cache: 'npm'`; secondary layer on Windows ARM (primary on Ubuntu)                                                                      |
-| node_modules direct    | Windows ARM only | Keyed to `runner.os + runner.arch + .node-version + package-lock.json` hash; `restore-keys` for incremental install on partial hit; two-step npm approach |
-| AI model profile       | Both runners     | Rolling key with `run_number` suffix; `restore-keys` prefix matching; saved post-test to capture inference artifacts                                      |
-| Docker container image | Chrome Beta only | Rebuilt on Node/Playwright/Dockerfile changes; versioned + `:latest` tags                                                                                 |
+| Cache                   | Scope            | Key Strategy                                                                                                                       |
+| ----------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| npm download cache      | Ubuntu jobs      | `setup-node` with `cache: 'npm'`                                                                                                   |
+| node_modules direct     | Windows ARM only | Keyed to `runner.os + runner.arch + .node-version + package-lock.json` hash; `restore-keys` for incremental install on partial hit |
+| AI model profile (e2e)  | Edge e2e only    | `msedge-dev-e2e-edge-v1-run{N}`; saved only on e2e success                                                                         |
+| AI model profile (unit) | Edge unit only   | `msedge-dev-test-edge-v1-run{N}`; saved only on unit test success                                                                  |
+| Docker container image  | Chrome Beta only | Rebuilt on Node/Playwright/Dockerfile changes; versioned + `:latest` tags                                                          |
+
+**Critical:** Model caches are saved only on test success (`steps.*.outcome == 'success'`). Timed-out runs may have corrupt profiles (browser killed mid-ONNX write). E2e and unit test jobs have separate cache namespaces to prevent race conditions.
 
 ### Feature Flags
 
@@ -208,13 +213,12 @@ These four Playwright defaults must be removed via `ignoreDefaultArgs` for the L
 
 ## Detailed Documents
 
-| Document                                                   | Scope                  | Key Topics                                                                                               |
-| ---------------------------------------------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------- |
-| [ci-workflow-architecture.md](ci-workflow-architecture.md) | CI pipeline            | Job structure, test matrix, Docker strategy, caching, bootstrap script, step guards, concurrency         |
-| [e2e-test-architecture.md](e2e-test-architecture.md)       | E2E tests              | Worker-scoped fixtures, ProcessSingleton handling, model warm-up, persistent profiles, Playwright config |
-| [unit-test-architecture.md](unit-test-architecture.md)     | Unit tests             | Vitest browser mode, persistent contexts, global setup, guard tests, prompt error detection, timeouts    |
-| [platform-runner-findings.md](platform-runner-findings.md) | Platform compatibility | Runner viability, GPU vs CPU inference, macOS failures, BypassPerfRequirement bug, npm caching           |
+| Document                                                   | Scope                  | Key Topics                                                                    |
+| ---------------------------------------------------------- | ---------------------- | ----------------------------------------------------------------------------- |
+| [platform-runner-findings.md](platform-runner-findings.md) | Platform compatibility | Runner viability, GPU vs CPU inference, macOS failures, BypassPerfRequirement |
+
+CI workflow, E2E, and unit test architecture details are in `AGENTS.md` and the sections above.
 
 ---
 
-_Summary compiled: 2026-03-22_
+_Summary compiled: 2026-03-22, updated: 2026-03-23_

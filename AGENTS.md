@@ -196,10 +196,7 @@ Use `git grep` for searching tracked files. Use `rg` only for untracked/ignored 
 
 ## Deep Reference
 
-- `docs/SUMMARY.md` — executive summary with quick-reference tables
-- `docs/ci-workflow-architecture.md` — CI pipeline, caching, Docker strategy
-- `docs/e2e-test-architecture.md` — Playwright fixtures, ProcessSingleton workarounds
-- `docs/unit-test-architecture.md` — Vitest browser mode, global setup, guard tests
+- `docs/SUMMARY.md` — architecture summary with quick-reference tables, test flow, timeouts, caching
 - `docs/platform-runner-findings.md` — runner compatibility, GPU fallback, BypassPerfRequirement
 
 <!-- nx configuration start-->

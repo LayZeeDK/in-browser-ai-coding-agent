@@ -124,55 +124,29 @@ Angular 21 app using the W3C LanguageModel API for in-browser AI inference. Two 
 
 18. **Removed perf-param matrix** — `ci.yml` test-edge job consolidated from 3 parallel variants to 1 job with `--perf-param 3`. Saves 2x ARM64 runner minutes per push.
 
-## What to Do Next
+## Session 3 Resolution
 
-### Immediate
+### Root cause
 
-1. **Verify Chrome unit tests pass without kill step** — The `pkill` was removed. Confirm `context.close()` releases the profile cleanly.
-2. **Monitor unit test results from in-progress runs** — The oldest run's unit tests should complete or timeout within ~10 min.
+The global-setup warm-up was fundamentally broken: it launched a separate browser, spent 20+ min on ONNX compilation, then closed it. Vitest's test browser (a different process) started from scratch. ONNX compilation state is per-process, not per-profile.
 
-### Short-term (make Edge CI reliable)
+### Fix implemented
 
-3. **Increase unit test warm-up timeout to 30+ min** — The 20-min warm-up timeout is too short. The process needs 23-44 min for first inference. Increasing to 35 min (or removing the timeout entirely) would let the warm-up complete on most runners.
-4. **Consider `continue-on-error` for Edge e2e** — E2e always times out at 45 min on ARM64. Make it advisory while unit tests are the quality gate.
-5. **Consider skipping e2e warm-up prompt** — Since e2e warm-up is wasted (process dies at step end), skip the warm-up prompt in e2e fixtures to save 45 min of runner time. Let unit tests handle the cold-start.
+1. **`browser-warmup.ts`** (Vitest setupFile) — warms model in the same browser process as tests
+2. **globalSetup simplified** — only calls `seedLocalState()` (file operations, no browser launch)
+3. **E2e fixture simplified** — navigates to app URL, runs `LanguageModel.create()` + `session.prompt('warmup')`. No diagnostics navigation.
+4. **`@layzeedk/browser-profiles`** — shared Nx lib with profile definitions, `seedLocalState()`, `getLaunchOptions()`
+5. **CI split** — 4 independent jobs (`e2e-chrome`, `test-chrome`, `e2e-edge`, `test-edge`) with separate caches, success-only saves, 120-min Edge timeouts
+6. **`npm run ci`** — runs `e2e` as separate `run-many` after `lint typecheck test build` to prevent ProcessSingleton conflicts
 
-### Medium-term
+### Current status
 
-6. **Update docs/** — CI workflow architecture, e2e test architecture, and unit test architecture docs are outdated.
-7. **File upstream issues** — `@angular/build:unit-test` headless override in CI, Vitest double globalSetup invocation.
+- **Chrome**: e2e and unit tests pass locally and in CI (~2 min total)
+- **Edge**: e2e passed once on CI (109 min warm-up). Unit tests passed 12/13 (service test timeout at 300s, now 600s). Awaiting CI run with all fixes.
+- **Local**: `npm run ci` passes (26/26 unit + 6/6 e2e)
 
-## Files Changed (both sessions)
+### Remaining
 
-### CI workflow
-
-- `.github/workflows/ci.yml` — Split into build-chrome-image → test-chrome + test-edge jobs
-- `.github/docker/Dockerfile` — Chrome Beta + system deps (no model)
-
-### E2E tests
-
-- `apps/in-browser-ai-coding-agent-e2e/src/fixtures.ts` — `seedLocalState()`, warm-up reorder, diagnostics, refresh delay, `headless: false`
-- `apps/in-browser-ai-coding-agent-e2e/playwright.config.ts` — Retries 0 in CI
-- `apps/in-browser-ai-coding-agent-e2e/project.json` — E2e configurations (chrome, edge)
-
-### Unit tests
-
-- `apps/in-browser-ai-coding-agent/global-setup.shared.ts` — Shared warm-up logic, PID guard, diagnostics
-- `apps/in-browser-ai-coding-agent/global-setup.ts` — Thin entry (all browsers)
-- `apps/in-browser-ai-coding-agent/global-setup.chrome.ts` — Chrome-only entry
-- `apps/in-browser-ai-coding-agent/global-setup.edge.ts` — Edge-only entry
-- `apps/in-browser-ai-coding-agent/vitest.shared.mts` — Config factory, `headless: false`
-- `apps/in-browser-ai-coding-agent/vitest.config.chrome.mts` — Chrome-only config
-- `apps/in-browser-ai-coding-agent/vitest.config.edge.mts` — Edge-only config
-- `apps/in-browser-ai-coding-agent/vitest.config.mts` — Default (both browsers)
-- `apps/in-browser-ai-coding-agent/project.json` — test-chrome, test-edge targets, `headless: false`
-
-### Bootstrap
-
-- `scripts/bootstrap-ai-model.mjs` — `--perf-param` flag, debug logs flag
-
-### Documentation
-
-- `AGENTS.md` — Updated gotchas, design decisions, rejected approaches
-- `.planning/research/*.md` — 7 research documents
-- `plans/fix-edge-ci-model-warmup.prompt.md` — This file
+- Monitor CI Edge jobs with 120-min timeout — may need increase if co-tenant load causes >120 min cold-start
+- Watch `adapter_cache.bin`/`encoder_cache.bin` sizes in CI "Log inference cache state" step — if populated after first successful run, future runs could be dramatically faster
+- File upstream issues: `@angular/build:unit-test` headless override, Vitest double globalSetup invocation

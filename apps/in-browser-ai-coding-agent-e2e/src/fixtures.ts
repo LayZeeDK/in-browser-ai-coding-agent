@@ -111,7 +111,7 @@ export const test = base.extend<
       await use(context);
       await context.close();
     },
-    { scope: 'worker', timeout: 7_200_000 }, // 2h — matches CI step timeout
+    { scope: 'worker', timeout: 10_800_000 }, // 3h — matches CI step timeout
   ],
 
   // Test-scoped: provides a fresh page from the shared context
