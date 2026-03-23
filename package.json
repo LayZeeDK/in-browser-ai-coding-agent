@@ -48,6 +48,7 @@
     "@nx/vitest": "22.6.0",
     "@nx/web": "22.6.0",
     "@nx/workspace": "22.6.0",
+    "@playwright/cli": "^0.1.1",
     "@playwright/test": "^1.36.0",
     "@schematics/angular": "~21.2.0",
     "@swc-node/register": "1.11.1",
