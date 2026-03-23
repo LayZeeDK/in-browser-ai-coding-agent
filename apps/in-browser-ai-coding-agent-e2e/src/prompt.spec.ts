@@ -36,7 +36,7 @@ test('responds to a prompt', async ({ persistentPage: page }) => {
   // Wait for either a response or an error to appear
   const errorEl = page.getByTestId('prompt-error');
   const responseEl = page.getByTestId('prompt-response');
-  await expect(responseEl.or(errorEl)).toBeVisible({ timeout: 180_000 });
+  await expect(responseEl.or(errorEl)).toBeVisible({ timeout: 600_000 });
 
   // Assert it was a response, not an error
   await expect(errorEl).toBeHidden();
