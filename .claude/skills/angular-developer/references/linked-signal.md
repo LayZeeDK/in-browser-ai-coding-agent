@@ -52,6 +52,26 @@ export class ShippingMethodPicker {
 }
 ```
 
+## Custom Equality Comparison
+
+Like `signal` and `computed`, `linkedSignal` accepts a custom `equal` function to control when downstream consumers are notified:
+
+```ts
+const activeUser = signal({ id: 123, name: 'Morgan', isAdmin: true });
+
+// Consider the user "the same" if the ID matches — ignore name/role changes
+const activeUserEditCopy = linkedSignal(() => activeUser(), {
+  equal: (a, b) => a.id === b.id,
+});
+
+// Also works with object syntax
+const activeUserEditCopy = linkedSignal({
+  source: activeUser,
+  computation: (user) => user,
+  equal: (a, b) => a.id === b.id,
+});
+```
+
 ### When to use `linkedSignal` vs `computed` vs `effect`
 
 - Use `computed`: When state is **strictly** derived from other state and should never be manually updated.
