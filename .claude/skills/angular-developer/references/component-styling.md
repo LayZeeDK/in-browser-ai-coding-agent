@@ -86,6 +86,27 @@ You can use `<style>` elements directly in a component's template. View encapsul
 <div class="dynamic-class">Hello</div>
 ```
 
+## Prefer `class` and `style` Bindings Over `ngClass` / `ngStyle`
+
+Use Angular's built-in `class` and `style` bindings instead of the `NgClass` and `NgStyle` directives. They are more readable, align with standard HTML, and have better performance.
+
+```html
+<!-- Prefer -->
+<div [class.admin]="isAdmin" [class.dense]="density === 'high'">
+  <div [style.color]="textColor" [style.background-color]="backgroundColor">
+    <!-- Or with object syntax -->
+    <div [class]="{ admin: isAdmin, dense: density === 'high' }">
+      <div [style]="{ color: textColor, 'background-color': backgroundColor }">
+        <!-- Avoid -->
+        <div [ngClass]="{ admin: isAdmin, dense: density === 'high' }">
+          <div [ngStyle]="{ color: textColor, 'background-color': backgroundColor }"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
 ## External Styles
 
 Using `<link>` or `@import` in CSS is treated as external styles. **External styles are not affected by emulated view encapsulation.**

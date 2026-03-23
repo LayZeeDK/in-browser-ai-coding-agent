@@ -112,4 +112,90 @@ The `@switch` block renders content based on a value. It uses strict equality (`
 - **View**: The DOM rendered by the component's template inside the host element.
 - **Standalone**: By default, components are standalone (since Angular 19, `standalone: true` is default). For older versions, `standalone: true` must be explicit or the component must be part of an `NgModule`.
 - **Component Tree**: Angular applications are structured as a tree of components, where each component can host child components.
-- **Component Naming**: Do not add suffixes the `Component` suffix for Component classes (e.g., AppComponent) unless the project has been configured to use that naming configuration.
+- **Component Naming**: Follow your project's naming convention. The Angular CLI generates a `Component` suffix by default (e.g., `UserProfileComponent`). Some projects omit it (e.g., `UserProfile`). Consistency within a project matters more than which convention you choose.
+
+## Style Guide Conventions
+
+### Use `protected` for Template-Only Members
+
+Class members that are only used in the component's template should be `protected`. Public members define a public API accessible via DI and queries.
+
+```ts
+@Component({
+  template: `<p>{{ fullName() }}</p>`,
+})
+export class UserProfile {
+  firstName = input();
+  lastName = input();
+
+  // Not part of the public API, only used in the template
+  protected fullName = computed(() => `${this.firstName()} ${this.lastName()}`);
+}
+```
+
+### Use `readonly` for Angular-Initialized Properties
+
+Mark properties initialized by Angular as `readonly` to prevent accidental overwriting:
+
+```ts
+@Component({
+  /*...*/
+})
+export class UserProfile {
+  readonly userId = input();
+  readonly userSaved = output();
+  readonly userName = model();
+}
+```
+
+### Name Event Handlers for What They Do
+
+Prefer naming event handlers for the action they perform, not the triggering event:
+
+```html
+<!-- Prefer -->
+<button (click)="saveUserData()">Save</button>
+
+<!-- Avoid -->
+<button (click)="handleClick()">Save</button>
+```
+
+### Keep Lifecycle Methods Simple
+
+Avoid putting complex logic directly inside lifecycle hooks. Create well-named methods and call them:
+
+```ts
+ngOnInit() {
+  this.startLogging();
+  this.runBackgroundTask();
+}
+```
+
+Always implement lifecycle hook interfaces for type safety:
+
+```ts
+import { Component, OnInit } from '@angular/core';
+
+@Component({
+  /*...*/
+})
+export class UserProfile implements OnInit {
+  ngOnInit() {
+    /* ... */
+  }
+}
+```
+
+### Avoid Complex Template Logic
+
+When template expressions get too complex, refactor into `computed()` signals:
+
+```ts
+// Instead of complex inline expressions in templates
+protected displayName = computed(() => {
+  const first = this.firstName();
+  const last = this.lastName();
+
+  return last ? `${last}, ${first}` : first;
+});
+```

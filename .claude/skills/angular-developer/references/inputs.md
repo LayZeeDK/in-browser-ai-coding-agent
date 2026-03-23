@@ -96,6 +96,12 @@ export class Legacy {
 ## Best Practices
 
 - **Prefer Signals**: Use `input()` instead of `@Input()` for better reactivity and type safety.
+- **Mark as `readonly`**: Properties initialized by `input()`, `input.required()`, and `model()` should be marked `readonly` to prevent accidental overwriting.
+  ```ts
+  readonly name = input('Guest');
+  readonly age = input.required<number>();
+  readonly value = model(0);
+  ```
 - **Required Inputs**: Use `input.required()` for mandatory data to get build-time errors.
 - **Pure Transforms**: Ensure input transform functions are pure and statically analyzable.
 - **Avoid Collisions**: Do not use input names that collide with standard DOM properties (e.g., `id`, `title`).
