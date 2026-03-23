@@ -5,14 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** Non-technical user types a description and gets working HTML/CSS/JS rendered in a preview -- on-device, no cloud APIs
-**Current focus:** Milestone v1.0 Prompt-to-preview -- Defining requirements
+**Current focus:** Phase 1 - Model Abstraction Layer
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 1 of 4 (Model Abstraction Layer)
 Plan: --
-Status: Defining requirements
-Last activity: 2026-03-23 -- Milestone v1.0 started
+Status: Ready to plan
+Last activity: 2026-03-23 -- Roadmap created (4 phases, 27 requirements mapped)
+
+Progress: [..........] 0%
 
 ## Performance Metrics
 
@@ -42,7 +44,13 @@ _Updated after each plan completion_
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- None yet -- all decisions pending implementation
+- Roadmap: 4 phases derived from 27 requirements (coarse granularity)
+- Research: create-per-pass sessions (not clone) -- passes need different system prompts
+- Research: promptStreaming() is cumulative -- assign directly to signal, never concatenate
+- Research: sandbox must be static attribute (Angular NG0910), blob URL not srcdoc
+- Research: CSS Grid for 3-pane layout, no angular-split dependency (but evaluate alternatives in Phase 3: `@ngbracket/ngx-layout`, Angular Material Grid List, Angular CDK BreakpointObserver -- none currently installed)
+- Research: AbortController for cancel with 500ms cooldown after abort
+- Research: DOMParser for truncation detection (deterministic, no AI tokens)
 
 ### Pending Todos
 
@@ -50,12 +58,12 @@ None yet.
 
 ### Blockers/Concerns
 
-- **Phase 2 (Pipeline):** Two-pass pipeline structure is MEDIUM confidence -- JSON schema for outline pass and token budgets require empirical measurement. Budget for 1-2 adjustment iterations after first end-to-end run.
-- **Phase 3 (Prompt Engineering):** Gemini Nano HTML/CSS generation quality is LOW-MEDIUM confidence. No published benchmarks for web-specific output. Chrome/Gemini Nano (~38s warm-up) is the fast iteration loop; validate Edge/Phi-4 Mini after Chrome prompts are satisfactory.
-- **Phase 1 note:** Anchor session token cost on Gemini Nano in 6K context window is undocumented -- measure `session.contextUsage` on empty anchor session before designing pass token budgets.
+- **Phase 2:** `responseConstraint` schema reliability for small models is LOW confidence -- start with 2-3 fields, measure JSON.parse success rate, add complexity incrementally
+- **Phase 3:** Gemini Nano HTML generation quality is LOW-MEDIUM confidence -- no published benchmarks; Chrome is the fast iteration loop (~20s warm-up), verify Edge after Chrome prompts work
+- **Phase 1:** Anchor session token cost on Gemini Nano (6K context) is undocumented -- measure `session.contextUsage` on empty anchor session before designing pass token budgets
 
 ## Session Continuity
 
 Last session: 2026-03-23
-Stopped at: Milestone v1.0 started -- defining requirements
+Stopped at: Roadmap created -- ready to plan Phase 1
 Resume file: None
