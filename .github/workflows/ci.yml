@@ -15,6 +15,10 @@ permissions:
   contents: read
   packages: write
 
+env:
+  npm_config_fund: 'false'
+  npm_config_audit: 'false'
+
 jobs:
   format:
     if: github.event_name == 'pull_request'
@@ -177,24 +181,24 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version-file: '.node-version'
+          cache: 'npm'
 
       - name: Restore node_modules cache
         id: node-modules
         uses: actions/cache/restore@v5
         with:
           path: node_modules
-          key: ${{ runner.os }}-${{ runner.arch }}-node-modules-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-node${{ hashFiles('.node-version') }}-nm-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-node${{ hashFiles('.node-version') }}-nm-
+
+      - name: Validate lockfile
+        if: steps.node-modules.outputs.cache-hit != 'true'
+        run: npm ci --dry-run --ignore-scripts
 
       - name: Install dependencies
         if: steps.node-modules.outputs.cache-hit != 'true'
-        run: npm ci
-
-      - name: Save node_modules cache
-        if: steps.node-modules.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v5
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-${{ runner.arch }}-node-modules-${{ hashFiles('package-lock.json') }}
+        run: npm install --no-save --prefer-offline
 
       - name: Install msedge-dev
         run: npx playwright install msedge-dev --with-deps
@@ -234,6 +238,13 @@ jobs:
           path: .playwright-profiles/msedge-dev
           key: msedge-dev-e2e-edge-v1-run${{ github.run_number }}
 
+      - name: Save node_modules cache
+        if: ${{ !cancelled() && steps.node-modules.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v5
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-${{ runner.arch }}-node${{ hashFiles('.node-version') }}-nm-${{ hashFiles('package-lock.json') }}
+
   test-edge:
     runs-on: windows-11-arm
     steps:
@@ -247,24 +258,24 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version-file: '.node-version'
+          cache: 'npm'
 
       - name: Restore node_modules cache
         id: node-modules
         uses: actions/cache/restore@v5
         with:
           path: node_modules
-          key: ${{ runner.os }}-${{ runner.arch }}-node-modules-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-node${{ hashFiles('.node-version') }}-nm-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-node${{ hashFiles('.node-version') }}-nm-
+
+      - name: Validate lockfile
+        if: steps.node-modules.outputs.cache-hit != 'true'
+        run: npm ci --dry-run --ignore-scripts
 
       - name: Install dependencies
         if: steps.node-modules.outputs.cache-hit != 'true'
-        run: npm ci
-
-      - name: Save node_modules cache
-        if: steps.node-modules.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v5
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-${{ runner.arch }}-node-modules-${{ hashFiles('package-lock.json') }}
+        run: npm install --no-save --prefer-offline
 
       - name: Install msedge-dev
         run: npx playwright install msedge-dev --with-deps
@@ -345,3 +356,10 @@ jobs:
         with:
           path: .playwright-profiles/msedge-dev
           key: msedge-dev-test-edge-v1-run${{ github.run_number }}
+
+      - name: Save node_modules cache
+        if: ${{ !cancelled() && steps.node-modules.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v5
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-${{ runner.arch }}-node${{ hashFiles('.node-version') }}-nm-${{ hashFiles('package-lock.json') }}
