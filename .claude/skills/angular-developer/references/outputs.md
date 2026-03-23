@@ -78,6 +78,35 @@ export class LegacyExample {
 }
 ```
 
+## RxJS Interop
+
+Angular provides two functions in `@angular/core/rxjs-interop` for bridging between outputs and Observables:
+
+- **`outputFromObservable(obs$)`**: Creates an output that emits whenever the Observable emits. Useful when wrapping Observable-based services:
+
+```ts
+import { outputFromObservable } from '@angular/core/rxjs-interop';
+
+@Component({
+  /* ... */
+})
+export class SearchBox {
+  private searchService = inject(SearchService);
+
+  readonly results = outputFromObservable(this.searchService.results$);
+}
+```
+
+- **`outputToObservable(outputRef)`**: Converts an `OutputEmitterRef` to an Observable for use in RxJS pipelines:
+
+```ts
+import { outputToObservable } from '@angular/core/rxjs-interop';
+
+// In a parent component or test
+const obs$ = outputToObservable(childComponent.valueChanged);
+obs$.pipe(debounceTime(300)).subscribe((val) => console.log(val));
+```
+
 ## Best Practices
 
 - **Prefer `output()`**: Use the function-based `output()` instead of `@Output()` and `EventEmitter`.

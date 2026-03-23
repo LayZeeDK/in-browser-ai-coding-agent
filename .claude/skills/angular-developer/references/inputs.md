@@ -93,6 +93,16 @@ export class Legacy {
 }
 ```
 
+## Setting Inputs on Dynamic Components
+
+When creating components programmatically, use `componentRef.setInput()` to set input values. This works with both signal-based and decorator-based inputs:
+
+```ts
+const componentRef = viewContainerRef.createComponent(UserProfile);
+componentRef.setInput('name', 'Alice');
+componentRef.setInput('age', 30);
+```
+
 ## Best Practices
 
 - **Prefer Signals**: Use `input()` instead of `@Input()` for better reactivity and type safety.
