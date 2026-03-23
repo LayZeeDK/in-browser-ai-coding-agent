@@ -1,17 +1,16 @@
 # Testing Fundamentals
 
-This guide covers the fundamental principles and practices for writing unit tests in this repository, which uses Vitest as the test runner.
+This guide covers the fundamental principles and practices for writing unit tests in Angular applications using Vitest as the test runner.
 
-## Core Philosophy: Zoneless & Async-First
+## Core Philosophy: Async-First Testing
 
-This project follows a modern, zoneless testing approach. State changes schedule updates asynchronously, and tests must account for this.
-
-**Do NOT** use `fixture.detectChanges()` to manually trigger updates.
-**ALWAYS** use the "Act, Wait, Assert" pattern:
+Modern Angular applications (especially zoneless ones) schedule state changes asynchronously. Tests should account for this using the "Act, Wait, Assert" pattern:
 
 1.  **Act:** Update state or perform an action (e.g., set a component input, click a button).
 2.  **Wait:** Use `await fixture.whenStable()` to allow the framework to process the scheduled update and render the changes.
 3.  **Assert:** Verify the outcome.
+
+**Note:** In zoneless applications, avoid `fixture.detectChanges()` for triggering updates — use `await fixture.whenStable()` instead. In zone-based applications, `fixture.detectChanges()` remains the standard way to trigger change detection synchronously.
 
 ### Basic Test Structure Example
 
@@ -65,11 +64,64 @@ describe('MyComponent', () => {
   - `fixture.nativeElement`: Access the component's root DOM element.
   - `fixture.debugElement`: An Angular-specific wrapper around the `nativeElement` that provides safer, platform-agnostic ways to query the DOM (e.g., `debugElement.query(By.css('p'))`).
 
-## Custom Utilities
+## Handling Asynchronous Operations
 
-To keep tests fast and avoid long waits, this project provides custom utilities:
+### `fakeAsync` and `tick`
 
-- **`useAutoTick()`**: (from `packages/private/testing/src/utils.ts`) Fast-forwards time via a mock clock to avoid real waits.
-- **`await timeout(ms)`**: (from `packages/private/testing/src/utils.ts`) Use for cases where a specific real-time delay is unavoidable.
+Use `fakeAsync` and `tick` from `@angular/core/testing` to control time-based operations (timers, debounces) without real waits:
 
-Always prefer `useAutoTick()` to keep tests efficient.
+```ts
+import { fakeAsync, tick } from '@angular/core/testing';
+
+it('should debounce search input', fakeAsync(() => {
+  component.onSearchChange('angular');
+
+  // Fast-forward 300ms debounce
+  tick(300);
+
+  expect(component.searchResults().length).toBeGreaterThan(0);
+}));
+```
+
+### Vitest Timer Mocks
+
+Alternatively, use Vitest's built-in timer control:
+
+```ts
+import { vi } from 'vitest';
+
+it('should handle delayed operations', async () => {
+  vi.useFakeTimers();
+
+  component.startDelayedOperation();
+  vi.advanceTimersByTime(1000);
+
+  await fixture.whenStable();
+  expect(component.operationComplete()).toBe(true);
+
+  vi.useRealTimers();
+});
+```
+
+## Overriding Providers in Tests
+
+Use `TestBed.overrideComponent` or provide mock services in `configureTestingModule`:
+
+```ts
+beforeEach(async () => {
+  await TestBed.configureTestingModule({
+    imports: [MyComponent],
+    providers: [{ provide: DataService, useValue: { getData: () => of(mockData) } }],
+  }).compileComponents();
+});
+```
+
+## TestBed Error Behavior
+
+By default, `TestBed` rethrows unhandled application errors to ensure they are not silently ignored in tests. If you need to test error handling behavior specifically, you can disable this:
+
+```ts
+TestBed.configureTestingModule({
+  rethrowApplicationErrors: false,
+});
+```
