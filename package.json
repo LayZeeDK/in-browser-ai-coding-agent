@@ -11,7 +11,7 @@
     "ci": "nx format:check && nx run-many -t lint typecheck test build && nx run-many -t e2e",
     "format": "nx format",
     "format:check": "nx format:check",
-    "prepare": "git config core.hooksPath .githooks",
+    "prepare": "git config core.hooksPath .githooks && git config url.https://github.com/.insteadOf git@github.com:",
     "start": "nx serve in-browser-ai-coding-agent"
   },
   "private": true,
