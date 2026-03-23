@@ -58,3 +58,4 @@ vitest.config.*.timestamp*
 __screenshots__/
 
 .nx/polygraph
+*-workspace/
