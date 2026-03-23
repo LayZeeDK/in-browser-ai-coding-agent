@@ -1,7 +1,6 @@
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
-// eslint-disable-next-line @nx/enforce-module-boundaries -- Nx plugins parse config before Vite plugins resolve tsconfig paths
 import {
   allProfiles,
   getLaunchOptions,
