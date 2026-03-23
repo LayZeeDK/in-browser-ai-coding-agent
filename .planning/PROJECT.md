@@ -51,7 +51,7 @@ A non-technical user types a description of what they want and gets working, wel
 - Conversation history / multi-turn editing — deferred to later milestone, v1 is single prompt to output
 - Self-repair loop (generate, detect errors, auto-fix) — deferred to later milestone, lint/debug passes researched but not implemented in v1
 - File persistence (File System API or in-browser storage) — deferred, no persistence in v1
-- Notepod/wZed file explorer and code editor integration — deferred to later milestone, requires persistence layer first
+- Nodepod/wZed file explorer and code editor integration — deferred to later milestone, requires persistence layer first
 - Parallel agent sessions — deferred, research Workers first, implement after pipeline is proven
 - Cloud API fallback — explicitly excluded, the core value is fully on-device inference
 - macOS support — ONNX Runtime CoreML GPU fallback issue makes it non-viable (documented in platform findings)
@@ -110,7 +110,7 @@ Research is needed to determine actual code generation quality for each model. T
 | Research-driven multi-pass pipeline      | Small on-device models may need multiple passes (pseudo-code to code) for quality; research determines structure                   | -- Pending |
 | Sandboxed preview (iframe or Shadow DOM) | Security isolation for generated code; trade-offs to be researched                                                                 | -- Pending |
 | No follow-up questions in v1             | Keep v1 focused on prompt-to-code pipeline quality; follow-ups add complexity                                                      | -- Pending |
-| No persistence in v1                     | Simplifies architecture; persistence (File System API, Notepod/wZed) deferred                                                      | -- Pending |
+| No persistence in v1                     | Simplifies architecture; persistence (File System API, Nodepod/wZed) deferred                                                      | -- Pending |
 
 ---
 
