@@ -7,12 +7,7 @@
   "// targets": "to see all targets run: nx show project in-browser-ai-coding-agent-e2e --web",
   "targets": {
     "e2e": {
-      "dependsOn": [
-        {
-          "projects": ["in-browser-ai-coding-agent"],
-          "target": "test"
-        }
-      ],
+      "dependsOn": ["^test"],
       "configurations": {
         "chrome": {
           "command": "playwright test --project=chrome-gemini-nano"
