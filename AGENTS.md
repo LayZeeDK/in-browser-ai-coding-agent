@@ -52,10 +52,11 @@ apps/
       app.ts                             # Root component
       app.config.ts                      # Angular app configuration
       app.routes.ts                      # Route definitions
-    global-setup.ts                      # Vitest global setup — warms all browsers
+    browser-warmup.ts                    # Vitest setupFile — warms model in test browser
+    global-setup.ts                      # Vitest global setup — seeds all browser profiles
     global-setup.chrome.ts               # Vitest global setup — Chrome only
     global-setup.edge.ts                 # Vitest global setup — Edge only
-    global-setup.shared.ts               # Shared warm-up logic (browser instances, polling)
+    global-setup.shared.ts               # Shared setup logic (seedLocalState, no browser launch)
     vitest.config.mts                    # Vitest config — both browsers (default)
     vitest.config.chrome.mts             # Vitest config — Chrome only (test-chrome target)
     vitest.config.edge.mts               # Vitest config — Edge only (test-edge target)
@@ -66,6 +67,10 @@ apps/
       example.spec.ts                    # Basic app tests
       prompt.spec.ts                     # Real inference tests
     playwright.config.ts                 # Playwright config (2 projects: chrome + edge)
+libs/
+  shared/
+    browser-profiles/                    # @layzeedk/browser-profiles — shared browser config
+      src/lib/browser-profiles.ts        # Profile definitions, seedLocalState(), getLaunchOptions()
 scripts/
   bootstrap-ai-model.mjs                # Model download + profile setup (CI + local)
   rebase-format.sh                      # Rebase helper with format fixes
@@ -83,6 +88,9 @@ tsconfig.base.json                      # Shared TypeScript paths and compiler o
 - **E2E imports from `./fixtures`**: Never import from `@playwright/test` directly — tests must use the shared persistent context (see Critical Constraints below)
 - **`@angular/build:unit-test` ignores Nx configurations**: `runnerConfig` resolves from base `options` only — configuration overrides are silently ignored. Use separate targets (`test-chrome`, `test-edge`) instead of `test -c chrome-gemini-nano`
 - **`@angular/build:unit-test` forces headless in CI**: When `process.env.CI` is set and `headless` is not explicitly configured, the builder forces `headless: true` on all browser instances. LanguageModel API requires headed mode. Set `"headless": false` in the executor options in `project.json`
+- **Vite config files can't use tsconfig path aliases**: Nx plugins parse `vitest.config.mts` and `global-setup.*.ts` before Vite plugins load. Use relative imports with `eslint-disable-next-line @nx/enforce-module-boundaries`
+- **Profile paths must use `workspaceRoot`**: `resolve('.playwright-profiles/...')` resolves relative to CWD. Nx `command` targets run from the project root, not workspace root. Always use `resolve(workspaceRoot, '.playwright-profiles/...')`
+- **`session.destroy()` can unload the model**: Per the W3C Prompt API spec, destroying a session signals the browser to unload the model from memory if no other sessions reference it
 
 ## Troubleshooting
 
@@ -92,7 +100,7 @@ tsconfig.base.json                      # Shared TypeScript paths and compiler o
 | `UnknownError: Other generic failures occurred`                | `optimization-guide-on-device-model@2` forces GPU backend on no-GPU machine | Use `@1` (not `@2`) — Chrome 140+ auto-detects CPU                                                |
 | `Not Ready For Unknown Reason` on `edge://on-device-internals` | Transient Edge model loading race                                           | Refresh the page — resolves in ~1s. Fixtures handle this automatically                            |
 | `InvalidStateError: The device is unable to create a session`  | macOS GPU VRAM insufficient, no CPU fallback in ONNX Runtime CoreML         | Not fixable — macOS is not supported (see platform findings)                                      |
-| Tests timeout at 240-300s                                      | Model not warm — first `session.prompt()` takes 11+ min on ARM64            | Run bootstrap script first, or let e2e warm-up complete before unit tests                         |
+| Tests timeout at 240-300s                                      | Model not warm — first `session.prompt()` takes 23-110 min on CI ARM64      | Ensure `browser-warmup.ts` setupFile is configured. CI step timeout is 120 min for Edge           |
 | Model download never starts on Windows Server                  | Server SKU rejected by Edge model delivery                                  | Use Windows 10/11 Desktop, not Server 2025                                                        |
 
 ## Content Search
@@ -161,11 +169,13 @@ Use `git grep` for searching tracked files. Use `rg` only for untracked/ignored 
 
 ## Design Decisions
 
-- **E2E before unit tests**: E2E warm-up initializes inference pipeline; unit tests reuse warm model. Cache saved post-test (not post-bootstrap) to capture inference artifacts (`adapter_cache.bin`, `encoder_cache.bin`)
-- **Three-way warm-up is intentional**: bootstrap, e2e fixture, Vitest global-setup each warm up independently — each is a separate entry point that might run alone
-- **Warm-up order matters**: (1) `LanguageModel.create()` triggers model registration, (2) wait for Model Status "Ready" on the internals page, (3) `session.prompt('warmup')` runs first inference. Without step 1, Model Status stays "NO STATE" indefinitely. Without step 2, the prompt absorbs the full cold-start (~12 min vs ~35s)
-- **"NO STATE" is transient — don't refresh**: On `edge://on-device-internals` Model Status tab, "NO STATE" means the model is loading. Wait patiently. Only refresh on "Not Ready For Unknown Reason"
-- **Retries disabled in CI**: Playwright retries create new workers, each needing a full 12+ min model warm-up on ARM64. ProcessSingleton is handled by the fixture's 5-attempt retry loop instead
+- **Warm-up runs in the test browser process**: `browser-warmup.ts` (Vitest setupFile) and the e2e fixture both call `LanguageModel.create()` + `session.prompt('warmup')` in the same browser that runs tests. ONNX compilation is per-process — warming a separate browser is wasted work
+- **globalSetup only seeds profiles**: `global-setup.shared.ts` calls `seedLocalState()` (file operations) — no browser launch. The actual warm-up happens in `browser-warmup.ts` (unit tests) or the e2e fixture
+- **Don't destroy warm-up sessions prematurely**: Per the W3C Prompt API spec, `session.destroy()` signals the browser to unload the model from memory. Only destroy after warm-up completes successfully
+- **CI saves cache only on success**: Post-test cache save is gated on `steps.unit-tests.outcome == 'success'` to avoid persisting corrupt profiles from timed-out runs
+- **E2E and unit tests are independent in CI**: Separate jobs on separate VMs with separate caches (`msedge-dev-e2e-edge-v1-*`, `msedge-dev-test-edge-v1-*`). No shared warm-up between them
+- **Shared browser config in Nx lib**: `@layzeedk/browser-profiles` is the single source of truth for profile definitions, `seedLocalState()`, and `getLaunchOptions()`. Vite-processed files use relative imports with eslint-disable (Nx plugins parse configs before Vite resolves tsconfig paths)
+- **Retries disabled in CI**: Playwright retries create new workers, each needing a full model warm-up on ARM64. ProcessSingleton is handled by the fixture's 5-attempt retry loop instead
 - **Per-browser Nx targets, not configurations**: `@angular/build:unit-test` ignores Nx configuration overrides for `runnerConfig`. Separate targets (`test-chrome`, `test-edge`) with distinct Vitest config files provide proper cache isolation
 - **`@1` not `@2` for `optimization-guide-on-device-model`**: `@2` (BypassPerfRequirement) predates Chrome 140 CPU support, forces GPU backend on no-GPU machines
 - **ONNX Runtime is Edge profile component**: DLLs download into profile dir, not browser install. Profile cache must include runtime + model + tokenizer
@@ -174,12 +184,15 @@ Use `git grep` for searching tracked files. Use `rg` only for untracked/ignored 
 
 ## Rejected Approaches
 
-- `globalSetup` for E2E warm-up: separate browser process, ProcessSingleton blocks test worker
+- `globalSetup` browser warm-up: launches a separate browser that closes before tests start — ONNX compilation state is lost. Use globalSetup only for file operations (`seedLocalState`)
+- Vitest `setupFiles` for launching browsers: runs in browser context, no `launchPersistentContext()` API access. However, `setupFiles` IS the correct place for model warm-up — it runs in the same browser process as tests, preserving ONNX compilation state
+- `dependsOn: ["^test"]` on e2e target: pulls in aggregate test (both browsers) even for per-browser CI jobs. Use separate `run-many` calls instead
+- CDP browser sharing between Playwright and Vitest: `connectOptions` and `persistentContext` are mutually exclusive in `@vitest/browser-playwright`; Playwright's `launchServer()` doesn't support persistent contexts (issue #1523, open since 2020)
+- `parallelism: false` on Nx targets: acts as a global machine lock blocking ALL tasks, not just the conflicting pair
 - Per-test browser fixtures: close-relaunch triggers ProcessSingleton every test
-- Vitest `setupFiles`: runs in browser context, no `launchPersistentContext()` API access
 - macOS runners (Intel + M1): GPU VRAM insufficient, no CPU-only fallback
 - Nx configurations for `runnerConfig`: `@angular/build:unit-test` resolves from base options only, silently ignoring configuration overrides
-- Vitest/Playwright retries in CI: each retry recreates the worker-scoped fixture, triggering a full 12+ min model warm-up on ARM64 — 3 retries x 15 min exceeds the 45-min step timeout
+- Vitest/Playwright retries in CI: each retry recreates the worker-scoped fixture, triggering a full model warm-up on ARM64
 
 ## Deep Reference
 
