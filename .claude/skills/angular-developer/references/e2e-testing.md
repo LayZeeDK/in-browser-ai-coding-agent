@@ -149,3 +149,48 @@ npx cypress run
 - **Keep tests independent**: Each test should set up its own state and not depend on the order of execution.
 - **Test user-visible behavior**: Focus on what users see and interact with, not implementation details.
 - **Use Page Object Model**: For larger test suites, encapsulate page interactions in reusable classes to reduce duplication.
+
+## Accessibility Testing (Playwright)
+
+Use `@axe-core/playwright` to catch WCAG violations in E2E tests:
+
+```ts
+import AxeBuilder from '@axe-core/playwright';
+
+test('should have no accessibility violations', async ({ page }) => {
+  await page.goto('/');
+  const results = await new AxeBuilder({ page }).analyze();
+
+  expect(results.violations).toEqual([]);
+});
+
+test('should have no a11y violations on the form page', async ({ page }) => {
+  await page.goto('/contact');
+  const results = await new AxeBuilder({ page })
+    .include('form') // scope to a specific element
+    .withTags(['wcag2a', 'wcag2aa']) // WCAG AA conformance
+    .analyze();
+
+  expect(results.violations).toEqual([]);
+});
+```
+
+## API Mocking / Route Interception (Playwright)
+
+Intercept network requests to isolate E2E tests from backend dependencies:
+
+```ts
+test('should display mocked data', async ({ page }) => {
+  // Intercept API calls before navigation
+  await page.route('**/api/heroes', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([{ id: 1, name: 'Mock Hero' }]),
+    }),
+  );
+
+  await page.goto('/');
+  await expect(page.locator('.hero-name')).toContainText('Mock Hero');
+});
+```

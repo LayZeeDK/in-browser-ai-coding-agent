@@ -85,3 +85,34 @@ it('should get the activated component directly', async () => {
 - **Access the Router State:** Use `harness.router` to access the live router instance and assert on its state (e.g., `harness.router.url`).
 - **Get Activated Components:** Use `harness.getHarness(ComponentType)` to get an instance of a component harness for the currently activated routed component, or `harness.routeDebugElement` to get the `DebugElement`.
 - **Wait for Stability:** After performing an action that causes navigation, always `await harness.fixture.whenStable()` to ensure the routing is complete before making assertions.
+
+## Testing Guards and Resolvers in Isolation
+
+Guards and resolvers are plain functions — test them directly without routing:
+
+```ts
+describe('authGuard', () => {
+  it('should allow navigation when authenticated', () => {
+    TestBed.configureTestingModule({
+      providers: [{ provide: AuthService, useValue: { isLoggedIn: () => true } }],
+    });
+
+    const result = TestBed.runInInjectionContext(() => authGuard({} as ActivatedRouteSnapshot, {} as RouterStateSnapshot));
+
+    expect(result).toBe(true);
+  });
+
+  it('should redirect to /login when not authenticated', () => {
+    TestBed.configureTestingModule({
+      providers: [{ provide: AuthService, useValue: { isLoggedIn: () => false } }],
+    });
+
+    const result = TestBed.runInInjectionContext(() => authGuard({} as ActivatedRouteSnapshot, {} as RouterStateSnapshot));
+
+    // Guard returns a UrlTree for redirect
+    expect(result).toBeInstanceOf(Object); // UrlTree
+  });
+});
+```
+
+Use `TestBed.runInInjectionContext()` because functional guards use `inject()` internally.

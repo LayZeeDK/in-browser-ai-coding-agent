@@ -159,10 +159,10 @@ When implementing styling and animations in Angular, consult the following refer
 
 When writing or updating tests, consult the following references based on the task:
 
-- **Fundamentals**: Best practices for unit testing (Vitest), async patterns, and `TestBed`. Read [testing-fundamentals.md](references/testing-fundamentals.md)
-- **Component Harnesses**: Standard patterns for robust component interaction. Read [component-harnesses.md](references/component-harnesses.md)
-- **Router Testing**: Using `RouterTestingHarness` for reliable navigation tests. Read [router-testing.md](references/router-testing.md)
-- **End-to-End (E2E) Testing**: Best practices for E2E tests with Playwright and Cypress. Read [e2e-testing.md](references/e2e-testing.md)
+- **Fundamentals**: Async-first testing (Act/Wait/Assert), `TestBed`, signal inputs via `componentRef.setInput()`, output testing, service testing with `Mocked<T>`/`vi.fn()`, `resource()` and `httpResource()` testing patterns, `HttpTestingController`, `rethrowApplicationErrors`. Read [testing-fundamentals.md](references/testing-fundamentals.md)
+- **Component Harnesses**: Using Material harnesses, creating custom harnesses (`ComponentHarness`, `locatorFor`, `TestElement`, `HarnessPredicate`, `parallel()`). Read [component-harnesses.md](references/component-harnesses.md)
+- **Router Testing**: `RouterTestingHarness`, `provideRouter`, testing guards/resolvers in isolation with `runInInjectionContext`. Read [router-testing.md](references/router-testing.md)
+- **End-to-End (E2E) Testing**: Playwright and Cypress setup, accessibility testing with axe-core, API mocking/interception. Read [e2e-testing.md](references/e2e-testing.md)
 
 ## Tooling
 
