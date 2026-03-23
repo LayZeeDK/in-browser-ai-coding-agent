@@ -164,9 +164,6 @@ jobs:
 
       - run: npm ci
 
-      - name: Bootstrap AI model
-        run: xvfb-run --auto-servernum node scripts/bootstrap-ai-model.mjs --browser chrome-beta --profile .playwright-profiles/chrome-beta --timeout 300000
-
       - name: Run unit tests
         id: unit-tests
         timeout-minutes: 45
