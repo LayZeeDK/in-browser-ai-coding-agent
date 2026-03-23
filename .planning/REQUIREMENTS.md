@@ -84,34 +84,34 @@ A non-technical user types a description of what they want and gets working, wel
 
 <!-- Updated by roadmap creation -->
 
-| REQ-ID  | Phase | Status  |
-| ------- | ----- | ------- |
-| PIPE-01 | —     | Pending |
-| PIPE-02 | —     | Pending |
-| PIPE-03 | —     | Pending |
-| PIPE-04 | —     | Pending |
-| PIPE-05 | —     | Pending |
-| PIPE-06 | —     | Pending |
-| PIPE-07 | —     | Pending |
-| PIPE-08 | —     | Pending |
-| UI-01   | —     | Pending |
-| UI-02   | —     | Pending |
-| UI-03   | —     | Pending |
-| UI-04   | —     | Pending |
-| UI-05   | —     | Pending |
-| UI-06   | —     | Pending |
-| UI-07   | —     | Pending |
-| PREV-01 | —     | Pending |
-| PREV-02 | —     | Pending |
-| PREV-03 | —     | Pending |
-| OUT-01  | —     | Pending |
-| OUT-02  | —     | Pending |
-| OUT-03  | —     | Pending |
-| OUT-04  | —     | Pending |
-| QA-01   | —     | Pending |
-| QA-02   | —     | Pending |
-| QA-03   | —     | Pending |
-| QA-04   | —     | Pending |
+| REQ-ID  | Phase   | Status  |
+| ------- | ------- | ------- |
+| PIPE-01 | Phase 2 | Pending |
+| PIPE-02 | Phase 2 | Pending |
+| PIPE-03 | Phase 2 | Pending |
+| PIPE-04 | Phase 2 | Pending |
+| PIPE-05 | Phase 1 | Pending |
+| PIPE-06 | Phase 1 | Pending |
+| PIPE-07 | Phase 1 | Pending |
+| PIPE-08 | Phase 2 | Pending |
+| UI-01   | Phase 3 | Pending |
+| UI-02   | Phase 3 | Pending |
+| UI-03   | Phase 3 | Pending |
+| UI-04   | Phase 3 | Pending |
+| UI-05   | Phase 3 | Pending |
+| UI-06   | Phase 3 | Pending |
+| UI-07   | Phase 3 | Pending |
+| PREV-01 | Phase 2 | Pending |
+| PREV-02 | Phase 2 | Pending |
+| PREV-03 | Phase 2 | Pending |
+| OUT-01  | Phase 3 | Pending |
+| OUT-02  | Phase 3 | Pending |
+| OUT-03  | Phase 3 | Pending |
+| OUT-04  | Phase 3 | Pending |
+| QA-01   | Phase 4 | Pending |
+| QA-02   | Phase 4 | Pending |
+| QA-03   | Phase 4 | Pending |
+| QA-04   | Phase 4 | Pending |
 
 ---
 
