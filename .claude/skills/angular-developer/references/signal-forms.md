@@ -1,8 +1,8 @@
 # Signal Forms
 
-Signal Forms are the recommended approach for handling forms in modern Angular applications (v21+). They provide a reactive, type-safe, and model-driven way to manage form state using Angular Signals.
+Signal Forms are a new approach for handling forms in Angular v21+ applications. They provide a reactive, type-safe, and model-driven way to manage form state using Angular Signals.
 
-**CRITICAL**: You MUST use Angular's new Signal Forms API for all form-related functionality. Do NOT use null as a value or type of any fields.
+**Note**: Signal Forms (`@angular/forms/signals`) are new in Angular v21. For new forms in v21+ projects, prefer Signal Forms. For existing projects using Reactive Forms or Template-driven Forms, continue using the established form strategy unless migrating intentionally. Do NOT use null as a value or type of any fields.
 
 ## Imports
 
@@ -192,10 +192,9 @@ Do NOT do this: `<input min="1" [formField]>` or `<input [value]="val" [formFiel
 <input [formField]="userForm.name" />
 ```
 
-## Reactive Forms
+## Relationship to Reactive Forms
 
-**Do NOT import** `FormControl`, `FormGroup`, `FormArray`, or `FormBuilder` from `@angular/forms`. Signal Forms replace these concepts entirely.
-Signal forms does NOT have a builder.
+When using Signal Forms, do not mix them with `FormControl`, `FormGroup`, `FormArray`, or `FormBuilder` from `@angular/forms` in the same form. Signal Forms use a different model-driven approach and do not have a builder equivalent.
 
 ## Accessing State
 
@@ -541,7 +540,6 @@ import { form, FormField, submit, required, email, min, hidden, applyEach, valid
 
 @Component({
   selector: 'app-root',
-  standalone: true,
   imports: [FormField],
   templateUrl: './app.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
