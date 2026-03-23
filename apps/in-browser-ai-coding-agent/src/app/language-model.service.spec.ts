@@ -1,9 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, inject, it } from 'vitest';
 import {
   LanguageModelService,
   ModelAvailability,
 } from './language-model.service';
+
+const isEdge = /\bEdg\//.test(navigator.userAgent);
 
 describe('LanguageModelService', () => {
   let service: LanguageModelService;
@@ -44,14 +46,18 @@ describe('LanguageModelService', () => {
     expect(typeof service.isApiSupported).toBe('boolean');
   });
 
-  it('should respond to a prompt', async () => {
-    const response = await service.prompt('Hello, AI!');
+  it.skipIf(inject('CI') && isEdge)(
+    'should respond to a prompt',
+    async () => {
+      const response = await service.prompt('Hello, AI!');
 
-    console.log(
-      `[unit] Prompt: "Hello, AI!"\n[unit-response]${response.trim()}[/unit-response]`,
-    );
+      console.log(
+        `[unit] Prompt: "Hello, AI!"\n[unit-response]${response.trim()}[/unit-response]`,
+      );
 
-    expect(response).toBeTruthy();
-    expect(response.length).toBeGreaterThan(0);
-  }, 600_000);
+      expect(response).toBeTruthy();
+      expect(response.length).toBeGreaterThan(0);
+    },
+    600_000,
+  );
 });

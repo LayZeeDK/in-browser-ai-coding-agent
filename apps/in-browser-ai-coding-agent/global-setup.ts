@@ -4,4 +4,4 @@
  */
 import { allProfiles, setupInstances } from './global-setup.shared';
 
-export const setup = () => setupInstances(allProfiles);
+export const setup = ({ provide }) => setupInstances(allProfiles, provide);

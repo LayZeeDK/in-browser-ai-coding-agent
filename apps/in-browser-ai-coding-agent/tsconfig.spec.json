@@ -4,5 +4,5 @@
     "outDir": "../../dist/out-tsc",
     "types": ["dom-chromium-ai"]
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts"]
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "vitest.d.ts"]
 }

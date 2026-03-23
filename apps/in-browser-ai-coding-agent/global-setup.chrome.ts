@@ -4,5 +4,8 @@
  */
 import { allProfiles, setupInstances } from './global-setup.shared';
 
-export const setup = () =>
-  setupInstances(allProfiles.filter((p) => p.name === 'chrome-gemini-nano'));
+export const setup = ({ provide }) =>
+  setupInstances(
+    allProfiles.filter((p) => p.name === 'chrome-gemini-nano'),
+    provide,
+  );

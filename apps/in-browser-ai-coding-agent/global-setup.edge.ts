@@ -4,5 +4,8 @@
  */
 import { allProfiles, setupInstances } from './global-setup.shared';
 
-export const setup = () =>
-  setupInstances(allProfiles.filter((p) => p.name === 'edge-phi4-mini'));
+export const setup = ({ provide }) =>
+  setupInstances(
+    allProfiles.filter((p) => p.name === 'edge-phi4-mini'),
+    provide,
+  );

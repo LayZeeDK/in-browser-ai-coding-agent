@@ -17,8 +17,14 @@ export { allProfiles };
 
 /**
  * Seed profiles with required flags and create directories if missing.
+ * Optionally provides shared context values to browser-side tests.
  */
-export async function setupInstances(profiles: BrowserProfile[]) {
+export async function setupInstances(
+  profiles: BrowserProfile[],
+  provide?: (key: string, value: unknown) => void,
+) {
+  provide?.('CI', !!process.env['CI']);
+
   for (const profile of profiles) {
     seedLocalState(profile);
     console.log(
