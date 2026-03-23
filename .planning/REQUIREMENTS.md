@@ -16,7 +16,7 @@ A non-technical user types a description of what they want and gets working, wel
 - [ ] **PIPE-04**: Pipeline supports programmatic validation passes (HTML well-formedness, syntax checking) alongside AI passes — deterministic work is offloaded to JavaScript, not the model
 - [ ] **PIPE-05**: Model service uses Angular DI with an abstract class token and browser-specific implementations (Gemini Nano for Chrome, Phi-4 Mini for Edge)
 - [ ] **PIPE-06**: Each model implementation has its own system prompts, temperature settings, and token budget management tuned to that model's strengths
-- [ ] **PIPE-07**: Pipeline maintains an anchor session to prevent model unload, with per-pass sessions created via `clone()` and destroyed individually
+- [ ] **PIPE-07**: Pipeline maintains an anchor session to prevent model unload, with fresh sessions created per pass (each with its own system prompt) and destroyed individually
 - [ ] **PIPE-08**: Pipeline uses `promptStreaming()` for the code generation pass to enable real-time token display
 
 ### User Interface
@@ -28,6 +28,7 @@ A non-technical user types a description of what they want and gets working, wel
 - [ ] **UI-05**: App displays a loading/progress indicator while the pipeline is running (spinner or step indicator tied to pipeline state)
 - [ ] **UI-06**: Code pane shows streaming tokens as they arrive during the code generation pass
 - [ ] **UI-07**: Preview pane has a viewport toggle to switch between mobile (375px) and desktop (1280px) width
+- [ ] **UI-08**: User can abort/cancel an in-progress generation via an abort button (wired to AbortController)
 
 ### Preview
 
@@ -101,6 +102,7 @@ A non-technical user types a description of what they want and gets working, wel
 | UI-05   | Phase 3 | Pending |
 | UI-06   | Phase 3 | Pending |
 | UI-07   | Phase 3 | Pending |
+| UI-08   | Phase 3 | Pending |
 | PREV-01 | Phase 2 | Pending |
 | PREV-02 | Phase 2 | Pending |
 | PREV-03 | Phase 2 | Pending |
@@ -116,4 +118,5 @@ A non-technical user types a description of what they want and gets working, wel
 ---
 
 _Requirements defined: 2026-03-23_
-_26 v1 requirements across 5 categories_
+_Last updated: 2026-03-23 after research — PIPE-07 corrected (clone to fresh sessions), UI-08 added (abort)_
+_27 v1 requirements across 5 categories_
