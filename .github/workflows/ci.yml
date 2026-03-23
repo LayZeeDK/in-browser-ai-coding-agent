@@ -118,7 +118,7 @@ jobs:
           cache-from: type=gha,scope=playwright-chrome-beta
           cache-to: type=gha,scope=playwright-chrome-beta,mode=max
 
-  test-chrome:
+  e2e-chrome:
     needs: build-chrome-image
     runs-on: ubuntu-latest
     container:
@@ -140,12 +140,31 @@ jobs:
       - run: npm ci
 
       - name: Run e2e tests
-        id: e2e-tests
         timeout-minutes: 45
         run: xvfb-run --auto-servernum npm exec nx -- e2e in-browser-ai-coding-agent-e2e -c chrome
 
+  test-chrome:
+    needs: build-chrome-image
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ needs.build-chrome-image.outputs.image }}:latest
+      options: --ipc=host --user 1001
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - uses: nrwl/nx-set-shas@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.node-version'
+          cache: 'npm'
+
+      - run: npm ci
+
       - name: Run unit tests
-        if: ${{ !cancelled() }}
         id: unit-tests
         timeout-minutes: 45
         shell: bash

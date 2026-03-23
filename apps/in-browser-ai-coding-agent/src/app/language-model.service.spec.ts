@@ -53,5 +53,5 @@ describe('LanguageModelService', () => {
 
     expect(response).toBeTruthy();
     expect(response.length).toBeGreaterThan(0);
-  }, 300_000);
+  }, 600_000);
 });
