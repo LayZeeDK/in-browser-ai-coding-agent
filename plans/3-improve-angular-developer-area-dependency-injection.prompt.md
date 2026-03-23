@@ -32,10 +32,10 @@ After reading every DI reference file, the quality is better than line counts su
 
 1. Fetch content from angular.dev/guide/di sub-pages for `DestroyRef` and `takeUntilDestroyed()` patterns
 2. Write 2-3 test prompts (e.g., "Create a service that subscribes to an Observable and cleans up properly using DestroyRef and takeUntilDestroyed", "Use viewProviders to isolate a form state service from projected content in a reusable form wrapper component", "Create an APP_INITIALIZER that loads remote configuration before the app starts")
-3. Run evals (with-skill vs baseline) to measure current pass rate
-4. Focus improvement on `injection-context.md` (add DestroyRef/takeUntilDestroyed), `hierarchical-injectors.md` (viewProviders content projection example), and `defining-providers.md` (APP_INITIALIZER). Reduce overlap between `di-fundamentals.md` and `injection-context.md`.
-5. Re-run evals with improved skill across 10 runs to measure variance
-6. Commit changes using atomic commits with detailed descriptions
+3. Run evals (with-skill vs without-skill) to measure current pass rate — use the eval viewer (`generate_review.py`) so I can review outputs qualitatively, then **WAIT for my review before proceeding**
+4. After I approve, focus improvement on `injection-context.md` (add DestroyRef/takeUntilDestroyed), `hierarchical-injectors.md` (viewProviders content projection example), and `defining-providers.md` (APP_INITIALIZER). Reduce overlap between `di-fundamentals.md` and `injection-context.md`.
+5. Re-run evals with improved skill — 10 with-skill runs AND 10 without-skill runs to measure variance and comparative lift — generate the eval viewer and **WAIT for my review before proceeding**
+6. After I approve the benchmark results, commit changes using atomic commits with detailed descriptions
 
 ### Angular.dev source pages
 

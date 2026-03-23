@@ -40,10 +40,10 @@ After reading every routing reference file, the quality is more varied than line
 
 1. Fetch content from angular.dev/guide/routing sub-pages for each file with identified gaps
 2. Write 2-3 test prompts (e.g., "Set up lazy-loaded feature routes with PreloadAllModules and a canActivate auth guard that uses RedirectCommand", "Configure withComponentInputBinding so route params and resolved data bind directly to component inputs", "Add pathMatch: 'full' to fix a redirect that's matching too eagerly")
-3. Run evals (with-skill vs baseline) to measure current pass rate
-4. Enrich files — focus effort on `loading-strategies.md` (preloading), `navigate-to-routes.md` (input binding cross-ref), and `route-guards.md` (RedirectCommand). Lighter touch on already-solid files.
-5. Re-run evals with improved skill across 10 runs to measure variance
-6. Commit changes using atomic commits with detailed descriptions
+3. Run evals (with-skill vs without-skill) to measure current pass rate — use the eval viewer (`generate_review.py`) so I can review outputs qualitatively, then **WAIT for my review before proceeding**
+4. After I approve, enrich files — focus effort on `loading-strategies.md` (preloading), `navigate-to-routes.md` (input binding cross-ref), and `route-guards.md` (RedirectCommand). Lighter touch on already-solid files.
+5. Re-run evals with improved skill — 10 with-skill runs AND 10 without-skill runs to measure variance and comparative lift — generate the eval viewer and **WAIT for my review before proceeding**
+6. After I approve the benchmark results, commit changes using atomic commits with detailed descriptions
 
 ### Angular.dev source pages
 

@@ -30,10 +30,10 @@ While Angular 21 projects should prefer Signal Forms for new forms, many real-wo
 
 1. Fetch content from angular.dev/guide/forms sub-pages for typed forms and validation patterns
 2. Write 2-3 test prompts (e.g., "Create a registration form using typed Reactive Forms with nonNullable FormBuilder, including a custom async username validator that calls the server", "Add cross-field validation to a password form where confirmPassword must match password", "Create a custom required-if validator directive for template-driven forms")
-3. Run evals (with-skill vs baseline) to measure current pass rate
-4. Focus improvement on `reactive-forms.md` (typed forms with nonNullable, custom validators, cross-field validation). Lighter touch on `template-driven-forms.md` (custom validator directive, forms comparison table).
-5. Re-run evals with improved skill across 10 runs to measure variance
-6. Commit changes using atomic commits with detailed descriptions
+3. Run evals (with-skill vs without-skill) to measure current pass rate — use the eval viewer (`generate_review.py`) so I can review outputs qualitatively, then **WAIT for my review before proceeding**
+4. After I approve, focus improvement on `reactive-forms.md` (typed forms with nonNullable, custom validators, cross-field validation). Lighter touch on `template-driven-forms.md` (custom validator directive, forms comparison table).
+5. Re-run evals with improved skill — 10 with-skill runs AND 10 without-skill runs to measure variance and comparative lift — generate the eval viewer and **WAIT for my review before proceeding**
+6. After I approve the benchmark results, commit changes using atomic commits with detailed descriptions
 
 ### Angular.dev source pages
 

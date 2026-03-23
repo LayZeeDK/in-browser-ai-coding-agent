@@ -28,10 +28,10 @@ After reading every styling reference file, these are in better shape than expec
 
 1. Fetch content from angular.dev for styling topics, focusing on CSS custom properties for theming and Tailwind v4 integration depth
 2. Write 2-3 test prompts (e.g., "Create a theme system using CSS custom properties that works across components with ViewEncapsulation.Emulated", "Add dark mode support to an Angular + Tailwind CSS v4 project", "Animate a list with staggered enter/leave transitions using native CSS animations (animate.enter/animate.leave)")
-3. Run evals (with-skill vs baseline) to measure current pass rate
-4. Focus improvement on `component-styling.md` (CSS custom properties theming) and `tailwind-css.md` (dark mode, @apply). `angular-animations.md` needs only minor touches.
-5. Re-run evals with improved skill across 10 runs to measure variance
-6. Commit changes using atomic commits with detailed descriptions
+3. Run evals (with-skill vs without-skill) to measure current pass rate — use the eval viewer (`generate_review.py`) so I can review outputs qualitatively, then **WAIT for my review before proceeding**
+4. After I approve, focus improvement on `component-styling.md` (CSS custom properties theming) and `tailwind-css.md` (dark mode, @apply). `angular-animations.md` needs only minor touches.
+5. Re-run evals with improved skill — 10 with-skill runs AND 10 without-skill runs to measure variance and comparative lift — generate the eval viewer and **WAIT for my review before proceeding**
+6. After I approve the benchmark results, commit changes using atomic commits with detailed descriptions
 
 ### Angular.dev source pages
 

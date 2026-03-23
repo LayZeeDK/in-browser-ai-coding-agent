@@ -32,10 +32,10 @@ After reading every file in this cluster, `performance.md` is excellent and need
 
 1. Fetch angular.dev content for accessibility testing patterns and keyboard navigation
 2. Write 2-3 test prompts (e.g., "Add Axe accessibility testing to an Angular component test suite using jest-axe with TestBed", "Create a modal dialog component with proper focus trapping that returns focus to the trigger element on close", "Configure angular-eslint with accessibility rules and fix the violations it finds")
-3. Run evals (with-skill vs baseline) to measure current pass rate
-4. Focus improvement almost entirely on `accessibility.md` (add testing section with axe-core, add keyboard navigation patterns, add focus trap for modals). Minor touch on `error-handling.md` (HttpErrorResponse patterns). Leave `performance.md` and `security.md` as-is unless evals reveal issues.
-5. Re-run evals with improved skill across 10 runs to measure variance
-6. Commit changes using atomic commits with detailed descriptions
+3. Run evals (with-skill vs without-skill) to measure current pass rate — use the eval viewer (`generate_review.py`) so I can review outputs qualitatively, then **WAIT for my review before proceeding**
+4. After I approve, focus improvement almost entirely on `accessibility.md` (add testing section with axe-core, add keyboard navigation patterns, add focus trap for modals). Minor touch on `error-handling.md` (HttpErrorResponse patterns). Leave `performance.md` and `security.md` as-is unless evals reveal issues.
+5. Re-run evals with improved skill — 10 with-skill runs AND 10 without-skill runs to measure variance and comparative lift — generate the eval viewer and **WAIT for my review before proceeding**
+6. After I approve the benchmark results, commit changes using atomic commits with detailed descriptions
 
 ### Angular.dev source pages
 
