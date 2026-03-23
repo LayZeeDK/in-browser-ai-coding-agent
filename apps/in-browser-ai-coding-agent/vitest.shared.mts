@@ -2,8 +2,8 @@ import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
 // Relative import required — Vite processes config files without tsconfig path aliases
 import {
-  AI_IGNORE_DEFAULT_ARGS,
   allProfiles,
+  getLaunchOptions,
 } from '../../libs/shared/browser-profiles/src/index';
 
 /** Vitest browser instances built from the shared profile definitions. */
@@ -12,12 +12,7 @@ const allInstances = allProfiles.map((p) => ({
   name: p.name,
   provider: playwright({
     persistentContext: p.profileDir,
-    launchOptions: {
-      channel: p.channel,
-      headless: false,
-      args: p.args,
-      ignoreDefaultArgs: AI_IGNORE_DEFAULT_ARGS,
-    },
+    launchOptions: getLaunchOptions(p),
   }),
 }));
 

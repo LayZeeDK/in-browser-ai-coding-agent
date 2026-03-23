@@ -45,6 +45,16 @@ export interface BrowserProfile {
   flags: string[];
 }
 
+export function getLaunchOptions(profile: BrowserProfile) {
+  return {
+    channel: profile.channel,
+    headless: false,
+    args: profile.args,
+    ignoreDefaultArgs: AI_IGNORE_DEFAULT_ARGS,
+    timeout: 60_000,
+  };
+}
+
 export const allProfiles: BrowserProfile[] = [
   {
     name: 'chrome-gemini-nano',

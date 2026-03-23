@@ -5,8 +5,8 @@ import {
   type Page,
 } from '@playwright/test';
 import {
-  AI_IGNORE_DEFAULT_ARGS,
   allProfiles,
+  getLaunchOptions,
   seedLocalState,
 } from '@layzeedk/browser-profiles';
 
@@ -49,13 +49,10 @@ export const test = base.extend<
 
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
-          context = await chromium.launchPersistentContext(profile.profileDir, {
-            channel: profile.channel,
-            headless: false,
-            args: profile.args,
-            ignoreDefaultArgs: AI_IGNORE_DEFAULT_ARGS,
-            timeout: 60_000,
-          });
+          context = await chromium.launchPersistentContext(
+            profile.profileDir,
+            getLaunchOptions(profile),
+          );
 
           break;
         } catch (error) {
