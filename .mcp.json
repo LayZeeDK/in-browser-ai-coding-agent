@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "nx-mcp": {
-      "command": "npx",
-      "args": ["-y", "nx-mcp@latest"]
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "nx-mcp@latest"]
     }
   }
 }
