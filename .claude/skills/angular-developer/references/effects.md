@@ -40,6 +40,56 @@ export class Example {
 }
 ```
 
+### Injection Context
+
+By default, `effect()` must be created in an injection context (constructor, field initializer). To create an effect elsewhere, pass an `Injector`:
+
+```ts
+private injector = inject(Injector);
+
+initializeLogging(): void {
+  effect(
+    () => console.log(`Count: ${this.count()}`),
+    { injector: this.injector }
+  );
+}
+```
+
+### View Effects vs Root Effects
+
+Angular distinguishes two kinds of effects based on where they are created:
+
+- **View Effect** (created in a component context): runs _before_ its component is checked during change detection. Destroyed when the component is destroyed.
+- **Root Effect** (created in a root-provided service): runs before _all_ components are checked. Destroyed when the application is destroyed.
+
+### Manual Cleanup
+
+Effects are automatically destroyed with their injection context. For manual control, use `manualCleanup` and the returned `EffectRef`:
+
+```ts
+const ref = effect(() => console.log(this.count()), { manualCleanup: true });
+// Later:
+ref.destroy();
+```
+
+## One-Time Initialization with `afterNextRender`
+
+For one-time setup that needs DOM access (e.g., initializing a chart library), use `afterNextRender` instead of `afterRenderEffect`:
+
+```ts
+import { afterNextRender, viewChild, ElementRef } from '@angular/core';
+
+canvas = viewChild.required<ElementRef>('canvas');
+
+constructor() {
+  afterNextRender({
+    write: () => {
+      this.chart = initializeChart(this.canvas().nativeElement);
+    },
+  });
+}
+```
+
 ## DOM Manipulation with `afterRenderEffect`
 
 Standard `effect` runs _before_ Angular updates the DOM. If you need to manually inspect or modify the DOM based on a signal change (e.g., integrating a 3rd party UI library), use `afterRenderEffect`.
@@ -81,3 +131,5 @@ export class Chart {
 4. `read` (Never write here)
 
 _Note: `afterRenderEffect` only runs on the client, never during Server-Side Rendering (SSR)._
+
+**Prefer native observers when possible:** Use `ResizeObserver`, `MutationObserver`, or `IntersectionObserver` over `effect`/`afterRenderEffect` when you need to react to DOM changes — they are more efficient and purpose-built for these use cases.
