@@ -45,9 +45,9 @@ When asked to create a new Angular project, you must determine the correct execu
 
 When working with Angular components, consult the following references based on the task:
 
-- **Fundamentals**: Anatomy, metadata, core concepts, and template control flow (@if, @for, @switch). Read [components.md](references/components.md)
-- **Inputs**: Signal-based inputs, transforms, and model inputs. Read [inputs.md](references/inputs.md)
-- **Outputs**: Signal-based outputs and custom event best practices. Read [outputs.md](references/outputs.md)
+- **Fundamentals**: Anatomy, metadata, core concepts, template control flow (@if, @for, @switch), content projection (`<ng-content>`, multi-slot, fallback content, `ngProjectAs`), view and content queries (`viewChild()`, `viewChildren()`, `contentChild()`, `contentChildren()`), lifecycle hooks (full timing table, `DestroyRef`, `afterNextRender`/`afterEveryRender` phases), and `@defer` cross-reference. Read [components.md](references/components.md)
+- **Inputs**: Signal-based inputs, transforms, model inputs, and `setInput()` for dynamic components. Read [inputs.md](references/inputs.md)
+- **Outputs**: Signal-based outputs, custom events, and RxJS interop (`outputFromObservable`, `outputToObservable`). Read [outputs.md](references/outputs.md)
 - **Host Elements**: Host bindings and attribute injection. Read [host-elements.md](references/host-elements.md)
 
 If you require deeper documentation not found in the references above, read the documentation at `https://angular.dev/guide/components`.

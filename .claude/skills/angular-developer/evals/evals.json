@@ -1,0 +1,50 @@
+{
+  "skill_name": "angular-developer",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create a card component with multi-slot content projection. It should have slots for a header, body, and actions section. Use ng-content with select attributes. Include fallback content for the actions slot that shows a default 'Close' button. Also create a CardHeader component used as the selector for the header slot.",
+      "expected_output": "A CustomCard component using <ng-content select=\"...\"> for multi-slot projection, a CardHeader child component, and fallback content in the actions ng-content.",
+      "files": [],
+      "expectations": [
+        "Uses <ng-content> with select attribute for multi-slot projection",
+        "Has at least 3 distinct ng-content slots (header, body, actions)",
+        "Includes fallback content inside at least one <ng-content> element",
+        "Creates a separate CardHeader component with its own selector",
+        "Uses ChangeDetectionStrategy.OnPush",
+        "Does NOT use @ContentChild or @ContentChildren decorators (signal queries or no queries needed)",
+        "Components are standalone (no standalone: true explicit since Angular 19+)"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Build a tabs component that uses viewChildren() to query tab panel components in its template and contentChildren() to discover tab items projected by the consumer. Each tab item should have a label input. The tabs component should track the active tab index with a signal and show only the active panel. Use the modern signal-based query APIs.",
+      "expected_output": "A Tabs component using viewChildren() and contentChildren() signal query functions, TabItem and TabPanel child components, with signal-based active tab tracking.",
+      "files": [],
+      "expectations": [
+        "Uses viewChildren() function (not @ViewChildren decorator)",
+        "Uses contentChildren() function (not @ContentChildren decorator)",
+        "TabItem has a label defined with input() function (not @Input decorator)",
+        "Active tab is tracked with a signal (signal() or computed())",
+        "Uses ChangeDetectionStrategy.OnPush on all components",
+        "Uses @for for iteration (not *ngFor)",
+        "Does NOT import from '@angular/core' the decorators ViewChildren, ContentChildren, or ContentChild"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Create an AutoResizeTextarea component that uses ngAfterViewInit to measure its initial rendered height via viewChild() and ngOnDestroy (or DestroyRef) to clean up a ResizeObserver. The component should implement the OnInit, AfterViewInit, and OnDestroy interfaces. Use the modern signal-based viewChild() to get a reference to the textarea element.",
+      "expected_output": "A component using viewChild() signal query for the textarea ElementRef, lifecycle hooks with proper interface implementation, and ResizeObserver cleanup.",
+      "files": [],
+      "expectations": [
+        "Uses viewChild() function (not @ViewChild decorator) to reference the textarea",
+        "Implements OnInit, AfterViewInit, and OnDestroy interfaces",
+        "Uses ngAfterViewInit to read initial element dimensions",
+        "Cleans up ResizeObserver in ngOnDestroy or via DestroyRef.onDestroy()",
+        "Uses ChangeDetectionStrategy.OnPush",
+        "viewChild uses a template reference variable string or ElementRef read option",
+        "Does NOT use @ViewChild decorator"
+      ]
+    }
+  ]
+}
