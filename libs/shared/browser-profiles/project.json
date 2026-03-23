@@ -1,0 +1,9 @@
+{
+  "name": "browser-profiles",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/shared/browser-profiles/src",
+  "projectType": "library",
+  "tags": ["scope:shared"],
+  "// targets": "to see all targets run: nx show project browser-profiles --web",
+  "targets": {}
+}

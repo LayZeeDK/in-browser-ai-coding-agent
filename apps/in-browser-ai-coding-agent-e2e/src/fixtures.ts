@@ -8,7 +8,7 @@ import {
   AI_IGNORE_DEFAULT_ARGS,
   allProfiles,
   seedLocalState,
-} from '../../in-browser-ai-coding-agent/browser-profiles';
+} from '@layzeedk/browser-profiles';
 
 const profilesByName = Object.fromEntries(allProfiles.map((p) => [p.name, p]));
 

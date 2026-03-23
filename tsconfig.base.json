@@ -15,7 +15,11 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@layzeedk/browser-profiles": [
+        "libs/shared/browser-profiles/src/index.ts"
+      ]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }

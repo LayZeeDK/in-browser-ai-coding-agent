@@ -16,7 +16,7 @@ import {
   allProfiles,
   seedLocalState,
   type BrowserProfile,
-} from './browser-profiles';
+} from '../../libs/shared/browser-profiles/src/index';
 
 export { allProfiles };
 
