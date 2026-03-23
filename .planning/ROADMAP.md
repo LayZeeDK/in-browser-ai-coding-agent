@@ -31,7 +31,13 @@ Decimal phases appear between their surrounding integers in numeric order.
 2. Each concrete implementation has its own system prompts and queries `session.contextWindow` at runtime for token budget management -- swapping models requires no changes outside the `model/` folder
 3. A persistent anchor session is created on initialization and never destroyed while the app is open; creating and destroying per-pass sessions (each with its own system prompt) does not trigger model unload -- verifiable by running two consecutive pipeline passes without a cold-start delay
 4. Unit tests can inject a mock `ModelService` to validate downstream consumers without a real browser model
-   **Plans**: TBD
+
+**Plans:** 2 plans
+
+Plans:
+
+- [ ] 01-01-PLAN.md -- Create @layzeedk/model Nx library with abstract ModelService, concrete implementations, provideModel() factory, and testing entrypoint
+- [ ] 01-02-PLAN.md -- Integrate into app, build temp component, delete old code, full test coverage (unit + e2e)
 
 ### Phase 2: Generation Pipeline and Sandboxed Preview
 
@@ -82,7 +88,7 @@ Phases execute in numeric order: 1 --> 2 --> 3 --> 4
 
 | Phase                                        | Plans Complete | Status      | Completed |
 | -------------------------------------------- | -------------- | ----------- | --------- |
-| 1. Model Abstraction Layer                   | 0/TBD          | Not started | -         |
+| 1. Model Abstraction Layer                   | 0/2            | Planned     | -         |
 | 2. Generation Pipeline and Sandboxed Preview | 0/TBD          | Not started | -         |
 | 3. Split-Pane UI and Prompt Engineering      | 0/TBD          | Not started | -         |
 | 4. Quality Hardening and CI Integration      | 0/TBD          | Not started | -         |
