@@ -1,17 +1,17 @@
 # Project Research Summary
 
-**Project:** In-Browser AI Coding Agent — Code Generation Milestone
-**Domain:** In-browser AI code generation using on-device small language models
+**Project:** In-Browser AI Coding Agent — v1.0 prompt-to-preview milestone
+**Domain:** Browser-native AI code generation using on-device small language models
 **Researched:** 2026-03-23
-**Confidence:** MEDIUM-HIGH
+**Confidence:** HIGH (stack and architecture); MEDIUM-HIGH (features and pitfalls)
 
 ## Executive Summary
 
-This milestone adds a full prompt-to-preview coding-agent loop to an existing Angular 21 app. The app already has LanguageModel API integration, dual-browser CI, and model status UI; what is missing is the generation pipeline and sandboxed preview. The recommended approach is a two-pass inference pipeline (structured JSON planning pass + HTML code-generation pass) using the W3C LanguageModel (Prompt) API, rendered into a sandboxed iframe. All four research strands agree on this direction — the disagreements are narrowly scoped to implementation details rather than overall approach.
+This milestone adds the core coding-agent loop to an existing Angular 21 app that already has model download, availability checking, and single-shot inference. The app targets two on-device small language models: Gemini Nano (~3.25B params, Chrome Beta, ~6,144 token context) and Phi-4 Mini (3.8B params, Edge Dev, 9,216 token API-imposed cap). The recommended approach is a two-pass pipeline: a structured JSON planning pass using `responseConstraint` forces even the smallest model to produce a coherent page specification before the code generation pass runs. A deterministic third pass (DOMParser truncation detection, no AI tokens consumed) validates output before rendering. Every feature in the milestone is implementable with zero new npm dependencies — the entire stack is the W3C LanguageModel API, Angular 21 primitives, and browser platform APIs already present in the project.
 
-The binding technical constraint throughout every research file is the token budget: Gemini Nano operates at roughly 6,144 tokens total across input and output; Phi-4 Mini is API-capped at 9,216 tokens by Edge despite its native 128K context. This shapes every design decision — prompt engineering, pipeline pass count, output format, and feature scope. Multi-pass generation is not optional: research shows 15%+ Pass@1 improvement and small-model instruction-following is too unreliable for single-shot complex HTML. The DI-based model abstraction (abstract class as DI token, browser-detected provider factory) is essential because Gemini Nano and Phi-4 Mini require materially different prompt templates and pipeline configurations.
+The primary competitive angle is privacy and cost: 100% on-device inference means no data leaves the device, no account is required, and there is zero marginal cost per generation. This is the opposite of every cloud tool (v0.dev, bolt.new, Lovable), whose 128K–200K context windows and GPT-4-class models cannot be matched at this model size. The correct positioning is a privacy-first, offline-capable tool for simple static pages — not a competitor on output quality for complex applications. Prompt templates solve the blank-canvas problem for non-technical users and naturally scope prompts to tasks the models handle reliably.
 
-The primary risks are security (iframe sandbox misconfiguration), performance (session destruction triggering model cold-starts between pipeline passes), and output quality (truncation detection and semantic error management). All three risks have documented mitigations. The security risk is the highest-stakes: the `allow-scripts` + `allow-same-origin` combination has produced real CVEs in deployed AI tools and must be prevented at the architectural level before any AI output is rendered.
+The critical risks are all manageable with known patterns. The anchor-session pattern (keep one empty session alive at all times) prevents costly model cold-starts between pipeline passes. The sandboxed iframe pattern (`sandbox="allow-scripts"` without `allow-same-origin`, blob URL, not `srcdoc`) isolates generated code in an opaque null origin. Cumulative streaming semantics (`promptStreaming()` emits the full response so far per chunk, not deltas) is a non-obvious API behaviour that must be handled correctly from the first pass. Angular's NG0910 error enforces static `sandbox` attributes on iframes, which directly reinforces the security requirement. Build order matters: the abstract `ModelService` DI token must come before the pipeline, because it defines the contract that all pipeline code programs against.
 
 ---
 
@@ -19,175 +19,190 @@ The primary risks are security (iframe sandbox misconfiguration), performance (s
 
 ### Recommended Stack
 
-The core code-generation milestone requires zero new npm dependencies. `@types/dom-chromium-ai@0.0.15` and `marked@17.0.5` are already installed; `@tailwindcss/browser@4.2.2` is injected as a CDN `<script>` tag into generated HTML strings (not bundled with the Angular app). The inference pipeline runs entirely on the main thread — the LanguageModel API is `[Exposed=Window]` only, confirmed by the W3C spec and both Chrome and Edge official documentation. Tool calling is spec-only (not shipped); `responseConstraint` with JSON Schema is the reliable structured-output mechanism for pipeline passes.
+The existing stack — Angular 21, TypeScript, RxJS, `@types/dom-chromium-ai@^0.0.15`, `marked@^17.0.5` — covers every v1.0 feature without additions. All inference goes through the W3C LanguageModel (Prompt) API, which is already typed and partially exercised in the codebase. The deliberate no-new-dependencies constraint is correct: `angular-split` has no Angular 21 release, Monaco/CodeMirror is multi-megabyte overkill for a read-only display, DOMPurify is unnecessary when the iframe sandbox already provides origin isolation, and JSON repair libraries are futile given that `responseConstraint` enforces schema compliance at the inference engine level. Tailwind CSS v4 Play CDN is the one recommended addition — injected as a `<script>` tag into the generated HTML string, not as a build dependency, because LLMs produce utility classes more reliably than hand-crafted CSS property names.
 
 **Core technologies:**
 
-- W3C LanguageModel (Prompt) API: inference engine — already in use; `promptStreaming()` is essential for UI responsiveness since no Worker offloading is possible
-- `responseConstraint` (JSON Schema): structured output for Pass 1 (outline/plan) — reliable for small metadata schemas, unreliable for HTML-in-JSON; use only for structured metadata passes
-- `marked@17.0.5` (Lexer): code block extraction from Pass 2 unconstrained markdown responses — fallback when `responseConstraint` is not appropriate
-- `@tailwindcss/browser@4.2.2` (CDN-injected): CSS strategy for generated HTML — LLMs generate Tailwind utility classes more reliably than vanilla CSS due to semantic naming in training data
-- Angular signals: pipeline state management — `signal<PipelinePhase>`, `signal<string>` for streaming tokens; no RxJS needed
-- Sandboxed iframe (blob URL): preview rendering — blob URL iframes get an opaque origin independent of the host page's CSP; `srcdoc` iframes inherit parent CSP and will silently block generated inline scripts
+- W3C LanguageModel API (`session.prompt`, `session.promptStreaming`, `responseConstraint`, `session.clone`) — two-pass inference pipeline; already typed by `@types/dom-chromium-ai@^0.0.15`; must run on main thread only (`[Exposed=Window]`)
+- Angular 21 signals + `computed()` — reactive pipeline state without RxJS; `OnPush` change detection handles streaming token updates at ~5–20 signal writes/second automatically
+- `Blob` + `URL.createObjectURL` + `<iframe sandbox="allow-scripts">` — sandboxed preview with opaque null origin; blob URLs bypass parent CSP for inline scripts, which `srcdoc` does not
+- `DOMParser.parseFromString()` — deterministic truncation detection and structural validation; no AI tokens consumed
+- `navigator.clipboard.writeText()` / `<a download>` — clipboard copy and HTML file download; both Baseline Available since 2025
+- Custom CSS Grid split-pane component (~60 lines, pointer events for drag-to-resize) — no `angular-split` dependency needed for a three-pane layout
+- `@tailwindcss/browser@4` CDN (injected into generated HTML, not an app dependency) — LLMs generate Tailwind utility classes reliably; no build step needed in generated output
 
-**Critical version notes:**
+**Critical API details:**
 
-- Tailwind v4 training data gap: Gemini Nano's training predates v4; N-shot examples with v4 class syntax are required in system prompts
-- `topK`/`temperature` are deprecated in web-page contexts; omit sampling parameters entirely
+- `promptStreaming()` yields the full accumulated response per chunk, not deltas — this is opposite to every other LLM streaming API; assign each chunk directly to the signal, never concatenate
+- `responseConstraint` is reliable for small metadata schemas (outline pass); unreliable for HTML-in-JSON (code generation pass) — keep it to 2–3 levels of nesting, `object`/`array`/`string`/`boolean`/`number`/`maxItems`/`required` only
+- `topK` and `temperature` are deprecated in web-page contexts — omit them
+- `omitResponseConstraintInput: true` saves context tokens on Gemini Nano by not counting the schema against the context window
 
 ### Expected Features
 
-The feature set is bounded by tight token budgets, not by implementation complexity. Conversation history, self-repair loops, and parallel agent sessions are deferred not because they are hard to build but because Gemini Nano's 6K context cannot accommodate them without crowding out generation headroom.
+The feature set is fully defined by the dependency graph: the abstract model service must exist before the pipeline, and the pipeline must exist before the preview, prompt templates, or export features.
 
 **Must have (table stakes):**
 
-- Split-pane UI (prompt left, preview right) — the playground layout that immediately communicates purpose
-- Natural-language prompt input with submit button — the entry point for the entire product
-- Multi-pass pipeline (plan pass + code pass) — required for acceptable output quality; single-pass is not viable for small models
-- Per-model DI (separate Gemini Nano and Phi-4 Mini implementations) — different prompt templates and pipeline tuning; cannot share a single implementation
-- Sandboxed iframe preview with `sandbox="allow-scripts"` only — security-critical; `allow-same-origin` must never be added
-- Streaming token display during generation — prevents blank-screen anxiety; `promptStreaming()` is already in the API
-- Loading/progress indicator tied to pipeline phase — required when inference takes 5-60s
-- Error feedback for generation failures — trust-critical; map `QuotaExceededError`, model-not-available, truncation to human-readable messages
-- Copy to clipboard and download as single HTML file — minimum viable export
+- Natural-language prompt textarea + submit button — the product entry point
+- Live sandboxed preview of generated HTML/CSS/JS — expected by every comparable tool (v0.dev, bolt.new, CodePen)
+- Loading/progress indicator — streaming tokens are the primary indicator; spinner covers non-streaming phases
+- Error messages in plain English for all failure modes — trust-critical for non-technical users (`QuotaExceededError`, `NotSupportedError`, `InvalidStateError`, truncation, malformed output)
+- Copy to clipboard — minimum viable export
+- Download as .html file — minimum viable persistence
+- Model download/status indicator — already exists, must remain prominent
 
-**Should have (competitive advantage):**
+**Should have (competitive differentiators):**
 
-- Prompt templates (5-8 curated examples: landing page, contact form, countdown timer, quiz, dashboard card) — solves the blank-canvas problem; low implementation cost, high user value
-- Viewport toggle (mobile 375px / desktop 1280px) — low effort once preview exists
+- Multi-pass pipeline (JSON planning pass + streaming code generation pass) — SCoT research shows up to 13.79% Pass@1 improvement; the core quality lever for small models
+- 100% on-device inference positioning in UI copy — the #1 differentiator vs. every cloud tool
+- Streaming token display during code generation — eliminates blank-screen anxiety during 10–60s generation
+- Prompt templates (8 curated examples spanning simple to medium complexity) — solves the blank canvas problem for non-technical users
+- Per-model prompt engineering via Angular DI abstraction — Gemini Nano needs short, constrained prompts; Phi-4 Mini tolerates N-shot HTML examples
+- Structured JSON planning pass with `responseConstraint` — forces coherent structure before code generation
+- Truncation detection + user-friendly error — small models hit output budget frequently; cloud tools rarely truncate
+- Viewport toggle (375px mobile / 1280px desktop) — demonstrates responsive output; low effort once preview exists
 - Abort/cancel button wired to `AbortController` — required for Phi-4 Mini where inference takes 2+ minutes
 
-**Defer (v1.x after validation):**
+**Defer to v1.x (post-validation):**
 
-- Conversation history / multi-turn refinement — conflicts with 6K-9K token budget; add only after context management strategy is proven
-- Self-repair loop (generate → validate → re-prompt) — high complexity, uncertain payoff in v1
-- Read-only code display with syntax highlighting — nice for technical users; non-critical for launch
+- Self-repair loop (detect structural errors, re-prompt with error context) — consumes tokens from a tight budget; add only if baseline quality is insufficient
+- Syntax highlighting (Prism.js ~11KB) — developer appeal; wrong priority for the non-technical target audience
+- Prompt augmentation (rewrite user's prompt before sending)
 
-**Defer (v2+):**
+**Defer to v2+:**
 
+- Conversation history / iterative refinement — Gemini Nano's 6K total context cannot support multi-turn history without degrading output quality
+- Code editor integration (Monaco/CodeMirror) — wrong audience; 2MB+ bundle
+- Image-to-code — requires vision-capable on-device models, not yet available
 - File persistence (File System API)
-- Code editor integration (Monaco/CodeMirror)
-- Image-to-code (vision input) — models not vision-tuned for code generation
-- Parallel agent sessions — requires Web Worker support not yet in the spec
+- Parallel Web Worker inference — LanguageModel API is `[Exposed=Window]` only; no Worker support exists or is planned
 
 ### Architecture Approach
 
-The architecture is organized into three new feature folders under `src/app/`: `coding-agent/` (split-pane UI components), `pipeline/` (orchestration services and signal-based state), and `model/` (abstract DI token, per-model implementations, browser-detection provider factory). These coexist with the existing `LanguageModelService` (availability + download, unchanged) and `ModelStatusComponent` (unchanged). The split-pane coding agent is lazy-loaded at `/agent`; the existing model status UI stays at `/`. Build order must be bottom-up: model abstraction layer first, then code extractor, then pipeline service, then UI.
+The architecture separates into three clear layers: a model abstraction layer (`ModelService` abstract class + browser-specific implementations), a pipeline orchestration layer (`CodeGenerationPipelineService` + `CodeExtractorService`), and a UI layer (`CodingAgentComponent` with three panes). All pipeline state lives as Angular signals in the service layer; UI components are pure reactive consumers. The new route `/agent` is lazy-loaded, keeping the initial bundle small. The existing `LanguageModelService` (availability, download) is left untouched — it serves a different concern and must not be merged with the new `ModelService`.
 
 **Major components:**
 
-1. `ModelService` (abstract class + `model.providers.ts`) — DI token and browser-detection factory; everything else injects this, never raw `LanguageModelService`
-2. `GeminiNanoModelService` / `Phi4MiniModelService` — concrete model implementations with their own system prompts, N-shot examples, and token budget constants
-3. `CodeGenerationPipelineService` — orchestrates passes, holds anchor session to prevent model unload, manages pipeline phase signals
-4. `CodeExtractorService` — strict/loose/raw code-block extraction with three-tier fallback; no Angular dependency, fully unit-testable
-5. `PreviewPaneComponent` — blob URL lifecycle (create, revoke previous), injected error-capture script, `postMessage` bridge for runtime errors from iframe
-6. `CodingAgentComponent` + panes + `PipelineProgressComponent` — split-pane layout wired to pipeline service signals
+1. `ModelService` (abstract class + `GeminiNanoModelService` + `Phi4MiniModelService` + `model.providers.ts`) — DI token hiding which model is running; the only place that reads `navigator.userAgent`; holds the anchor session to prevent model unloads between generations
+2. `CodeGenerationPipelineService` — orchestrates the two-pass pipeline; owns all pipeline signals (`phase`, `streamingTokens`, `generatedCode`, `outline`, `error`, `isRunning`); handles abort propagation via `AbortController`
+3. `CodeExtractorService` — pure TypeScript, no Angular dependencies; parses markdown code fences (strict/loose/raw three-tier fallback), detects truncation via tag-balance and `</html>` check; independently unit-testable without a browser
+4. `CodingAgentComponent` + panes (`PromptInputPaneComponent`, `CodeViewPaneComponent`, `PreviewPaneComponent`, `PipelineProgressComponent`) — 3-pane CSS Grid layout; pure signal consumers; no direct model or session access
+5. `PreviewPaneComponent` — manages blob URL lifecycle (create, revoke-on-update, revoke-on-destroy); injects error-capture `postMessage` script; caches `DomSanitizer.bypassSecurityTrustResourceUrl()` result in `computed()` to prevent iframe flicker
+
+**Key patterns:**
+
+- Abstract class DI token (not interface — interfaces are erased at runtime) with factory provider detecting browser at startup via `navigator.userAgent`
+- Anchor session (never destroyed while app is open) + create-per-pass sessions (destroyed after each pass) — passes need different system prompts so `clone()` is not used for pass isolation
+- `promptStreaming()` to signal bridge — each chunk is the full response so far; assign directly to signal (`signal.set(chunk)`), never concatenate
+- Static `sandbox="allow-scripts"` attribute on iframe (Angular NG0910 enforces this) + blob URL (not `srcdoc`) for opaque-origin isolation independent of parent CSP
+- `bypassSecurityTrustResourceUrl()` result cached in `computed()` — uncached calls reload the iframe on every change detection cycle
 
 ### Critical Pitfalls
 
-1. **Iframe sandbox escape via `allow-scripts` + `allow-same-origin`** — Use `sandbox="allow-scripts"` only, never add `allow-same-origin`. This combination has produced stored XSS in production AI tools (Open-WebUI CVE). For preview rendering, use blob URL (not `srcdoc`) because `srcdoc` iframes inherit the parent page's CSP and will silently block generated inline scripts. Lock this in before any AI output is rendered.
+1. **`sandbox="allow-scripts" allow-same-origin` combination completely nullifies iframe security** — Blob URLs inherit the creator's origin; with both flags, iframe scripts can remove the sandbox attribute, access parent DOM, and exfiltrate data. Open-WebUI had a real stored XSS from this exact mistake (GHSA-vjm7-m4xh-7wrc). Use `sandbox="allow-scripts"` only, always. Angular NG0910 prevents dynamic sandbox binding and is a direct enforcement mechanism.
 
-2. **`session.destroy()` triggering model cold-start between pipeline passes** — Keep a persistent anchor session alive for the entire pipeline execution. Clone it per pass (`anchorSession.clone()`). Only destroy per-pass sessions after the next pass is already underway. Never destroy the anchor session during active pipeline execution. Missing this causes each pass to pay the full cold-start cost (38s for Gemini Nano, 23-110 min for Phi-4 Mini on ARM64).
+2. **`promptStreaming()` is cumulative, not delta** — Each chunk is the full response accumulated so far, not a new-token delta. All other LLM streaming APIs (OpenAI, Anthropic, WebLLM) are delta-based. Developers bring that expectation and write concatenation logic, producing doubled, tripled output in the code pane. Assign each chunk directly: `signal.set(chunk)`.
 
-3. **Context window is far smaller than advertised** — Phi-4 Mini native 128K is capped at 9,216 tokens by the Edge API. Gemini Nano is ~6,144 tokens total (input + output combined). Query `session.contextWindow` at runtime; never hardcode token budgets. Budget aggressively: system prompt under 300 tokens, user prompt echo under 100, leave 2,000 tokens minimum for output. Monitor `session.contextUsage / session.contextWindow`; treat results above 80% as potentially truncated.
+3. **`session.destroy()` triggers model unload; cold-starts cost 23–110 minutes on ARM64** — Destroying all sessions signals the browser to unload the model after ~1 minute. Each pipeline pass needs a different system prompt, so sessions cannot be cloned for pass isolation. Correct pattern: keep a persistent anchor session alive, create fresh sessions per pass with the appropriate system prompt, destroy pass sessions after use.
 
-4. **`responseConstraint` unreliable for HTML-in-JSON** — The constraint is reliable for small structured metadata (2-3 fields, enum values). It fails for schemas containing HTML as a JSON string value: small models produce unescaped quotes that break JSON parsing, or stall entirely. Use `responseConstraint` for Pass 1 (structured outline/metadata only); generate code in unconstrained prompts and extract with `CodeExtractorService`.
+4. **Context window caps are far below advertised model limits** — Phi-4 Mini's model card says 128K; the Edge API enforces 9,216. Gemini Nano's usable window is ~4,096–6,000 tokens total (input + output combined). Never hardcode token budgets. Query `session.contextWindow` at runtime. Budget: system prompt under 300 tokens, pass output needs minimum 2,000 tokens headroom.
 
-5. **Output truncation renders silently broken previews** — Small models hit the output token budget and stop mid-tag with no error thrown. Validate that the response contains a closing `</html>` (or at minimum `</body>`) before rendering. If truncated, show an error with retry rather than rendering broken HTML. Prompt engineering must forbid preamble text to maximize the output budget available for actual code.
+5. **Angular NG0910: `sandbox` must be a static attribute, not a property binding** — `<iframe [sandbox]="value">` and `<iframe [attr.sandbox]="value">` both throw NG0910 at runtime. Use `<iframe sandbox="allow-scripts" [src]="safeBlobUrl()">`. Use `@if`/`@switch` to render different `<iframe>` elements with different static sandbox values if conditional configurations are ever needed.
 
 ---
 
 ## Implications for Roadmap
 
-Based on combined research, the dependency graph points to five phases. The model abstraction must exist before the pipeline. The pipeline must exist before the UI. Preview security must be locked in before any AI output touches the rendering layer. Prompt engineering is the final tuning step once the full stack is assembled.
+Based on dependency analysis across all four research files, the suggested phase structure has four phases. The dependency graph enforces a strict bottom-up build order: DI contract before pipeline, pipeline before UI, preview security locked in before AI output reaches the rendering layer.
 
 ### Phase 1: Model Abstraction Layer
 
-**Rationale:** The abstract `ModelService` DI token is the central dependency of every subsequent phase. Building it first enables all other services and components to be developed against a stable interface, with mock implementations for unit tests. The browser-detection provider factory (`model.providers.ts`) belongs here so the pipeline never contains conditional model logic.
-**Delivers:** Abstract `ModelService` class, `GeminiNanoModelService`, `Phi4MiniModelService`, `model.providers.ts` registered in `app.config.ts`
-**Addresses:** Per-model DI requirement from features research
-**Avoids:** Injecting `LanguageModelService` directly in pipeline code; anchor session pattern for model unload prevention lives here
-**Research flag:** Standard patterns — Angular abstract class DI is well-documented. No pre-phase research needed.
+**Rationale:** The abstract `ModelService` DI token defines the contract that the pipeline, tests, and UI all program against. Building it first means every subsequent layer can be developed and tested against a stable interface with mock implementations. Chrome Beta must come first: Gemini Nano warms up in ~20 seconds vs. 23+ minutes for Phi-4 Mini on ARM64 CI, making it the fast iteration loop throughout all phases.
 
-### Phase 2: Code Extraction and Pipeline Orchestration
+**Delivers:** `ModelService` abstract class, `GeminiNanoModelService`, `Phi4MiniModelService`, `model.providers.ts` factory (browser detection via `navigator.userAgent`), anchor session management, per-model system prompt constants, `provideModelService()` registered in `app.config.ts`.
 
-**Rationale:** `CodeExtractorService` has no Angular dependencies and can be unit-tested with Vitest in isolation — build it before the pipeline. The pipeline service wires the two-pass flow (JSON-constrained outline pass + markdown code-generation pass) and owns all signal-based state. Building this before the UI means the service API is settled before components depend on it.
-**Delivers:** `CodeExtractorService` (strict/loose/raw extraction), `CodeGenerationPipelineService` (two-pass pipeline, anchor session lifecycle, `AbortController` threading, signal-based state)
-**Uses:** `responseConstraint` for Pass 1 outline; unconstrained prompting + `CodeExtractorService` for Pass 2; `promptStreaming()` with signal updates
-**Implements:** Pipeline service and types from `pipeline/` folder
-**Avoids:** Context window exhaustion (Pass 1 JSON constrained to under 300 tokens); model unload between passes (anchor session); output truncation detection before rendering; `responseConstraint` scoped to metadata schema only; context accumulation (separate cloned session per pass)
-**Research flag:** Two-pass pipeline structure is MEDIUM confidence (research literature, not verified against these specific models). Treat as exploratory; budget for empirical validation and iteration on pass structure.
+**Addresses:** Per-model DI architecture (FEATURES P0), per-model prompt engineering (FEATURES P0)
 
-### Phase 3: Sandboxed Preview Pane
+**Avoids:** Worker architecture mistake (Pitfall 3 — LanguageModel API is `[Exposed=Window]` only), model unload between pipeline passes (Pitfall 4 — anchor session lives in this layer), hardcoded token budgets (Pitfall 2 — `contextWindow` property queried at runtime from concrete service)
 
-**Rationale:** Preview security must be locked in as a standalone phase before it is connected to live AI output. Building and reviewing `PreviewPaneComponent` in isolation (with hardcoded HTML test fixtures) lets security decisions be validated independently. Blob URL lifecycle, error-capture script injection, `postMessage` bridge, and CSP injection into generated HTML all belong here.
-**Delivers:** `PreviewPaneComponent` with blob URL rendering, injected `window.onerror` → `postMessage` bridge, CSP `<meta>` injection into generated HTML, `URL.revokeObjectURL` cleanup, `sandbox="allow-scripts allow-forms"` (no `allow-same-origin`)
-**Addresses:** Sandboxed iframe preview from features research
-**Avoids:** Sandbox escape (`allow-scripts` only, blob URL avoids CSP inheritance); prompt injection via CSP injection blocking external network requests from generated HTML
-**Note on preview mechanism disagreement:** Stack researcher recommends `srcdoc`; Architecture researcher recommends blob URL; Pitfalls researcher recommends `srcdoc` with `allow-scripts` only. Resolution: use blob URL because it avoids CSP inheritance entirely — the correct choice when the Angular app has or may gain a non-trivial CSP. Document this decision in the component.
-**Research flag:** Security patterns are HIGH confidence from official MDN and CVE research. No pre-phase research needed.
+**Research flag:** Standard patterns — Angular abstract class DI is well-documented. No phase research needed.
 
-### Phase 4: Split-Pane UI and Prompt Engineering
+### Phase 2: Generation Pipeline and Sandboxed Preview
 
-**Rationale:** The UI is the last layer assembled. By this point, the pipeline service exposes stable signals and the preview pane accepts HTML input; the UI just wires them. Prompt engineering (system prompts, N-shot examples, output format instructions, token budget tuning) can only be done once the full stack is assembled and generation can be observed end-to-end.
-**Delivers:** `CodingAgentComponent` (split-pane layout, `/agent` lazy-loaded route), `PromptInputPaneComponent` (textarea, submit, prompt templates), `PipelineProgressComponent` (streaming tokens, phase indicators), prompt templates (5-8 curated examples), tuned system prompts for both Gemini Nano and Phi-4 Mini
-**Addresses:** All P1 table-stakes features — split-pane UI, prompt input, streaming display, prompt templates, loading indicator, error feedback, copy/download
-**Avoids:** Semantic errors (few-shot examples in system prompts); CSS design quality (base CSS instructions in system prompt); truncation (output format instructions forbid preamble); non-deterministic CI tests (structural assertions, not string matching)
-**Research flag:** Prompt engineering outcomes for Gemini Nano HTML/CSS generation have LOW-MEDIUM confidence (no published benchmarks for web-specific output). This is the highest empirical-uncertainty phase. Plan for iteration. Chrome/Gemini Nano is the fast iteration loop (~38s warm-up); validate on Edge/Phi-4 Mini after Chrome prompts are satisfactory.
+**Rationale:** The pipeline is the core product capability. `CodeExtractorService` must be built first because it has no Angular dependencies and can be validated with plain Vitest (no browser needed). `PreviewPaneComponent` can be developed in isolation with hardcoded HTML to validate the sandbox security model before connecting to live AI output. The pipeline service completes this phase by wiring the two-pass flow and owning all reactive state. Preview security is locked in this phase, before any AI output touches the rendering layer.
 
-### Phase 5: Quality, Security Hardening, and CI Integration
+**Delivers:** `CodeExtractorService` (markdown parsing, truncation detection, three-tier code block extraction), `CodeGenerationPipelineService` (two-pass orchestration, signal state: `phase`/`streamingTokens`/`generatedCode`/`outline`/`error`/`isRunning`, abort handling, streaming bridge), `PreviewPaneComponent` (blob URL lifecycle, `DomSanitizer` caching in `computed()`, error-capture `postMessage` injection, CSP meta tag injection into generated HTML), pipeline type definitions (`PipelinePhase`, `GeneratedCode`, `PageOutline`), `/agent` lazy-loaded route stub.
 
-**Rationale:** Cross-cutting concerns that span the full stack: input sanitization, abort/cancel UI, truncation detection error states, warm-up cache update after prompt stabilization, and structural output testing. These are deferred from earlier phases to avoid premature optimization of prompts that are still being tuned.
-**Delivers:** Input sanitization (strip HTML, limit to 500 chars), abort/cancel button wired to `AbortController`, truncation detection with user-visible error and retry, CI warm-up updated to use actual system prompt, structural test suite (DOMParser validation, not string matching), viewport toggle (mobile/desktop), model availability re-check before each pipeline pass
-**Addresses:** P2 features (viewport toggle) and security hardening
-**Avoids:** Prompt injection (input sanitization layer); model deleted mid-session (re-check before each pass); non-deterministic CI tests (structural assertions); warm-up cache invalidation (update after prompt stabilization)
-**Research flag:** Standard patterns for most items. No pre-phase research needed.
+**Addresses:** Multi-pass pipeline (FEATURES P0), structured JSON planning pass (FEATURES P0), streaming token display (FEATURES P0), sandboxed preview (FEATURES P0), truncation detection (FEATURES P0), error feedback (FEATURES P0)
+
+**Avoids:** `allow-scripts` + `allow-same-origin` security hole (Pitfall 1 — `sandbox="allow-scripts"` static attribute, no `allow-same-origin` ever), cumulative streaming mishandled (Pitfall 6 — direct assignment in streaming bridge), `responseConstraint` used for full HTML output (Pitfall 7 — constraint only for planning pass metadata), context overflow across passes (Pitfall 10 — fresh session per pass with appropriate system prompt), Angular NG0910 (Pitfall 11 — static sandbox attribute), blob URL memory leak (Pitfall 18 — revoke-on-update in `PreviewPaneComponent`), prompt injection via CSP meta tag injection (Pitfall 8)
+
+**Research flag:** The `responseConstraint` planning schema reliability (Pitfall 7) warrants early empirical testing before finalising schema complexity. The API is documented but small-model reliability with complex nested schemas is LOW confidence. Start with a minimal schema (2–3 fields) and validate parse success rate before adding depth. No pre-phase research needed, but build empirical validation into the phase work.
+
+### Phase 3: Split-Pane UI and Prompt Engineering
+
+**Rationale:** UI assembly requires the full end-to-end pipeline to be wired before it can be assembled. Prompt engineering specifically requires a running Chrome Beta loop (~20s per iteration) with a live preview to evaluate output quality — it cannot be done against stubs. All Phase 3 features (prompt templates, viewport toggle, copy/download, abort UX, input sanitization) are independent of each other once the split-pane host component exists and can be built in parallel.
+
+**Delivers:** `CodingAgentComponent` (3-pane CSS Grid layout, pipeline wiring, abort button), `PromptInputPaneComponent` (textarea, template selector, disabled-during-generation state, input sanitization: strip HTML, cap at 500 chars, strip control chars), `CodeViewPaneComponent` (streaming token display, final code view), `PipelineProgressComponent` (step indicators: Outlining / Generating / Rendering), prompt templates (8 curated examples), viewport toggle (375px / 1280px), copy to clipboard, download as HTML, abort button with 500ms cooldown after cancel.
+
+**Addresses:** Natural-language prompt textarea (FEATURES P0), prompt templates (FEATURES P0), copy/download (FEATURES P0), viewport toggle (FEATURES P1), error messages for non-technical users (FEATURES P0), abort support
+
+**Avoids:** Prompt injection via user input (Pitfall 8 — input sanitization layer), CSS design quality degradation (Pitfall 14 — system prompt design instructions, base CSS variables), semantic errors from over-ambitious tasks (Pitfall 9 — templates scope prompts to achievable complexity), abort-then-prompt latency (Pitfall 12 — 500ms cooldown in stop button)
+
+**Research flag:** Prompt engineering for small models generating HTML is MEDIUM confidence (model-specific behaviour needs empirical measurement). Budget 2–3 iteration days explicitly for system prompt tuning on Chrome Beta, then Edge Dev verification after Chrome prompts are satisfactory. Do not block on Edge's 23-min warm-up during the iteration loop.
+
+### Phase 4: Quality Hardening
+
+**Rationale:** This phase stabilises what Phase 3 delivers. Test infrastructure for AI output requires structural assertions (well-formed HTML, expected elements, no browser console errors) not snapshot tests. CI warm-up needs to use the real system prompt after it stabilises in Phase 3. Token budget monitoring and cross-browser verification complete the production-readiness story.
+
+**Delivers:** Synthetic prompt corpus (TypeScript data files, 20–30 prompts across complexity tiers), structural test assertions (DOMParser validation, `<!DOCTYPE html>` presence, `<style>` block, no console errors — not string matching), CI warm-up updated to use actual system prompt from pipeline, token budget monitoring (`session.contextUsage` / `session.contextWindow` logging), cross-browser verification (Edge/Phi-4 Mini after Chrome/Gemini Nano baseline), manual quality rubric review (10 test prompts).
+
+**Addresses:** Quality hardening, CI stability, cross-browser parity, structural output testing
+
+**Avoids:** Non-deterministic CI tests from snapshot assertions (Pitfall 16 — structural assertions only), warm-up cache invalidation after prompt changes (Pitfall 17 — cache key should include a hash of the system prompt content)
+
+**Research flag:** Standard patterns. The synthetic corpus design and structural assertion patterns are well-established in the project's existing test infrastructure (`docs/SUMMARY.md`). No phase research needed.
 
 ### Phase Ordering Rationale
 
-- The model abstraction layer (Phase 1) must precede the pipeline (Phase 2) because the pipeline injects the abstract token; building in reverse order forces rework.
-- The pipeline service (Phase 2) must precede the UI (Phase 4) because components read pipeline signals; the service API must be stable first.
-- Preview security (Phase 3) is deliberately decoupled from AI output so it can be security-reviewed before live model output ever reaches the rendering layer. Connecting Phase 2 output to Phase 3 rendering is the integration step at the start of Phase 4.
-- Prompt engineering (end of Phase 4) must come after the full pipeline is assembled; you cannot tune prompts against a mock model.
-- Hardening (Phase 5) is last because input sanitization patterns and CI warm-up strategy depend on the final prompt structure being stable.
+- **DI before pipeline is non-negotiable:** `CodeGenerationPipelineService` injects `ModelService`; building the pipeline before the abstraction means retrofitting the DI seam later.
+- **Extraction before pipeline orchestration:** `CodeExtractorService` is pure TypeScript with no Angular dependencies; validate it independently (plain Vitest, no browser) before adding the async orchestration layer.
+- **Preview security before AI output:** `PreviewPaneComponent` sandbox security is validated with hardcoded HTML before any live model output is connected. The security model cannot be reviewed retroactively after AI output is rendering.
+- **Chrome before Edge throughout all phases:** Gemini Nano's ~20s warm-up vs. Phi-4 Mini's 23–110 min warm-up on ARM64 makes Chrome the fast iteration loop. Edge is the verification pass, not the development loop.
+- **Prompt engineering late in Phase 3, not Phase 2:** Prompt engineering requires a running end-to-end pipeline with a live preview to evaluate output quality. Doing it in Phase 2 would require iterating against a service-only stub, which gives incomplete quality signals.
 
 ### Research Flags
 
-Phases needing empirical validation during implementation (no pre-phase research required):
+Phases likely needing empirical validation during implementation:
 
-- **Phase 2 (Pipeline):** Two-pass pipeline structure is MEDIUM confidence. The JSON schema for the outline pass and token budgets per model require empirical measurement. Plan for 1-2 adjustment iterations after the first end-to-end run.
-- **Phase 4 (Prompt Engineering):** Gemini Nano HTML/CSS generation quality is LOW-MEDIUM confidence. No published benchmarks for web-specific output from this model. Expect to discover model-specific constraints (preamble tendencies, Tailwind v3 vs v4 confusion) during implementation.
+- **Phase 2 (responseConstraint schema):** The planning pass schema complexity is LOW confidence for small-model reliability. Start minimal, test `JSON.parse()` success rate, add fields incrementally. Use `session.measureContextUsage({ responseConstraint: schema })` to validate schema fits the context budget before committing to the schema design.
+- **Phase 3 (prompt engineering):** Model-specific system prompt token limits and optimal N-shot example counts for Phi-4 Mini are MEDIUM confidence. Allocate explicit iteration time and do not estimate prompt quality from published benchmarks — no HTML generation benchmarks exist for either model.
 
-Phases with established patterns (confident, no additional research needed):
+Phases with standard patterns (no additional research needed):
 
-- **Phase 1 (Model Abstraction):** Angular abstract class DI is well-documented. HIGH confidence.
-- **Phase 3 (Preview Security):** Blob URL sandbox pattern and CSP injection are well-documented with CVE-level validation. HIGH confidence.
-- **Phase 5 (Hardening):** Standard web security patterns. HIGH confidence.
+- **Phase 1 (Model Abstraction Layer):** Angular DI with abstract class token is well-documented. Factory provider with `navigator.userAgent` detection is straightforward.
+- **Phase 4 (Quality Hardening):** Structural test assertions for AI output and CI warm-up patterns are established in the existing project. No new patterns required.
 
 ---
 
 ## Confidence Assessment
 
-| Area         | Confidence  | Notes                                                                                                                                                                                    |
-| ------------ | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Stack        | HIGH        | API layer verified via Chrome and Edge official docs (March 2026); zero new dependencies for v1 is confirmed                                                                             |
-| Features     | MEDIUM-HIGH | Token budget data is HIGH confidence (MSEdgeExplainers issue, swyx.io empirical measurement); model quality estimates are MEDIUM (limited HTML/CSS benchmarks for these specific models) |
-| Architecture | HIGH        | API constraints from official spec; DI pattern from existing codebase + Angular docs; pipeline structure from multi-stage code generation research literature                            |
-| Pitfalls     | HIGH        | Iframe sandbox risk from CVE/advisory; session destroy behavior from Chrome session management docs; token limits from confirmed GitHub issues and official docs                         |
+| Area         | Confidence  | Notes                                                                                                                                                                                                                                                                                                                                          |
+| ------------ | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stack        | HIGH        | All technologies verified against official Chrome/Edge docs, existing codebase, and MDN. Zero new runtime dependencies confirmed. `@types/dom-chromium-ai@0.0.15` covers the full API surface in use.                                                                                                                                          |
+| Features     | MEDIUM-HIGH | Competitor feature analysis and UX patterns are HIGH confidence. Model capability estimates for HTML generation are LOW confidence — no published HTML/CSS benchmarks exist for Gemini Nano or Phi-4 Mini. Phi-4 Mini HumanEval (74.4%) is HIGH confidence but measures Python function completion.                                            |
+| Architecture | HIGH        | API surface verified against TypeScript type definitions and official Chrome/Edge docs. Angular patterns (signals, DI, NG0910, `DomSanitizer`) verified against Angular 21 documentation and existing codebase. Session lifecycle (anchor pattern, destroy semantics) verified against Chrome session management guide and W3C spec.           |
+| Pitfalls     | HIGH        | Critical pitfalls backed by official documentation, W3C spec, CVE advisories (GHSA-vjm7-m4xh-7wrc), Angular framework errors (NG0910), and Chromium developer group discussions. Security pitfalls (Pitfall 1, 8) are the highest-confidence findings in the entire research corpus — the threat model is documented with real-world exploits. |
 
-**Overall confidence:** MEDIUM-HIGH
+**Overall confidence:** HIGH for the implementation approach; MEDIUM for output quality predictions at these model sizes.
 
 ### Gaps to Address
 
-- **Preview mechanism (blob URL vs. srcdoc):** Three researchers gave inconsistent recommendations. Resolution: use blob URL as the default for CSP independence; document the tradeoff. Validate during Phase 3 that the Angular app's CSP does not need adjustment for `frame-src blob:`.
-
-- **Gemini Nano HTML/CSS generation quality:** No published benchmarks for web-specific output from Gemini Nano. The quality assessment ("Marginal" for most tasks) is inferred from general code benchmarks and model size, not empirical measurement. This gap closes only during Phase 4 prompt engineering. Budget iteration time accordingly.
-
-- **Anchor session token cost on Gemini Nano:** The anchor session pattern occupies tokens in the 6K context window before any pass input arrives. The exact cost is not documented. Measure `session.contextUsage` on an empty anchor session before designing pass token budgets.
-
-- **Tailwind v4 vs v3 confusion in Gemini Nano:** Gemini Nano's training cutoff predates Tailwind v4. The degree to which it generates v3-style syntax is unknown. Provide explicit v4 class examples in N-shot prompts and verify the output during Phase 4.
-
-- **`responseConstraint` schema token cost:** The planned JSON Schema for the outline pass consumes input tokens. Use `session.measureContextUsage()` with the schema to validate it stays within budget before committing to the Pass 1 schema design.
+- **Gemini Nano HTML generation quality:** No published benchmarks. The 2–4/10 quality estimate is based on parameter count and third-party assessments, not empirical measurement. Address during Phase 3 prompt engineering: treat first-pass output as a baseline, iterate, and if quality is consistently below a usable threshold, the milestone can be validated primarily on Phi-4 Mini with Gemini Nano as a secondary target.
+- **`responseConstraint` schema token overhead:** The exact token cost of injecting a JSON schema into the context is not documented. Use `session.measureContextUsage({ responseConstraint: schema })` before finalising the planning pass schema in Phase 2. On Gemini Nano, every token counts.
+- **`omitResponseConstraintInput` token savings:** This option prevents the schema from counting against the context window, but its effect on Gemini Nano's 6K budget is not quantified. Test empirically — it may be the difference between the planning pass fitting or not.
+- **Abort-then-prompt latency root cause:** The 2–5x latency increase after aborting a prompt is confirmed by the Chromium developer group but marked "under investigation." The 500ms cooldown is a workaround. Monitor Chrome release notes; the workaround is acceptable for v1.
 
 ---
 
@@ -195,36 +210,37 @@ Phases with established patterns (confident, no additional research needed):
 
 ### Primary (HIGH confidence)
 
-- [W3C Prompt API Draft (19 March 2026)](https://webmachinelearning.github.io/prompt-api/) — `[Exposed=Window]`, session lifecycle, `responseConstraint` IDL, tool calling spec-only
-- [Chrome Prompt API docs](https://developer.chrome.com/docs/ai/prompt-api) — Worker exclusion, streaming, `responseConstraint`, `append()`, `clone()`
-- [Chrome Structured Output for Prompt API](https://developer.chrome.com/docs/ai/structured-output-for-prompt-api) — `responseConstraint` JSON Schema since Chrome 137, keyword support
-- [Chrome Prompt API Session Management](https://developer.chrome.com/docs/ai/session-management) — anchor session pattern, clone semantics, `destroy()` memory pressure
+- [Chrome Prompt API docs](https://developer.chrome.com/docs/ai/prompt-api) — streaming, `responseConstraint`, `clone()`, Web Worker exclusion, cumulative streaming semantics
+- [Chrome Session Management Guide](https://developer.chrome.com/docs/ai/session-management) — anchor session pattern, model unload timing, destroy lifecycle
+- [Chrome Structured Output for Prompt API](https://developer.chrome.com/docs/ai/structured-output-for-prompt-api) — `responseConstraint` JSON Schema, available since Chrome 137, `omitResponseConstraintInput`
 - [Edge Prompt API docs](https://learn.microsoft.com/en-us/microsoft-edge/web-platform/prompt-api) — Phi-4 Mini, `responseConstraint`, `initialPrompts`, `clone()`
-- [MSEdgeExplainers issue #1224](https://github.com/MicrosoftEdge/MSEdgeExplainers/issues/1224) — confirmed 9,216-token API cap for Phi-4 Mini in Edge
-- [Open-WebUI security advisory GHSA-vjm7-m4xh-7wrc](https://github.com/open-webui/open-webui/security/advisories/GHSA-vjm7-m4xh-7wrc) — real-world `allow-scripts` + `allow-same-origin` exploit in an AI preview tool
-- [MDN iframe sandbox](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/iframe) — sandbox attribute semantics and explicit warning
-- [Phi-4 Mini Technical Report (arXiv 2503.01743)](https://arxiv.org/abs/2503.01743) — 3.8B params, 128K native context, 74.4% HumanEval
-- [npm: @types/dom-chromium-ai](https://www.npmjs.com/package/@types/dom-chromium-ai) — v0.0.15 confirmed March 2026
-- [npm: marked](https://www.npmjs.com/package/marked) — v17.0.5 confirmed March 2026
+- [W3C Prompt API spec](https://github.com/webmachinelearning/prompt-api) — `[Exposed=Window]` only (no Workers), session lifecycle, `responseConstraint` IDL
+- [`@types/dom-chromium-ai@0.0.15`](https://www.npmjs.com/package/@types/dom-chromium-ai) — TypeScript definitions for full Prompt API surface; verified locally
+- [MDN iframe sandbox](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/iframe/sandbox) — sandbox attribute semantics, `allow-scripts`+`allow-same-origin` explicit warning
+- [Angular NG0910 error docs](https://angular.dev/errors/NG0910) — static `sandbox` attribute requirement
+- [Angular Security Best Practices](https://angular.dev/best-practices/security) — `DomSanitizer`, `bypassSecurityTrustResourceUrl`, resource URL context
+- [Angular Signals Guide](https://angular.dev/guide/signals) — signals, `computed()`, reactive context loss after `await`
+- [Open-WebUI security advisory GHSA-vjm7-m4xh-7wrc](https://github.com/open-webui/open-webui/security/advisories/GHSA-vjm7-m4xh-7wrc) — real-world `allow-scripts`+`allow-same-origin` exploit in an AI preview tool
+- [Phi-4-Mini technical report](https://arxiv.org/html/2503.01743v1) — 74.4% HumanEval Pass@1, 3.8B params, architecture
+- [SCoT prompting research](https://arxiv.org/abs/2305.06599) — up to 13.79% Pass@1 improvement for structured chain-of-thought code generation
 
 ### Secondary (MEDIUM confidence)
 
-- [Gemini Nano token limits (swyx.io)](https://www.swyx.io/gemini-nano) — ~6,144-token context window empirical measurement
-- [Multi-stage guided code generation (ScienceDirect 2024)](https://www.sciencedirect.com/science/article/abs/pii/S095219762401649X) — planning → pseudocode → implementation pipeline; 15%+ improvement
-- [Multi-agent code generation pipeline research (arXiv 2505.02133)](https://arxiv.org/html/2505.02133v1) — 15%+ Pass@1 improvement with multi-agent + debugging
-- [Multi-agent LLM system failure modes (arXiv 2503.13657)](https://arxiv.org/pdf/2503.13657) — error propagation in multi-pass pipelines
-- [ICSE 2025: LLM Code Generation Error Characteristics](https://dl.acm.org/doi/10.1109/ICSE55347.2025.00180) — semantic vs syntactic error rates in small models
-- [iframe srcdoc code preview guide](https://mionskowski.pl/posts/iframe-code-preview/) — `srcdoc` + `sandbox` pattern for playground preview
-- [Building a Secure Code Sandbox — iframe + postMessage](https://medium.com/@muyiwamighty/building-a-secure-code-sandbox-what-i-learned-about-iframe-isolation-and-postmessage-a6e1c45966df) — srcdoc CSP inheritance vs blob URL isolation
-- [Tailwind CSS Play CDN docs](https://tailwindcss.com/docs/installation/play-cdn) — `@tailwindcss/browser@4` CDN setup, limitations
-- [Phi-4-mini-instruct (Hugging Face)](https://huggingface.co/microsoft/Phi-4-mini-instruct) — 3.8B params, 128K context, Python-heavy training
-- [OWASP LLM01:2025 Prompt Injection](https://genai.owasp.org/llmrisk/llm01-prompt-injection/) — prompt injection risk taxonomy
+- [MSEdgeExplainers issue #1224](https://github.com/MicrosoftEdge/MSEdgeExplainers/issues/1224) — confirmed 9,216 token context cap for Phi-4 Mini in Edge Prompt API
+- [Chromium dev group: Prompt API performance](https://groups.google.com/a/chromium.org/g/chrome-ai-dev-preview-discuss/c/Nzsxe78l0zQ) — model unload timing (~1 min after last session destroyed), abort-then-prompt latency under investigation
+- [Chromium dev group: API oddities](https://groups.google.com/a/chromium.org/g/chrome-ai-dev-preview-discuss/c/tpHL6bvJyVg) — cumulative streaming behaviour confirmed
+- [web.dev: Chatbot with Prompt API](https://web.dev/articles/ai-chatbot-promptapi) — cumulative streaming: "the Prompt API responds with the full string response"
+- [Multi-stage guided code generation (MSG)](https://www.sciencedirect.com/science/article/abs/pii/S095219762401649X) — planning + design + implementation phases improve small-model code coherence
+- [v0 vs bolt.new vs Lovable comparison](https://www.nxcode.io/resources/tools/v0-vs-bolt-vs-lovable-ai-app-builder-comparison-2025) — competitor feature analysis
+- [Blank canvas UX problem](https://medium.com/ui-for-ai/no-more-blank-canvas-rethinking-how-people-start-with-ai-fd427af24dc8) — cognitive load research supporting prompt templates
+- [ICSE 2025: LLM Code Generation Error Characteristics](https://dl.acm.org/doi/10.1145/3672456) — semantic vs. syntactic error rates in small models; semantic errors dominate
+- [OWASP LLM01:2025 Prompt Injection](https://genai.owasp.org/llmrisk/llm01-prompt-injection/) — prompt injection risk taxonomy and mitigation
 
 ### Tertiary (LOW confidence)
 
-- Gemini Nano HTML/CSS benchmark data — no dedicated source found; quality estimates are inferences from model size and general code benchmarks
-- [Flowbite LLM + Tailwind docs](https://flowbite.com/docs/getting-started/llm/) — Tailwind utility class reliability for AI generation
-- [AI UX patterns — prompt augmentation (Jakob Nielsen)](https://jakobnielsenphd.substack.com/p/prompt-augmentation) — template and suggestion patterns for non-technical users
+- Gemini Nano HTML generation quality estimates — no published benchmarks found; extrapolated from parameter count and third-party SitePoint assessment
+- `responseConstraint` schema overhead in tokens — API-specific, not documented; must be measured empirically with `measureContextUsage()`
+- Exact token consumption by planning pass JSON schema — needs runtime measurement; affects Gemini Nano context budget materially
 
 ---
 
