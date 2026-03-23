@@ -1,243 +1,268 @@
 # Codebase Structure
 
-**Analysis Date:** 2026-03-22
+**Analysis Date:** 2026-03-23
 
 ## Directory Layout
 
 ```
-in-browser-ai-coding-agent/
-├── apps/                              # Nx workspace applications
-│   ├── in-browser-ai-coding-agent/   # Main Angular SPA application
+in-browser-ai-coding-agent/                          # Nx monorepo root
+├── .planning/                                         # GSD planning artifacts
+│   └── codebase/                                      # Codebase analysis documents
+├── .github/                                           # GitHub workflows and skills
+├── .githooks/                                         # Pre-commit hooks
+├── apps/                                              # Application packages
+│   ├── in-browser-ai-coding-agent/                   # Main Angular SPA
 │   │   ├── src/
-│   │   │   ├── app/                  # Angular components and services
-│   │   │   │   ├── app.ts            # Root component
-│   │   │   │   ├── app.config.ts     # Angular config (providers, routes)
-│   │   │   │   ├── app.routes.ts     # Route definitions
-│   │   │   │   ├── language-model.service.ts
-│   │   │   │   ├── model-status.component.ts
-│   │   │   │   ├── app.spec.ts
-│   │   │   │   ├── language-model.service.spec.ts
-│   │   │   │   └── model-status.component.spec.ts
-│   │   │   ├── main.ts               # Bootstrap entry point
-│   │   │   ├── index.html            # HTML template
-│   │   │   └── styles.css            # Global styles
-│   │   ├── public/                   # Static assets (served as-is)
-│   │   ├── global-setup.ts           # Vitest global setup (model warm-up)
-│   │   ├── vitest.config.mts         # Vitest browser config
-│   │   ├── project.json              # Nx project config
-│   │   └── tsconfig.*.json           # TypeScript configs
-│   │
-│   └── in-browser-ai-coding-agent-e2e/ # E2E tests
+│   │   │   ├── app/                                  # Application layer
+│   │   │   │   ├── app.ts                            # Root component
+│   │   │   │   ├── app.config.ts                     # Angular app config
+│   │   │   │   ├── app.routes.ts                     # Route definitions
+│   │   │   │   ├── app.html                          # Root template
+│   │   │   │   ├── app.css                           # Root styles
+│   │   │   │   ├── app.spec.ts                       # Root component tests
+│   │   │   │   ├── language-model.service.ts         # LLM API wrapper service
+│   │   │   │   ├── language-model.service.spec.ts    # Service unit tests
+│   │   │   │   ├── model-status.component.ts         # Model/prompt UI component
+│   │   │   │   └── model-status.component.spec.ts    # Component unit tests
+│   │   │   ├── main.ts                               # Application bootstrap
+│   │   │   ├── index.html                            # HTML shell
+│   │   │   └── styles.css                            # Global stylesheet
+│   │   ├── public/                                   # Static assets (copied to dist)
+│   │   ├── project.json                              # Nx project configuration
+│   │   ├── tsconfig.app.json                         # TypeScript config (app)
+│   │   ├── tsconfig.spec.json                        # TypeScript config (tests)
+│   │   ├── eslint.config.mjs                         # ESLint flat config (app)
+│   │   ├── browser-warmup.ts                         # Vitest setupFile — model warm-up
+│   │   ├── global-setup.ts                           # Vitest globalSetup — all browsers
+│   │   ├── global-setup.chrome.ts                    # Vitest globalSetup — Chrome only
+│   │   ├── global-setup.edge.ts                      # Vitest globalSetup — Edge only
+│   │   ├── global-setup.shared.ts                    # Shared globalSetup logic
+│   │   ├── vitest.config.mts                         # Vitest config (both browsers)
+│   │   ├── vitest.config.chrome.mts                  # Vitest config (Chrome only)
+│   │   ├── vitest.config.edge.mts                    # Vitest config (Edge only)
+│   │   └── vitest.shared.mts                         # Vitest config factory
+│   └── in-browser-ai-coding-agent-e2e/              # Playwright E2E tests
 │       ├── src/
-│       │   ├── fixtures.ts           # Playwright fixture (persistent context)
-│       │   ├── example.spec.ts       # Basic navigation tests
-│       │   └── prompt.spec.ts        # Prompt inference tests
-│       └── playwright.config.ts      # Playwright configuration
-│
-├── scripts/                           # Build and setup scripts
-│   └── bootstrap-ai-model.mjs        # Bootstrap script (download model, seed flags)
-│
-├── .github/
-│   ├── workflows/                    # GitHub Actions CI workflows
-│   │   └── ci.yml                    # Main CI pipeline
-│   ├── docker/
-│   │   └── Dockerfile                # Docker image for Chrome Beta on Linux
-│   ├── skills/                       # Nx plugin skills
-│   └── prompts/                      # Custom agent prompts
-│
-├── docs/                              # Detailed analysis (CI, platform, testing)
-├── .planning/
-│   └── codebase/                     # This file and architecture docs
-│
-├── .nx/                              # Nx cache (generated)
-├── .angular/                         # Angular cache (generated)
-├── dist/                             # Build output (generated)
-├── .playwright-profiles/             # Browser persistent profiles (generated)
-│   ├── chrome-beta/                  # Chrome Beta model profile
-│   └── msedge-dev/                   # Edge Dev model profile
-│
-├── nx.json                           # Nx workspace configuration
-├── tsconfig.base.json                # Base TypeScript config (shared paths)
-├── package.json                      # Workspace dependencies and scripts
-├── eslint.config.mjs                 # ESLint flat config
-├── vitest.workspace.ts               # Vitest workspace configuration
-└── README.md
+│       │   ├── fixtures.ts                           # Playwright test fixtures
+│       │   ├── example.spec.ts                       # Example tests
+│       │   └── prompt.spec.ts                        # Real inference tests
+│       ├── project.json                              # Nx project configuration
+│       ├── tsconfig.json                             # TypeScript config
+│       ├── playwright.config.ts                      # Playwright configuration
+│       └── eslint.config.mjs                         # ESLint flat config (E2E)
+├── libs/                                              # Reusable libraries
+│   └── shared/
+│       └── browser-profiles/                         # Browser config library
+│           ├── src/
+│           │   ├── index.ts                          # Public API export
+│           │   └── lib/browser-profiles.ts           # Browser profile definitions
+│           ├── project.json                          # Nx project configuration
+│           ├── tsconfig.json                         # TypeScript config
+│           └── eslint.config.mjs                     # ESLint flat config
+├── scripts/                                           # Utility scripts
+│   ├── bootstrap-ai-model.mjs                        # Download models and seed profiles
+│   └── rebase-format.sh                              # Rebase helper with format fixes
+├── docs/                                              # Architecture documentation
+│   ├── SUMMARY.md                                    # Architecture summary
+│   └── platform-runner-findings.md                   # Platform/runner compatibility
+├── .planning/                                         # GSD workflow artifacts
+├── .playwright-profiles/                             # Browser profile caches (gitignored)
+├── dist/                                              # Build output (gitignored)
+├── node_modules/                                      # npm dependencies (gitignored)
+├── .env* files                                        # Environment configuration (gitignored)
+├── eslint.config.mjs                                 # Root ESLint config
+├── nx.json                                           # Nx workspace configuration
+├── tsconfig.base.json                                # Root TypeScript config with path aliases
+├── vitest.workspace.ts                               # Vitest workspace configuration
+├── package.json                                      # Workspace dependencies and scripts
+├── package-lock.json                                 # Dependency lock file
+├── README.md                                         # Project documentation
+├── CLAUDE.md                                         # Claude-specific instructions
+├── AGENTS.md                                         # Agent-agnostic guidelines
+└── .prettierrc                                       # Prettier formatting config
 ```
 
 ## Directory Purposes
 
-**apps/in-browser-ai-coding-agent/src/app/:**
+**apps/in-browser-ai-coding-agent/src/app:**
 
-- Purpose: Angular components and services for the main application
-- Contains: Standalone components, injectable services, unit tests (\*.spec.ts)
-- Key files:
-  - `app.ts` — Root component
-  - `model-status.component.ts` — Main UI for model interaction
-  - `language-model.service.ts` — Service wrapper for W3C LanguageModel API
+- Purpose: Angular application layer containing all UI components and services
+- Contains: Components (.ts), templates (.html), styles (.css), unit tests (.spec.ts)
+- Key files: `app.ts` (root), `language-model.service.ts` (business logic), `model-status.component.ts` (UI)
 
-**apps/in-browser-ai-coding-agent-e2e/src/:**
+**apps/in-browser-ai-coding-agent/src:**
 
-- Purpose: End-to-end tests with Playwright
-- Contains: Test specs (\*.spec.ts), test fixtures
-- Key files:
-  - `fixtures.ts` — Worker-scoped persistent context fixture
-  - `example.spec.ts` — Basic navigation and UI tests
-  - `prompt.spec.ts` — Inference tests with prompt/response capture
+- Purpose: Application source root
+- Contains: Entry point (main.ts), HTML shell (index.html), global styles (styles.css), app/ subdirectory
+- Key files: `main.ts` (bootstrap), `index.html` (document root)
 
-**scripts/:**
+**apps/in-browser-ai-coding-agent (root):**
 
-- Purpose: Node.js scripts for CI setup and model bootstrapping
-- Contains: ESM modules (\*.mjs)
-- Key files:
-  - `bootstrap-ai-model.mjs` — Downloads model, seeds browser flags, validates API
+- Purpose: Vitest configuration and test setup
+- Contains: vitest configs (both/chrome/edge), globalSetup files, setupFile, browser-warmup
+- Key files: `vitest.shared.mts` (config factory), `browser-warmup.ts` (model warm-up), `global-setup.shared.ts` (profile seeding)
 
-**.github/workflows/:**
+**apps/in-browser-ai-coding-agent-e2e/src:**
 
-- Purpose: GitHub Actions CI/CD pipeline definitions
-- Contains: YAML workflow files
-- Key files:
-  - `ci.yml` — Main CI pipeline (format, lint, build, e2e, unit tests)
+- Purpose: Playwright E2E tests
+- Contains: Test specs, fixtures (worker-scoped persistent context)
+- Key files: `fixtures.ts` (browser context and model warm-up), `example.spec.ts`, `prompt.spec.ts`
 
-**docs/:**
+**libs/shared/browser-profiles/src/lib:**
 
-- Purpose: Detailed architectural analysis and decision records
-- Contains: Markdown documentation
-- Key files:
-  - `SUMMARY.md` — Executive summary of testing infrastructure
-  - `ci-workflow-architecture.md` — CI pipeline design and patterns
+- Purpose: Single source of truth for browser configuration
+- Contains: Profile definitions, launch options, flag seeding logic
+- Key files: `browser-profiles.ts` (profiles, seedLocalState, getLaunchOptions)
+- Usage: Imported by app, E2E tests, Vitest configs via `@layzeedk/browser-profiles` alias
+
+**scripts:**
+
+- Purpose: Build-time and CI utility scripts
+- Contains: `bootstrap-ai-model.mjs` (model download + profile setup), `rebase-format.sh` (git helper)
+
+**docs:**
+
+- Purpose: Architecture and platform/runner reference documentation
+- Contains: `SUMMARY.md` (quick-reference tables), `platform-runner-findings.md` (runner compatibility matrix)
 
 ## Key File Locations
 
 **Entry Points:**
 
-- `apps/in-browser-ai-coding-agent/src/main.ts` — Browser-side bootstrap (calls `bootstrapApplication()`)
-- `apps/in-browser-ai-coding-agent/src/index.html` — HTML template
-- `apps/in-browser-ai-coding-agent/global-setup.ts` — Node.js global setup before Vitest browser launch
+- `apps/in-browser-ai-coding-agent/src/main.ts`: Application bootstrap — calls `bootstrapApplication()` with appConfig and App component
+- `apps/in-browser-ai-coding-agent/src/app/app.ts`: Root component — renders title and ModelStatusComponent
+- `apps/in-browser-ai-coding-agent/browser-warmup.ts`: Vitest setupFile — warms model before tests
+- `apps/in-browser-ai-coding-agent-e2e/src/fixtures.ts`: Playwright E2E fixture — launches persistent context with model warm-up
 
 **Configuration:**
 
-- `nx.json` — Nx workspace config (plugins, generators, caching)
-- `tsconfig.base.json` — Base TypeScript compiler options
-- `package.json` — Dependencies, workspace scripts, version constraints
-- `apps/in-browser-ai-coding-agent/tsconfig.app.json` — App-specific TypeScript config
-- `apps/in-browser-ai-coding-agent-e2e/playwright.config.ts` — Playwright test configuration
-- `apps/in-browser-ai-coding-agent/vitest.config.mts` — Vitest browser mode config
+- `tsconfig.base.json`: Root TypeScript config with path alias `@layzeedk/browser-profiles`
+- `nx.json`: Nx workspace config with plugins, target defaults, caching rules
+- `eslint.config.mjs`: Root ESLint flat config with module boundary rules
+- `package.json`: Workspace dependencies (Angular, Nx, Vitest, Playwright) and npm scripts
 
 **Core Logic:**
 
-- `apps/in-browser-ai-coding-agent/src/app/language-model.service.ts` — Service for LanguageModel API
-- `apps/in-browser-ai-coding-agent/src/app/model-status.component.ts` — Main UI component
-- `apps/in-browser-ai-coding-agent-e2e/src/fixtures.ts` — Playwright persistent context fixture
+- `apps/in-browser-ai-coding-agent/src/app/language-model.service.ts`: W3C LanguageModel API wrapper with checkAvailability(), downloadModel(), prompt()
+- `libs/shared/browser-profiles/src/lib/browser-profiles.ts`: BrowserProfile definitions and seedLocalState() logic
+- `apps/in-browser-ai-coding-agent/src/app/model-status.component.ts`: Main UI component with model status display and inference form
 
 **Testing:**
 
-- `apps/in-browser-ai-coding-agent/src/app/*.spec.ts` — Unit tests
-- `apps/in-browser-ai-coding-agent-e2e/src/*.spec.ts` — E2E tests
-- `apps/in-browser-ai-coding-agent/global-setup.ts` — Vitest global setup
-
-**CI/CD:**
-
-- `.github/workflows/ci.yml` — GitHub Actions main workflow
-- `.github/docker/Dockerfile` — Docker image for Chrome Beta
-- `scripts/bootstrap-ai-model.mjs` — Model bootstrap script
+- `apps/in-browser-ai-coding-agent/src/app/*.spec.ts`: Unit tests (3 files: app, service, component)
+- `apps/in-browser-ai-coding-agent-e2e/src/*.spec.ts`: E2E tests (2 files: example, prompt)
+- `apps/in-browser-ai-coding-agent/vitest.shared.mts`: Vitest config factory with browser instances
+- `apps/in-browser-ai-coding-agent/global-setup.shared.ts`: Shared profile seeding logic
 
 ## Naming Conventions
 
 **Files:**
 
-- Components: `*.component.ts` (e.g., `model-status.component.ts`)
-- Services: `*.service.ts` (e.g., `language-model.service.ts`)
-- Tests: `*.spec.ts` (e.g., `app.spec.ts`)
-- Config: `*.config.ts` or `*.config.mjs` (e.g., `vite.config.ts`)
-- Setup: `*-setup.ts` (e.g., `global-setup.ts`)
+- Components: `[name].component.ts` (e.g., `model-status.component.ts`)
+- Services: `[name].service.ts` (e.g., `language-model.service.ts`)
+- Tests: `[name].spec.ts` (e.g., `model-status.component.spec.ts`)
+- Configuration: `[name].config.ts` (e.g., `app.config.ts`)
+- Routes: `*.routes.ts` (e.g., `app.routes.ts`)
+- Vitest configs: `vitest.config.mts` or `vitest.config.[variant].mts` (e.g., `vitest.config.chrome.mts`)
+- Global setup: `global-setup.ts` or `global-setup.[variant].ts` (e.g., `global-setup.chrome.ts`)
 
 **Directories:**
 
-- Components/services live in `app/` directory
-- E2E tests in separate `in-browser-ai-coding-agent-e2e` app
-- Build output in `dist/apps/{app-name}`
-- Browser profiles in `.playwright-profiles/{browser-name}`
+- Feature modules: `/src/app/` (flat structure — no nested feature directories yet)
+- Shared code: `libs/shared/[feature]/` (e.g., `libs/shared/browser-profiles/`)
+- Test support: Co-located with source or in `[project-root]/` for Vitest/Playwright config
+- Scripts: `scripts/` (build-time utilities)
+- Docs: `docs/` (architecture and reference)
 
-**Test Naming:**
+**Functions:**
 
-- Unit test files co-located with source: `foo.service.ts` + `foo.service.spec.ts`
-- E2E tests in separate app with `src/` directory
-- Test suite names follow component/service names: `describe('ModelStatusComponent', ...)`
+- camelCase for all functions and methods
+- Async functions use Promise<T> return type
+- Service methods: check\*(), [verb]Model(), prompt() patterns
+- Component lifecycle: ngOnInit, onDownload(), onSubmit() patterns
+
+**Types & Interfaces:**
+
+- PascalCase for types (e.g., `ModelAvailability`, `BrowserProfile`)
+- Discriminated unions for status: `'available' | 'downloading' | 'downloadable' | 'unavailable'`
+- Single responsibility: type names describe scope (LanguageModelService handles LanguageModel API only)
 
 ## Where to Add New Code
 
-**New Feature (UI/Service Enhancement):**
+**New Feature:**
 
-- Primary code: `apps/in-browser-ai-coding-agent/src/app/`
-- Create new component: `apps/in-browser-ai-coding-agent/src/app/my-feature.component.ts`
-- Create new service: `apps/in-browser-ai-coding-agent/src/app/my-feature.service.ts`
-- Tests: Co-located `*.spec.ts` files
-- Import in parent component or app.config (if injectable)
+- Primary code: `apps/in-browser-ai-coding-agent/src/app/[feature].component.ts` or `.service.ts`
+- Tests: `apps/in-browser-ai-coding-agent/src/app/[feature].component.spec.ts` or `.service.spec.ts`
+- Follow existing naming: `[name].component.ts` for components, `[name].service.ts` for services
 
 **New Component/Module:**
 
-- Implementation: `apps/in-browser-ai-coding-agent/src/app/{component-name}.component.ts`
-- Template: Inline in `template` property (no separate HTML file)
-- Styles: Inline in `styles` property (no separate CSS file)
-- Standalone: Always use `standalone: true` and `imports: [...]`
+- Location: `apps/in-browser-ai-coding-agent/src/app/` (no nested subdirectories — flat structure)
+- Standalone: Use `@Component` with `standalone: true` (implicit in Angular 21)
+- Imports: List dependencies in `@Component({ imports: [...] })`
+- Example: See `model-status.component.ts`
 
-**Utilities/Shared Helpers:**
+**Shared Utilities:**
 
-- Shared helpers for app: `apps/in-browser-ai-coding-agent/src/app/` (if small, in component file)
-- Shared helpers for tests: `apps/in-browser-ai-coding-agent-e2e/src/` (if E2E) or same app `src/app/` (if unit)
+- Shared across app and E2E: `libs/shared/[name]/src/lib/[name].ts`
+- Export via `libs/shared/[name]/src/index.ts`
+- Register path alias in `tsconfig.base.json` paths section
+- Example: `@layzeedk/browser-profiles` alias for `libs/shared/browser-profiles`
 
-**New E2E Tests:**
+**Shared Library (Nx):**
 
-- Location: `apps/in-browser-ai-coding-agent-e2e/src/{feature}.spec.ts`
-- Pattern: Import `{ test, expect }` from `./fixtures` (not `@playwright/test`)
-- Fixture parameter: `{ persistentPage: page }` to get page from worker-scoped context
-- Assertions: Use standard Playwright `expect()` from fixtures export
+- Run: `npm exec nx g @nx/angular:library --name [name] --directory libs/shared`
+- Creates project.json, tsconfig.json, eslint config
+- Update path alias in tsconfig.base.json
 
-**New Unit Tests:**
+**Test Files:**
 
-- Location: `apps/in-browser-ai-coding-agent/src/app/{feature}.spec.ts`
-- Pattern: Use Vitest `describe()`, `it()`, `beforeEach()` from `vitest`
-- Setup: Inject services via `TestBed.inject()` (Angular testing)
-- Browser API access: Direct (e.g., `typeof LanguageModel`)
+- Unit tests (Vitest browser mode): Co-located with source `.spec.ts`
+- E2E tests (Playwright): `apps/in-browser-ai-coding-agent-e2e/src/[feature].spec.ts`
+- Fixtures (worker-scoped): Add to `apps/in-browser-ai-coding-agent-e2e/src/fixtures.ts`
 
 ## Special Directories
 
-**`.playwright-profiles/`:**
+**.playwright-profiles:**
 
-- Purpose: Persistent browser user data directories
-- Generated: Yes (by bootstrap script or fixture)
-- Committed: No (in `.gitignore`)
-- Contents: Model files (~4 GB Phi-4 Mini), ONNX artifacts, browser Local State
-- Cached in CI: Via rolling cache key with `run_number` suffix
+- Purpose: Browser profile caches (Chrome Beta, Edge Dev)
+- Generated: Yes — by bootstrap script or on test run
+- Committed: No — .gitignore excludes `**/.playwright-profiles`
+- Contains: profile directories with Local State (flags), ONNX runtime DLLs, model files
 
-**`dist/`:**
+**dist/**
 
-- Purpose: Build output (production and development)
-- Generated: Yes (by `nx build`)
-- Committed: No (in `.gitignore`)
-- Contents: `apps/in-browser-ai-coding-agent/browser/` (Vite build) and `server/` (if SSR)
+- Purpose: Build output directory
+- Generated: Yes — by `npm run build` or Nx build target
+- Committed: No — .gitignore excludes `dist`
+- Contains: `apps/in-browser-ai-coding-agent/browser/` (Vite output)
 
-**`.nx/cache/`:**
+**node_modules/**
+
+- Purpose: npm dependencies
+- Generated: Yes — by `npm install`
+- Committed: No — standard exclusion
+- Layout: Hoisted monorepo structure under node_modules/.pnpm/ (npm v8+)
+
+**.nx/cache/**
 
 - Purpose: Nx task cache
-- Generated: Yes (by Nx during build/test)
-- Committed: No (in `.gitignore`)
-- Scope: Workspace-level, improves incremental build performance
+- Generated: Yes — by Nx on task execution
+- Committed: No — .gitignore excludes `.nx`
+- Usage: Task caching for build, lint, test, typecheck
 
-**`.angular/cache/`:**
+**.github/workflows/**
 
-- Purpose: Angular build cache
-- Generated: Yes (by Angular CLI/Vite during build)
-- Committed: No (in `.gitignore`)
-- Scope: Version-specific (e.g., `.angular/cache/21.2.3`)
+- Purpose: GitHub Actions CI/CD
+- Contains: `.yml` files for lint, test, build, E2E on multiple runners
+- Key workflows: `ci.yml` (main pipeline), browser-specific workflows
 
-**`.github/docker/`:**
+**.githooks/**
 
-- Purpose: Docker build files for Chrome Beta CI
-- Generated: No (checked in)
-- Contains: Dockerfile with multi-stage build for Chrome Beta and Edge Dev
-- Used by: GitHub Actions when `container: true` in test matrix
+- Purpose: Git hooks
+- Contains: `pre-commit` hook that runs `nx format` on staged files
+- Setup: `npm install` runs `git config core.hooksPath .githooks`
 
 ---
 
-_Structure analysis: 2026-03-22_
+_Structure analysis: 2026-03-23_

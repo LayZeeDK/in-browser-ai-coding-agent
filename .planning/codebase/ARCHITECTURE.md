@@ -1,174 +1,179 @@
 # Architecture
 
-**Analysis Date:** 2026-03-22
+**Analysis Date:** 2026-03-23
 
 ## Pattern Overview
 
-**Overall:** Angular Single Page Application (SPA) with persistent browser contexts for real on-device AI model inference
+**Overall:** Single-page application (SPA) with layered service-driven architecture using Angular 21.
 
 **Key Characteristics:**
 
-- Standalone Angular 21 components (no modules)
-- W3C LanguageModel API for in-browser AI inference
-- Dual-browser testing: Chrome Beta (Gemini Nano) and Edge Dev (Phi-4 Mini)
-- Persistent browser profiles for multi-gigabyte model caching
-- Monorepo with Nx orchestration
+- Standalone Angular components with signal-based reactivity
+- W3C LanguageModel API wrapper service for on-device AI inference
+- Browser-agnostic API abstraction supporting Chrome Beta (Gemini Nano) and Edge Dev (Phi-4 Mini)
+- Multi-platform testing with persistent browser contexts and model warm-up
 
 ## Layers
 
-**Presentation (UI):**
+**Presentation Layer:**
 
-- Purpose: User interface for model status and prompt interaction
+- Purpose: Render UI and handle user interactions
 - Location: `apps/in-browser-ai-coding-agent/src/app/`
-- Contains: Angular components with standalone decorator, templates, and styles
-- Depends on: LanguageModelService, Angular core modules
-- Used by: HTML template in `index.html`, e2e tests
+- Contains: Angular components (standalone), templates, and styles
+- Depends on: Services (LanguageModelService), DomSanitizer
+- Used by: Root component bootstrap
 
-**Service (Domain Logic):**
+**Service Layer:**
 
-- Purpose: Wrapper around W3C LanguageModel API, handles model availability and inference
+- Purpose: Encapsulate business logic and API interactions
 - Location: `apps/in-browser-ai-coding-agent/src/app/language-model.service.ts`
-- Contains: `LanguageModelService` singleton injectable providing type-safe API access
-- Depends on: W3C LanguageModel global API (browser-provided)
-- Used by: `ModelStatusComponent`
+- Contains: LanguageModelService with model availability checks, downloads, and inference
+- Depends on: W3C LanguageModel API (global)
+- Used by: Components (ModelStatusComponent)
 
-**Test Infrastructure:**
+**Configuration & Bootstrap Layer:**
 
-- Purpose: E2E tests with persistent contexts, unit tests in-browser, warm-up fixtures
-- Location: `apps/in-browser-ai-coding-agent-e2e/` (e2e) and `apps/in-browser-ai-coding-agent/` (unit)
-- Contains: Playwright tests, Vitest configuration, global setup, fixtures
-- Depends on: Playwright, Vitest, custom fixture helpers
-- Used by: CI pipeline, developers running tests locally
+- Purpose: Initialize application state and routing
+- Location: `apps/in-browser-ai-coding-agent/src/app/app.config.ts`, `apps/in-browser-ai-coding-agent/src/app/app.routes.ts`
+- Contains: ApplicationConfig with providers, empty route definitions
+- Depends on: Angular core providers
+- Used by: Root bootstrap in `main.ts`
+
+**Shared Infrastructure Layer:**
+
+- Purpose: Provide cross-cutting browser configuration
+- Location: `libs/shared/browser-profiles/src/lib/browser-profiles.ts`
+- Contains: Profile definitions (Chrome, Edge), flag seeding, launch options
+- Depends on: Node.js fs, @nx/devkit workspaceRoot
+- Used by: E2E fixtures, Vitest global setup, unit test configuration
+
+**Testing Support Layer:**
+
+- Purpose: Warm up models and provide test fixtures
+- Location: `apps/in-browser-ai-coding-agent/browser-warmup.ts`, `apps/in-browser-ai-coding-agent-e2e/src/fixtures.ts`, `apps/in-browser-ai-coding-agent/global-setup.shared.ts`
+- Contains: Model warm-up routines, persistent context fixtures, profile seeding
+- Depends on: W3C LanguageModel API, Playwright, browser-profiles lib
+- Used by: Vitest (setupFiles), Playwright E2E tests
 
 ## Data Flow
 
 **Model Availability Check:**
 
-1. Component initializes (`ngOnInit`)
-2. Calls `service.checkAvailability()`
-3. Service checks if `LanguageModel` global is defined
-4. Calls `await LanguageModel.availability()` (browser API)
-5. Returns status: `'available' | 'downloading' | 'downloadable' | 'unavailable'`
-6. Component updates signal state and polls while status is `'downloading'`
+1. Component initialization (ngOnInit) calls `LanguageModelService.checkAvailability()`
+2. Service checks if `LanguageModel` API is globally defined
+3. Service calls `LanguageModel.availability()` which returns status: available | downloading | downloadable | unavailable
+4. Component receives status and displays appropriate UI
+5. If downloading, component polls every 2 seconds until available
+6. User downloads model via `onDownload()` which calls `downloadModel()` with progress callback
 
-**Model Download:**
+**Inference Flow:**
 
-1. User clicks "Download Model" button
-2. Component calls `service.downloadModel(onProgress)`
-3. Service calls `await LanguageModel.create({ monitor: ... })`
-4. Monitor callback triggered on `downloadprogress` events
-5. Callback updates component signal with percentage
-6. Session destroyed after download completes
-
-**Prompt Inference:**
-
-1. User enters prompt text and clicks "Send"
-2. Component calls `service.prompt(text)`
-3. Service launches new session: `const session = await LanguageModel.create()`
-4. Service calls `await session.prompt(text)` (real inference)
-5. Response returned and displayed (parsed as Markdown)
-6. Session destroyed in finally block
+1. User submits prompt in `ModelStatusComponent.onSubmit()`
+2. Component calls `LanguageModelService.prompt(text)`
+3. Service creates a new LanguageModel session via `LanguageModel.create()`
+4. Service calls `session.prompt(text)` to get response
+5. Service destroys session in finally block
+6. Component receives response, parses as markdown via `marked.parse()`, sanitizes HTML, displays
 
 **State Management:**
 
-- Signals used for reactive state: `loading`, `availability`, `downloading`, `downloadProgress`, `prompting`, `response`, `error`
-- Computed signal for HTML rendering: `responseHtml` (Markdown → HTML via `marked` library)
-- No global state store; component-local signals only
+- Local component state using Angular signals (`signal()`)
+- Derived state using `computed()` for formatted HTML output
+- No global state management — all state is component-scoped
+- Signal updates via `set()` and `update()` methods
 
 ## Key Abstractions
 
 **LanguageModelService:**
 
-- Purpose: Single point of API abstraction for W3C LanguageModel
+- Purpose: Abstract W3C LanguageModel API specifics from components
 - Examples: `apps/in-browser-ai-coding-agent/src/app/language-model.service.ts`
-- Pattern: Singleton injectable with methods `checkAvailability()`, `downloadModel()`, `prompt()`
-- Type Safety: Exported `ModelAvailability` type union
+- Pattern: Dependency-injectable singleton (providedIn: 'root') with async methods returning Promise<string> or Promise<ModelAvailability>
+- Public methods: `checkAvailability()`, `downloadModel(onProgress?)`, `prompt(text)`
+- API detection: `isApiSupported` getter checks typeof LanguageModel !== 'undefined'
 
 **ModelStatusComponent:**
 
-- Purpose: Complete UI for model interaction (status display, download, prompt/response)
+- Purpose: Display model availability and provide inference UI
 - Examples: `apps/in-browser-ai-coding-agent/src/app/model-status.component.ts`
-- Pattern: Standalone component with template, styles, and child component composition
-- Signals: `loading`, `availability`, `downloading`, `downloadProgress`, `promptText`, `prompting`, `response`, `error`
+- Pattern: Standalone component with template/style inline, signal-driven reactivity
+- Signals: loading, availability, downloading, downloadProgress, promptText, prompting, response, error, responseHtml (computed)
+- Key feature: Polling loop during download (2s interval until available)
 
-**Persistent Browser Context:**
+**BrowserProfile:**
 
-- Purpose: Single long-lived browser process for model warm-up and testing
-- Examples: `apps/in-browser-ai-coding-agent-e2e/src/fixtures.ts` (worker-scoped)
-- Pattern: Playwright test fixture, worker-scoped, launches once and reused by all tests in worker
+- Purpose: Centralize browser configuration across unit tests, E2E tests, and CI
+- Examples: `libs/shared/browser-profiles/src/lib/browser-profiles.ts`
+- Pattern: Shared interface and configuration objects (Chrome Beta, Edge Dev)
+- Key methods: `getLaunchOptions()` (returns launch config), `seedLocalState()` (writes chrome://flags to Local State)
+- Uses: Playwright ignore-default-args, feature flags, profile directory management
 
 ## Entry Points
 
-**Bootstrap (Browser):**
+**Application Entry:**
 
 - Location: `apps/in-browser-ai-coding-agent/src/main.ts`
 - Triggers: Browser page load
-- Responsibilities: Calls `bootstrapApplication(App, appConfig)` to start the Angular app
+- Responsibilities: Bootstrap Angular application with `bootstrapApplication()`, pass app config and root component
 
-**Application Root:**
+**Root Component:**
 
 - Location: `apps/in-browser-ai-coding-agent/src/app/app.ts`
-- Triggers: Angular bootstrap
-- Responsibilities: Renders root component with `ModelStatusComponent` as child
+- Triggers: Bootstrap completion
+- Responsibilities: Render title, import ModelStatusComponent, render router outlet
 
-**E2E Test Suite:**
+**Unit Test Entry (Vitest):**
 
-- Location: `apps/in-browser-ai-coding-agent-e2e/src/*.spec.ts`
-- Triggers: `npm exec nx -- e2e in-browser-ai-coding-agent-e2e` or CI e2e step
-- Responsibilities: Browser automation tests using Playwright fixture
+- Location: `apps/in-browser-ai-coding-agent/browser-warmup.ts` (setupFile)
+- Triggers: Before any test file runs
+- Responsibilities: Detect LanguageModel API availability, create and destroy session with warmup prompt, log duration
 
-**Unit Test Suite:**
+**E2E Test Entry (Playwright):**
 
-- Location: `apps/in-browser-ai-coding-agent/src/app/*.spec.ts`
-- Triggers: `npm exec nx -- test in-browser-ai-coding-agent` or CI unit test step
-- Responsibilities: Component and service tests via Vitest in-browser
+- Location: `apps/in-browser-ai-coding-agent-e2e/src/fixtures.ts` (worker fixture)
+- Triggers: Worker startup
+- Responsibilities: Seed profile, retry persistent context launch, warm up model, provide shared context for all tests
 
-**Global Setup (Unit Tests):**
+**Global Setup (Pre-test):**
 
-- Location: `apps/in-browser-ai-coding-agent/global-setup.ts`
-- Triggers: Before Vitest browser mode launches (runs in Node.js)
-- Responsibilities: Warm-up model by navigating to on-device-internals, calling `LanguageModel.create()`, running warmup prompt, waiting for "Ready" state
+- Location: `apps/in-browser-ai-coding-agent/global-setup.ts` (Vitest globalSetup)
+- Triggers: Before Vitest starts
+- Responsibilities: Iterate profiles, seed Local State with flags
 
 ## Error Handling
 
-**Strategy:** Try-finally pattern with explicit error catch and relay to UI
+**Strategy:** Async try-finally with explicit error capture.
 
 **Patterns:**
 
-- Service methods check `isApiSupported` before using LanguageModel API; throw descriptive error if not
-- Service `prompt()` catches errors in try-finally block; error message relayed to component signal
-- Component catches service errors in try-finally; updates error signal with `e instanceof Error ? e.message : String(e)`
-- Test fixtures catch exceptions and log diagnostics; some errors are non-fatal (e.g., Model Status tab not found in container)
-
-**No throw-to-caller:** Errors are caught locally and exposed via signals/console logs. No unhandled rejections.
+- **Service Layer:** Throw descriptive errors when API unavailable (`throw new Error('LanguageModel API is not available')`). Session destroy in finally block to prevent resource leaks.
+- **Component Layer:** Catch errors in try-catch, set error signal for display, reset prompting state in finally block.
+- **Warm-up (setupFile):** Log warnings if warm-up fails, do not throw (tests should run even if warm-up fails). Catch and report duration.
+- **Test Fixtures:** Retry browser launch up to 5 times (2s delay between attempts) for ProcessSingleton conflicts on Windows. Throw on final attempt. Log all retry attempts.
 
 ## Cross-Cutting Concerns
 
 **Logging:**
 
-- Approach: `console.log()` and `console.warn()` for diagnostics
-- Patterns in E2E: Logs prefixed with `[fixtures]` for fixture operations, `[global-setup]` for setup
-- Patterns in Component: Uses standard `console.log()` for prompt responses (for CI summary capture)
+- Approach: Console.log for diagnostics, tagged with [source-name] (e.g., [browser-warmup], [fixtures], [global-setup])
+- Unit test responses logged with test-specific prefix: [unit-response] for test assertion verification
 
 **Validation:**
 
-- Approach: Type-based (TypeScript) and runtime guards (`isApiSupported` check)
-- No explicit schema validation; LanguageModel API returns typed values
-- Component validation: Trim and check prompt text not empty before submission
+- Model API check: `typeof LanguageModel !== 'undefined'` (API presence)
+- Status validation: Check returned status against known values (available, downloading, downloadable, unavailable)
+- Prompt input: Trim and check length > 0 before submit
 
-**Browser Compatibility:**
+**Authentication:**
 
-- Approach: Feature detection via `typeof LanguageModel !== 'undefined'`
-- Graceful degradation: Returns `'unavailable'` status instead of throwing
-- Tests skip on unsupported browsers: Model availability guard test (`should have a model...`) fails with diagnostic message
+- Approach: None. On-device API requires no authentication. Browser flags enable feature access.
 
-**Performance Considerations:**
+**Browser Feature Detection:**
 
-- Model warm-up front-loaded: First inference takes 11+ minutes on ARM; subsequent inferences cached
-- Persistent profiles: Model weights and ONNX Runtime artifacts cached across CI runs
-- No re-renders during inference: Async operations use signals, not observables
-- Test isolation: Each prompt test creates and destroys a session; no shared session state
+- Profile-based: Two pre-configured profiles (Chrome Beta, Edge Dev) with distinct feature flags
+- Runtime check: `isApiSupported` property detects API presence at runtime
+- Graceful degradation: Functions check API support and throw explicit errors if unavailable
 
 ---
 
-_Architecture analysis: 2026-03-22_
+_Architecture analysis: 2026-03-23_

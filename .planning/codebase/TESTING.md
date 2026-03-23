@@ -1,62 +1,76 @@
 # Testing Patterns
 
-**Analysis Date:** 2026-03-22
+**Analysis Date:** 2026-03-23
 
 ## Test Framework
 
-**Runners:**
+**Runner:**
 
-- **Unit Tests:** Vitest 4.1 in browser mode with `@vitest/browser-playwright` v4.1.0
-- **E2E Tests:** Playwright Test (via `@nx/playwright` 22.6.0) with custom persistent context fixture
-- Config files: `apps/in-browser-ai-coding-agent/vitest.config.mts`, `apps/in-browser-ai-coding-agent-e2e/playwright.config.ts`
+- Vitest 4.1 with browser mode (`@vitest/browser-playwright`)
+- Config: `apps/in-browser-ai-coding-agent/vitest.config.mts` (default - all browsers)
+- Per-browser configs: `vitest.config.chrome.mts`, `vitest.config.edge.mts`
+- Shared config factory: `vitest.shared.mts`
 
 **Assertion Library:**
 
-- Vitest built-in: `expect(value).toBe(...)`, `expect(value).toMatch(...)`
-- Playwright built-in: `await expect(element).toBeVisible()`, `await expect(element).toHaveAttribute(...)`
+- Vitest's native expect API
+- Angular's TestBed for component testing
 
 **Run Commands:**
 
 ```bash
-pnpm nx run in-browser-ai-coding-agent:test        # Run unit tests
-pnpm nx run in-browser-ai-coding-agent-e2e:e2e     # Run e2e tests
-pnpm nx run-many -t test                           # All unit tests
-pnpm nx run-many -t e2e                            # All e2e tests
+npm test                                    # Run all unit tests (both browsers)
+npm exec nx -- test-chrome in-browser-ai-coding-agent      # Chrome only
+npm exec nx -- test-edge in-browser-ai-coding-agent        # Edge Dev only
+npm run e2e                                 # E2E tests via Playwright
+npm run ci                                  # Full pipeline: lint, typecheck, test, build, e2e
 ```
-
-**Vitest Browser Mode:**
-
-- Runs tests inside real browsers (Chrome Beta, Edge Dev)
-- Requires persistent profile directories (`.playwright-profiles/chrome-beta`, `.playwright-profiles/msedge-dev`)
-- No JSDOM or bundled Chromium support (LanguageModel API unavailable in those contexts)
 
 ## Test File Organization
 
 **Location:**
 
-- Unit tests: Co-located with source files (`*.spec.ts` suffix)
-  - `src/app/language-model.service.spec.ts` (alongside service)
-  - `src/app/model-status.component.spec.ts` (alongside component)
-- E2E tests: Separate `*-e2e` app directory
-  - `apps/in-browser-ai-coding-agent-e2e/src/example.spec.ts`
-  - `apps/in-browser-ai-coding-agent-e2e/src/prompt.spec.ts`
-- Setup files: Outside `src/` (not compiled by Angular)
-  - `apps/in-browser-ai-coding-agent/global-setup.ts` (Vitest global setup)
-  - `apps/in-browser-ai-coding-agent-e2e/src/fixtures.ts` (Playwright test fixture)
+- Co-located with source files (same directory)
+- Example: `src/app/language-model.service.ts` + `src/app/language-model.service.spec.ts`
 
 **Naming:**
 
-- `{component-name}.spec.ts` for unit tests
-- `{feature}.spec.ts` for e2e tests
+- `[source-name].spec.ts` for unit tests
+- E2E specs: `src/*.spec.ts` in the e2e app directory
+
+**Structure:**
+
+```
+apps/
+  in-browser-ai-coding-agent/
+    src/app/
+      language-model.service.ts
+      language-model.service.spec.ts       # Co-located test
+      model-status.component.ts
+      model-status.component.spec.ts
+    browser-warmup.ts                       # Vitest setupFile
+    global-setup.ts                         # Vitest globalSetup
+    vitest.config.mts
+    vitest.shared.mts
+  in-browser-ai-coding-agent-e2e/
+    src/
+      fixtures.ts                           # Playwright persistent context fixture
+      example.spec.ts                       # E2E tests
+      prompt.spec.ts                        # Real inference E2E tests
+    playwright.config.ts
+libs/
+  shared/
+    browser-profiles/
+      src/
+        index.ts
+        lib/browser-profiles.ts
+```
 
 ## Test Structure
 
-**Vitest Unit Test Suite:**
+**Suite Organization:**
 
 ```typescript
-import { TestBed } from '@angular/core/testing';
-import { beforeEach, describe, expect, it } from 'vitest';
-
 describe('LanguageModelService', () => {
   let service: LanguageModelService;
 
@@ -68,401 +82,300 @@ describe('LanguageModelService', () => {
     expect(service).toBeTruthy();
   });
 
+  it('should return a valid availability status', async () => {
+    const status = await service.checkAvailability();
+    const validStatuses: ModelAvailability[] = ['available', 'downloading', 'downloadable', 'unavailable'];
+    expect(validStatuses).toContain(status);
+  });
+
   it('should respond to a prompt', async () => {
     const response = await service.prompt('Hello, AI!');
     expect(response).toBeTruthy();
-  }, 300_000); // 5-minute timeout
-});
-```
-
-**Playwright E2E Test Suite:**
-
-```typescript
-import { test, expect } from './fixtures';
-
-test('responds to a prompt', async ({ persistentPage: page }) => {
-  test.setTimeout(600_000);
-
-  await page.goto('http://localhost:4200/');
-
-  const statusEl = page.getByTestId('status-result');
-  await expect(statusEl).toBeVisible({ timeout: 10_000 });
-
-  // Test assertions...
+    expect(response.length).toBeGreaterThan(0);
+  }, 600_000); // Extended timeout for model inference
 });
 ```
 
 **Patterns:**
 
-- **Setup:** `beforeEach()` for Vitest (Angular TestBed injection), Playwright uses fixture setup
-- **Teardown:** `finally` blocks or Playwright fixture cleanup (automatic context close)
-- **Assertions:** Vitest uses synchronous `expect()`, Playwright uses `await expect(...)`
+- Descriptive test names: `it('should [expected behavior]')`
+- `beforeEach()` for setup (TestBed configuration for component tests)
+- Async tests with `async` keyword and `await` for async operations
+- Extended timeouts (600_000ms / 10min) for AI model inference tests
+- Console logging for test output inspection (see logging pattern below)
+
+## Component Testing
+
+**Setup Pattern:**
+
+```typescript
+describe('ModelStatusComponent', () => {
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [ModelStatusComponent], // Standalone component
+    }).compileComponents();
+  });
+
+  it('should create', () => {
+    const fixture = TestBed.createComponent(ModelStatusComponent);
+    expect(fixture.componentInstance).toBeTruthy();
+  });
+
+  it('should display a status result after checking availability', async () => {
+    const fixture = TestBed.createComponent(ModelStatusComponent);
+    const compiled = fixture.nativeElement as HTMLElement;
+    const statusEl = await waitForElement(compiled, '[data-testid="status-result"]');
+    expect(statusEl.getAttribute('data-status')).toMatch(/^(available|downloading|downloadable|unavailable)$/);
+  }, 30_000);
+});
+```
+
+**Element Waiting Helper:**
+
+- Custom `waitForElement()` helper for async rendering
+- Location: `src/app/model-status.component.spec.ts`
+- Pattern for testing components with loading states:
+  ```typescript
+  async function waitForElement(root: HTMLElement, selector: string, timeoutMs = 10_000): Promise<HTMLElement> {
+    const start = Date.now();
+    while (Date.now() - start < timeoutMs) {
+      const el = root.querySelector(selector) as HTMLElement | null;
+      if (el) {
+        return el;
+      }
+      await new Promise((r) => setTimeout(r, 200));
+    }
+    throw new Error(`Element "${selector}" not found within ${timeoutMs}ms`);
+  }
+  ```
 
 ## Mocking
 
-**Framework:** None (real browser, real on-device model)
+**Framework:** TestBed for dependency injection (Angular native)
+
+**Patterns:**
+
+- Services are real (not mocked) — tests run against actual LanguageModel API
+- Components inject real services via TestBed
+- Browser APIs (LanguageModel, DOM) are real in browser context
+
+**Example:**
+
+```typescript
+// From language-model.service.spec.ts
+it('should detect whether the LanguageModel API is supported', () => {
+  // In branded browsers (Chrome Canary, Edge Dev) with feature flags,
+  // the API should be defined. In bundled Chromium, it won't be.
+  expect(typeof service.isApiSupported).toBe('boolean');
+});
+
+it('should respond to a prompt', async () => {
+  // Calls real LanguageModel.create() and session.prompt()
+  const response = await service.prompt('Hello, AI!');
+  expect(response).toBeTruthy();
+}, 600_000);
+```
 
 **What NOT to Mock:**
 
-- `LanguageModel` API (requires real browser API)
-- Network requests (no external APIs in this app)
-- File system (browser APIs only)
-
-**What to Mock (if needed):**
-
-- Component dependencies via Vitest/Angular TestBed (not shown in current tests -- no HTTP/service mocking present)
-- Playwright page methods can be stubbed if testing error paths
-
-**Approach:**
-
-- Tests verify real on-device AI model functionality
-- Integration tests that exercise the full stack: UI component → service → LanguageModel API → browser inference
-- No unit test isolation via mocks; rely on guard tests to fail fast if environment is misconfigured
+- LanguageModel API — tests require real model for inference
+- Browser APIs (fetch, localStorage, etc.) — tests run in real browser
+- DOM manipulation — tests query and interact with real DOM
 
 ## Fixtures and Factories
 
 **Test Data:**
-No test data factories present. This codebase tests real inference, not simulated responses.
 
-**Browser Instances:**
-Global fixture provides persistent browser contexts:
+- No centralized fixtures for this codebase (services return live data)
+- API responses are from real LanguageModel API, not mocked
+- Status checks (`checkAvailability()`) return actual browser model state
 
-```typescript
-// Vitest browser instances (vitest.config.mts)
-const allInstances = [
-  {
-    name: 'chrome-gemini-nano',
-    provider: playwright({
-      persistentContext: resolve('.playwright-profiles/chrome-beta'),
-      launchOptions: {
-        channel: 'chrome-beta',
-        args: ['--enable-features=OptimizationGuideOnDeviceModel,PromptAPIForGeminiNano'],
-        ignoreDefaultArgs: AI_IGNORE_DEFAULT_ARGS,
-      },
-    }),
-  },
-  {
-    name: 'edge-phi4-mini',
-    provider: playwright({
-      persistentContext: resolve('.playwright-profiles/msedge-dev'),
-      launchOptions: {
-        channel: 'msedge-dev',
-        args: ['--enable-features=AIPromptAPI'],
-        ignoreDefaultArgs: AI_IGNORE_DEFAULT_ARGS,
-      },
-    }),
-  },
-];
-```
-
-**Playwright E2E Fixture:**
+**E2E Fixture Pattern** (worker-scoped persistent context):
 
 ```typescript
-export const test = base.extend<
-  { persistentPage: Page },
-  { persistentContext: BrowserContext }
->({
-  // Worker-scoped: one browser per worker, shared across all tests
-  persistentContext: [async ({}, use, workerInfo) => {
-    enableInternalDebugPages(profile.profileDir);
-    context = await chromium.launchPersistentContext(...);
-    await warmUpModel(context); // Navigate to on-device-internals, run prompt('warmup')
-    await use(context);
-    await context.close();
-  }, { scope: 'worker', timeout: 1_200_000 }],
+export const test = base.extend<{ persistentPage: Page }, { persistentContext: BrowserContext }>({
+  persistentContext: [
+    async ({}, use, workerInfo) => {
+      const projectName = workerInfo.project.name;
+      const profile = profilesByName[projectName];
 
-  // Test-scoped: fresh page from shared context
+      // Seed profile with flags
+      seedLocalState(profile);
+
+      // Retry launch (ProcessSingleton on Windows may reject)
+      let context!: BrowserContext;
+      for (let attempt = 1; attempt <= 5; attempt++) {
+        try {
+          context = await chromium.launchPersistentContext(profile.profileDir, getLaunchOptions(profile));
+          break;
+        } catch (error) {
+          if (attempt === 5) throw error;
+          await new Promise((r) => setTimeout(r, 2_000));
+        }
+      }
+
+      // Warm up model
+      const warmupPage = context.pages()[0] || (await context.newPage());
+      await warmupPage.goto(baseURL);
+      await warmupPage.evaluate(async () => {
+        const session = await LanguageModel.create();
+        await session.prompt('warmup');
+        session.destroy();
+      });
+
+      await use(context);
+      await context.close();
+    },
+    { scope: 'worker', timeout: 10_800_000 }, // 3 hours for model warm-up
+  ],
+
   persistentPage: async ({ persistentContext }, use) => {
-    const page = persistentContext.pages()[0] || await persistentContext.newPage();
+    const page = persistentContext.pages()[0] || (await persistentContext.newPage());
     await use(page);
   },
 });
 ```
 
-**Location:** `apps/in-browser-ai-coding-agent-e2e/src/fixtures.ts`
+Location: `apps/in-browser-ai-coding-agent-e2e/src/fixtures.ts`
 
 ## Coverage
 
-**Requirements:** No enforced coverage target in `vitest.config.mts` or test setup
+**Requirements:** Not enforced (no coverage target configured)
 
 **View Coverage:**
 
 ```bash
-pnpm nx run in-browser-ai-coding-agent:test --coverage
+npm exec nx -- test in-browser-ai-coding-agent -- --coverage
 ```
 
-Uses `@vitest/coverage-v8` for coverage reporting. Coverage output goes to `coverage/` directory.
+Coverage runs via `@vitest/coverage-v8` when the flag is passed.
 
 ## Test Types
 
 **Unit Tests:**
 
-- **Scope:** Individual services and components
-- **Files:** `language-model.service.spec.ts`, `model-status.component.spec.ts`, `app.spec.ts`
-- **Approach:** Angular TestBed for DI, Vitest browser mode for real LanguageModel API access
-- **Real inference:** Yes -- tests call actual `await service.prompt('Hello, AI!')` against on-device model
+- Scope: Individual services and components
+- Framework: Vitest + Angular TestBed
+- Browser: Real browser (Chrome Beta or Edge Dev) with LanguageModel API
+- Examples: `language-model.service.spec.ts`, `model-status.component.spec.ts`, `app.spec.ts`
+- Approach:
+  - Test service methods with actual model inference (not mocked)
+  - Test component lifecycle and state rendering
+  - Test error handling and edge cases
+  - Timeouts: 30s-600s for tests involving model inference
 
 **Integration Tests:**
 
-- **Scope:** Component + service interaction
-- **Example:** `model-status.component.spec.ts` renders component, waits for service to fetch availability, submits prompt
-- **Pattern:** Creates component fixture, waits for async lifecycle, triggers events, validates rendered output
+- Not explicitly separated from unit tests
+- Service + Component integration tested in component specs
+- Example: `ModelStatusComponent` test calls `LanguageModelService.prompt()`
 
 **E2E Tests:**
 
-- **Scope:** Full application flow from UI to inference
-- **Files:** `example.spec.ts` (basic app render), `prompt.spec.ts` (full prompt workflow)
-- **Approach:** Playwright page navigation, DOM interaction, element waiting
-- **Real inference:** Yes -- full browser automation of real inference
+- Framework: Playwright
+- Browser: Chrome Beta (Gemini Nano) + Edge Dev (Phi-4 Mini)
+- Worker-scoped persistent context for profile + model warm-up
+- Examples: `apps/in-browser-ai-coding-agent-e2e/src/example.spec.ts`, `prompt.spec.ts`
+- Approach:
+  - Full application flow (UI navigation, form submission, real inference)
+  - Multi-browser coverage (2 projects in `playwright.config.ts`)
+  - No retries (each retry requires full model warm-up on ARM64)
+  - Custom test assertion: `test('has title', async ({ persistentPage: page }) => { ... })`
 
 ## Common Patterns
 
-**Async Testing (Vitest):**
+**Async Testing:**
 
 ```typescript
+// Unit test with async service call
 it('should respond to a prompt', async () => {
   const response = await service.prompt('Hello, AI!');
   expect(response).toBeTruthy();
-}, 300_000); // Timeout in milliseconds
-```
+}, 600_000); // 10-minute timeout for model inference
 
-- Test function is `async`, returns `Promise`
-- Await promises before assertion
-- Timeout passed as second argument to `it()` (not in `expect()`)
+// Component test with async rendering
+it('should display result after waiting', async () => {
+  const fixture = TestBed.createComponent(ModelStatusComponent);
+  const statusEl = await waitForElement(fixture.nativeElement, '[data-testid="status-result"]');
+  expect(statusEl).toBeTruthy();
+}, 30_000);
 
-**Async Testing (Playwright):**
-
-```typescript
-test('responds to a prompt', async ({ persistentPage: page }) => {
-  test.setTimeout(600_000); // Set timeout at start of test
-
-  await page.goto('http://localhost:4200/');
-  await expect(statusEl).toBeVisible({ timeout: 10_000 });
+// E2E test with async navigation
+test('has title', async ({ persistentPage: page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('in-browser-ai-coding-agent');
 });
 ```
 
-- Set timeout with `test.setTimeout()` at test start
-- All page interactions are `async` and must be `await`-ed
-
-**Element Polling (Custom):**
+**Error Testing:**
 
 ```typescript
-async function waitForElement(root: HTMLElement, selector: string, timeoutMs = 10_000): Promise<HTMLElement> {
-  const start = Date.now();
+// Service error handling
+it('should throw if API is unavailable', async () => {
+  const service = new LanguageModelService();
+  // Mock isApiSupported to false (via browser context setup)
+  expect(service.isApiSupported).toBe(false);
 
-  while (Date.now() - start < timeoutMs) {
-    const el = root.querySelector(selector) as HTMLElement | null;
-    if (el) return el;
-    await new Promise((r) => setTimeout(r, 200)); // Poll every 200ms
+  try {
+    await service.prompt('test');
+    expect.fail('Should have thrown');
+  } catch (e) {
+    expect(e).toBeInstanceOf(Error);
+    expect((e as Error).message).toContain('LanguageModel API is not available');
   }
+});
 
-  throw new Error(`Element "${selector}" not found within ${timeoutMs}ms`);
-}
-```
-
-- Manual polling with 200ms delay between checks
-- Used for component tests that need to wait for async state changes
-- Throws with descriptive error if timeout exceeded
-
-**Error Detection (Race Pattern):**
-
-```typescript
-// Wait for either a response or an error — whichever appears first
-const resultEl = await waitForElement(compiled, '[data-testid="prompt-response"], [data-testid="prompt-error"]', 240_000);
-
-const testId = resultEl.getAttribute('data-testid');
-
-if (testId === 'prompt-error') {
-  expect.fail(`Prompt failed with error: ${resultEl.textContent?.trim()}`);
-}
-```
-
-- Single selector polls for both success and failure elements
-- Immediately fail with actual error message if error element appears
-- Prevents blind 4-minute timeout when model inference fails silently
-
-**Guard Tests (Fail Fast):**
-
-```typescript
-it('should have a model that is available, downloading, or downloadable', async () => {
-  const status = await service.checkAvailability();
-
-  expect(status, `Expected model to be available but got "${status}". ` + 'Ensure the browser has the LanguageModel API enabled and profile is bootstrapped.').toMatch(/^(available|downloading|downloadable)$/);
+// Component error display
+it('should show error message on prompt failure', async () => {
+  const fixture = TestBed.createComponent(ModelStatusComponent);
+  // Simulate error scenario...
+  await fixture.whenStable();
+  const errorEl = fixture.nativeElement.querySelector('[data-testid="prompt-error"]');
+  expect(errorEl?.textContent).toContain('error message');
 });
 ```
 
-- Runs before expensive prompt tests (via describe block ordering)
-- Fails immediately with diagnostic message if environment is misconfigured
-- Prevents cascade of prompt test timeouts due to missing API
+**Model Warm-up Pattern:**
 
-**Structured Logging (CI Parsing):**
+- Vitest setupFile: `apps/in-browser-ai-coding-agent/browser-warmup.ts`
+  - Runs in test browser process (same process as tests)
+  - Calls `LanguageModel.create()` + `session.prompt('warmup')` once globally
+  - Preserves ONNX Runtime compilation state for all subsequent tests
+  - No timeout, CI step timeout (60 min) is backstop
 
-```typescript
-// Service test
-console.log(`[unit] Prompt: "Hello, AI!"\n[unit-response]${response.trim()}[/unit-response]`);
+- E2E fixture warm-up: `apps/in-browser-ai-coding-agent-e2e/src/fixtures.ts`
+  - Worker-scoped setup (runs once per worker, not per test)
+  - Same warm-up pattern as Vitest
+  - 3-hour timeout allows for 23-48 min cold-start on ARM64 CI
 
-// Component test
-console.log(`[unit] Component prompt: "Hello, AI!"\n[unit-response]${responseText}[/unit-response]`);
+**Console Output Logging:**
 
-// E2E test
-console.log(`[e2e] Prompt: "Hello, AI!" -> Response: "${trimmed}"`);
+- Prompts and responses logged to console for test inspection
+- Format: `[context] Message\n[context-response]Content[/context-response]`
+- Example from `language-model.service.spec.ts`:
+  ```typescript
+  console.log(`[unit] Prompt: "Hello, AI!"\n[unit-response]${response.trim()}[/unit-response]`);
+  ```
+- Used to capture real model output for debugging and verification
 
-// GitHub Actions summary (E2E only)
-if (process.env['GITHUB_STEP_SUMMARY']) {
-  appendFileSync(process.env['GITHUB_STEP_SUMMARY'], `### E2E Prompt Response\n\n**Prompt:** Hello, AI!\n\n**Response:** ${trimmed}\n\n`);
-}
-```
+## Test Execution Flow
 
-- Prefixes identify test source in combined CI logs
-- `[unit-response]...[/unit-response]` delimiters wrap model output (guaranteed not in output)
-- E2E also writes to GitHub Actions job summary for visibility
+**Unit Tests:**
 
-## Browser Configuration
+1. Vitest globalSetup: `global-setup.ts` seeds browser profiles with flags
+2. Browser launch: Vitest launches Chrome Beta or Edge Dev with persistent profile
+3. Vitest setupFile: `browser-warmup.ts` runs warm-up inference in test browser
+4. Test execution: All test files run in the same warm browser (parallel disabled)
+5. Report: Vitest reporter (default + GitHub Actions in CI)
 
-**Vitest Browser Instances:**
+**E2E Tests:**
 
-- `chrome-gemini-nano`: Chrome Beta with Gemini Nano model
-  - Channel: `chrome-beta`
-  - Feature flags: `OptimizationGuideOnDeviceModel`, `PromptAPIForGeminiNano`
-  - Profile: `.playwright-profiles/chrome-beta`
-- `edge-phi4-mini`: Edge Dev with Phi-4 Mini model
-  - Channel: `msedge-dev`
-  - Feature flags: `AIPromptAPI`
-  - Profile: `.playwright-profiles/msedge-dev`
-
-**CI Instance Filtering:**
-
-```typescript
-const filterInstance = process.env['CI_VITEST_BROWSER_INSTANCE'];
-const instances = filterInstance ? allInstances.filter((i) => i.name === filterInstance) : allInstances;
-```
-
-- In CI, `CI_VITEST_BROWSER_INSTANCE` env var selects single instance per matrix job
-- Locally (no env var), both instances available
-- Prevents running both browsers on single runner (doubles disk/memory usage)
-
-**Playwright Default Args Handling:**
-Critical: Playwright defaults disable LanguageModel API. Must be removed:
-
-```typescript
-const PLAYWRIGHT_DISABLE_FEATURES = '--disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,...,OptimizationHints';
-
-const AI_IGNORE_DEFAULT_ARGS = [
-  PLAYWRIGHT_DISABLE_FEATURES, // Removes OptimizationHints disable
-  '--disable-field-trial-config', // Removes field trial gate
-  '--disable-background-networking', // Removes networking disable
-  '--disable-component-update', // Removes component disable
-];
-```
-
-**ProfileDir Initialization:**
-
-```typescript
-function enableInternalDebugPages(profileDir: string) {
-  const localStatePath = join(profileDir, 'Local State');
-  let state = existsSync(localStatePath) ? JSON.parse(readFileSync(localStatePath, 'utf8')) : {};
-
-  if (!state['internal_only_uis_enabled']) {
-    state['internal_only_uis_enabled'] = true;
-    writeFileSync(localStatePath, JSON.stringify(state, null, 2));
-  }
-}
-```
-
-- Seeds `internal_only_uis_enabled: true` into `Local State` JSON
-- Required to access `chrome://on-device-internals` without gate page
-- Called before browser launch (fixture, global setup, bootstrap script)
-
-## Global Setup (Vitest)
-
-File: `apps/in-browser-ai-coding-agent/global-setup.ts`
-
-**Purpose:** Warm up on-device AI models before any tests run
-
-**Execution Flow:**
-
-```
-1. For each browser instance (filtered by CI_VITEST_BROWSER_INSTANCE)
-2.   Check profile directory exists
-3.   enableInternalDebugPages(profileDir)
-4.   Launch persistent context (5 attempts, 2s delay for ProcessSingleton retry)
-5.   Navigate to chrome://on-device-internals or edge://on-device-internals
-6.   Run LanguageModel.create() + session.prompt('warmup')
-7.   Wait for "Foundational model state: Ready" (10 min deadline)
-8.   Handle "Not Ready For Unknown Reason" (transient, refresh page)
-9.   Close context
-10. Catch errors and log warnings (warm-up skipped, tests may still run)
-```
-
-**Why Warm Up:**
-Three levels of model readiness exist:
-
-1. **Files on disk:** `availability()` returns `'available'` (not eliminated cold-start)
-2. **Registered:** on-device-internals shows "Ready" (not eliminated cold-start)
-3. **Inference pipeline initialized:** First `session.prompt()` completes (ELIMINATES cold-start)
-
-Only level 3 (full inference) eliminates cold-start. Phi-4 Mini cold-start on ARM64 is 11+ minutes.
-
-**Timeouts:**
-
-- Max attempts for launch: 5 with 2s delay (total 10s buffer for ProcessSingleton)
-- Global setup page timeout: 600_000ms (10 minutes)
-- Model ready wait loop: 600_000ms deadline with 30s polls
-- Per-test prompt timeout: 300_000ms (5 minutes)
-
-## Retry Configuration
-
-**Vitest (Unit Tests):**
-
-```typescript
-retry: process.env['CI'] ? 2 : 0,
-reporters: process.env['CI'] ? ['default', 'github-actions'] : ['default'],
-```
-
-- 2 retries in CI, 0 locally
-- `github-actions` reporter annotates flaky tests in job summary
-
-**Playwright (E2E Tests):**
-
-```typescript
-workers: 1,
-retries: 2,
-trace: 'on-first-retry',  // Capture trace when test fails and retries
-```
-
-- Single worker (persistent context cannot be shared)
-- 2 retries unconditionally (ProcessSingleton flakiness happens locally too)
-- Traces captured on first retry for post-mortem debugging
-
-**Why Retries:**
-Chrome ProcessSingleton lockfile on Windows may cause first launch to fail if previous `chrome_crashpad_handler` is still running. Retry allows process to exit and release lock.
-
-## Known Issues & Mitigations
-
-**1. Phi-4 Mini Cold-Start (11+ minutes on ARM64)**
-
-- **Issue:** First `session.prompt()` after fresh profile requires ONNX Runtime compilation
-- **Mitigation:** Global setup runs warm-up prompt before tests; subsequent test prompts reuse warm session
-- **Detection:** If global setup logs `Model warm-up skipped`, prompt tests will absorb cold-start and timeout
-
-**2. Chrome ProcessSingleton on Windows**
-
-- **Issue:** `chrome_crashpad_handler` holds `FILE_FLAG_DELETE_ON_CLOSE` lockfile, causing second launch to fail
-- **Mitigation:** 5-attempt retry loop with 2s delay in fixture + global setup; Playwright's `retries: 2`
-- **Detection:** Log messages like `[fixtures] Launch attempt 2/5 failed, retrying in 2s...`
-
-**3. Edge "Not Ready For Unknown Reason" Transient State**
-
-- **Issue:** on-device-internals page reports model as "Not Ready" transiently
-- **Mitigation:** Global setup detects and reloads page; transient state resolves after ~1s
-- **Detection:** Global setup logs `[global-setup] edge-phi4-mini: model not ready, refreshing...`
-
-**4. Model Download Failures**
-
-- **Issue:** Model download can time out or fail transiently
-- **Mitigation:** Bootstrap script runs during CI cache miss; cached profiles skip bootstrap on hit
-- **Detection:** E2E test waits 300s for model to reach 'available' status before prompt
+1. Playwright config: `playwright.config.ts` defines 2 projects (chrome-gemini-nano, edge-phi4-mini)
+2. Web server: Nx `serve` target starts dev server on port 4200
+3. Fixture setup: Worker-scoped persistent context created, profile seeded, warm-up run
+4. Test execution: Tests share persistent context (no close/relaunch per test)
+5. Report: Playwright HTML reporter (auto-open disabled to avoid Chrome Stable conflict)
 
 ---
 
-_Testing analysis: 2026-03-22_
+_Testing analysis: 2026-03-23_
