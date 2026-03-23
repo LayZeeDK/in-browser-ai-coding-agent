@@ -4,8 +4,6 @@ Angular components are the fundamental building blocks of an application. Each c
 
 ## Component Definition
 
-Use the `@Component` decorator to define a component's metadata.
-
 ```ts
 @Component({
   selector: 'app-profile',
@@ -26,18 +24,16 @@ export class Profile {
 }
 ```
 
-## Metadata Options
+### Metadata Options
 
-- `selector`: The CSS selector that identifies this component in templates.
-- `template`: Inline HTML template (preferred for small templates).
-- `templateUrl`: Path to an external HTML file.
-- `styles`: Inline CSS styles.
-- `styleUrl` / `styleUrls`: Path(s) to external CSS file(s).
-- `imports`: Lists the components, directives, or pipes used in this component's template.
+- `selector`: CSS selector identifying the component in templates.
+- `template` / `templateUrl`: Inline or external HTML template.
+- `styles` / `styleUrl` / `styleUrls`: Inline or external CSS.
+- `imports`: Components, directives, or pipes used in the template.
 
-## Using Components
+### Using Components
 
-To use a component, add it to the `imports` array of the consuming component and use its selector in the template.
+Add to the `imports` array and use the selector in the template:
 
 ```ts
 @Component({
@@ -50,152 +46,228 @@ export class App {}
 
 ## Template Control Flow
 
-Angular uses built-in blocks for conditional rendering and loops.
-
-### Conditional Rendering (`@if`)
-
-Use `@if` to conditionally show content. You can include `@else if` and `@else` blocks.
+### `@if` / `@else if` / `@else`
 
 ```html
 @if (user.isAdmin) {
 <admin-dashboard />
-} @else if (user.isModerator) {
-<mod-dashboard />
 } @else {
 <standard-dashboard />
 }
 ```
 
-**Result aliasing**: Save the result of the expression for reuse.
+**Result aliasing**: `@if (user.settings(); as settings) { <p>{{ settings.theme }}</p> }`
+
+### `@for` (track is required)
 
 ```html
-@if (user.settings(); as settings) {
-<p>Theme: {{ settings.theme }}</p>
+@for (item of items(); track item.id; let i = $index) {
+<li>{{ i }}: {{ item.name }}</li>
+} @empty {
+<li>No items.</li>
 }
 ```
 
-### Loops (`@for`)
+Implicit variables: `$index`, `$count`, `$first`, `$last`, `$even`, `$odd`.
 
-The `@for` block iterates over collections. The `track` expression is **required** for performance and DOM reuse.
-
-```html
-<ul>
-  @for (item of items(); track item.id; let i = $index, total = $count) {
-  <li>{{ i + 1 }}/{{ total }}: {{ item.name }}</li>
-  } @empty {
-  <li>No items to display.</li>
-  }
-</ul>
-```
-
-**Implicit Variables**: `$index`, `$count`, `$first`, `$last`, `$even`, `$odd`.
-
-### Switching Content (`@switch`)
-
-The `@switch` block renders content based on a value. It uses strict equality (`===`) and has **no fallthrough**.
+### `@switch` (no fallthrough, strict `===`)
 
 ```html
-@switch (status()) { @case ('loading') { <app-spinner /> } @case ('error') { <app-error-msg /> } @case ('success') { <app-data-grid /> } @default {
-<p>Unknown status</p>
+@switch (status()) { @case ('loading') { <app-spinner /> } @case ('success') { <app-data /> } @default {
+<p>Unknown</p>
 } }
 ```
 
-**Exhaustive Type Checking**: Use `@default never;` to ensure all cases of a union type are handled.
+**Exhaustive checking**: `@default never;` errors if a union case is unhandled.
+
+## Content Projection
+
+`<ng-content>` is a placeholder for consumer-provided content.
+
+### Multi-Slot Projection
+
+Use `select` to route content to named slots. An `<ng-content>` without `select` catches unmatched content.
+
+```ts
+@Component({
+  selector: 'custom-card',
+  template: `
+    <ng-content select="card-title" />
+    <div class="divider"></div>
+    <ng-content select="card-body" />
+    <ng-content />
+  `,
+})
+export class CustomCard {}
+```
+
+### Fallback Content
+
+Default content renders when nothing is projected:
 
 ```html
-@switch (state) { @case ('on') { ... } @case ('off') { ... } @default never; // Errors if a new state like 'standby' is added }
+<ng-content select=".actions">
+  <button (click)="close()">Close</button>
+</ng-content>
 ```
 
-## Core Concepts
+### `ngProjectAs`
 
-- **Host Element**: The DOM element that matches the component's selector.
-- **View**: The DOM rendered by the component's template inside the host element.
-- **Standalone**: By default, components are standalone (since Angular 19, `standalone: true` is default). For older versions, `standalone: true` must be explicit or the component must be part of an `NgModule`.
-- **Component Tree**: Angular applications are structured as a tree of components, where each component can host child components.
-- **Component Naming**: Follow your project's naming convention. The Angular CLI generates a `Component` suffix by default (e.g., `UserProfileComponent`). Some projects omit it (e.g., `UserProfile`). Consistency within a project matters more than which convention you choose.
+Project a standard element into a named slot: `<h3 ngProjectAs="card-title">Hello</h3>`. Static only — cannot bind dynamically.
 
-## Style Guide Conventions
+**Important**: Never conditionally wrap `<ng-content>` with `@if`/`@for`/`@switch`. Angular always instantiates projected content regardless.
 
-### Use `protected` for Template-Only Members
+## Queries (View and Content)
 
-Class members that are only used in the component's template should be `protected`. Public members define a public API accessible via DI and queries.
+Signal-based query functions return reactive signals.
+
+### View Queries
+
+`viewChild()` / `viewChildren()` find elements in the component's own template:
 
 ```ts
-@Component({
-  template: `<p>{{ fullName() }}</p>`,
-})
-export class UserProfile {
-  firstName = input();
-  lastName = input();
+import { viewChild, viewChildren, computed, ElementRef } from '@angular/core';
 
-  // Not part of the public API, only used in the template
-  protected fullName = computed(() => `${this.firstName()} ${this.lastName()}`);
+@Component({
+  template: `
+    <card-header>Title</card-header>
+    <card-action>Save</card-action>
+    <card-action>Cancel</card-action>
+    <textarea #editor></textarea>
+  `,
+})
+export class CustomCard {
+  header = viewChild(CardHeader); // single, may be undefined
+  actions = viewChildren(CardAction); // array signal
+  editor = viewChild<ElementRef<HTMLTextAreaElement>>('editor'); // by template ref var
+
+  headerText = computed(() => this.header()?.text);
 }
 ```
 
-### Use `readonly` for Angular-Initialized Properties
+Use `viewChild.required()` when the target is always present — excludes `undefined` from the type and errors if not found.
 
-Mark properties initialized by Angular as `readonly` to prevent accidental overwriting:
+### Content Queries
+
+`contentChild()` / `contentChildren()` find elements projected by the consumer:
 
 ```ts
-@Component({
-  /*...*/
-})
-export class UserProfile {
-  readonly userId = input();
-  readonly userSaved = output();
-  readonly userName = model();
+@Component({ selector: 'custom-menu' })
+export class CustomMenu {
+  items = contentChildren(CustomMenuItem);
+  labels = computed(() => this.items().map((i) => i.text));
 }
 ```
 
-### Name Event Handlers for What They Do
+`contentChildren()` finds **direct children** only by default. Set `{ descendants: true }` for nested matches. `contentChild()` traverses descendants by default. Use `contentChild.required()` to guarantee presence.
 
-Prefer naming event handlers for the action they perform, not the triggering event:
+### Query Options
 
-```html
-<!-- Prefer -->
-<button (click)="saveUserData()">Save</button>
+- **`read`**: Retrieve a different token — e.g., `viewChild(MyDir, { read: ElementRef })`.
+- Queries never pierce component boundaries.
 
-<!-- Avoid -->
-<button (click)="handleClick()">Save</button>
-```
+### Legacy Decorators
 
-### Keep Lifecycle Methods Simple
+`@ViewChild`, `@ViewChildren`, `@ContentChild`, `@ContentChildren` remain supported. Decorator-based view queries are available in `ngAfterViewInit`; content queries in `ngAfterContentInit`. Prefer signal-based functions for new code.
 
-Avoid putting complex logic directly inside lifecycle hooks. Create well-named methods and call them:
+## Lifecycle Hooks
+
+Implement lifecycle interfaces for type safety. The hooks run during Angular's top-down change detection traversal.
+
+| Phase            | Method                  | Timing                                                                   |
+| ---------------- | ----------------------- | ------------------------------------------------------------------------ |
+| Creation         | `constructor`           | Instantiation. Use `inject()` here.                                      |
+| Change Detection | `ngOnChanges`           | Before `ngOnInit`, then on every input change. Receives `SimpleChanges`. |
+|                  | `ngOnInit`              | Once, after inputs initialized. Before template is checked.              |
+|                  | `ngDoCheck`             | Every CD cycle. Avoid — runs very frequently.                            |
+|                  | `ngAfterContentInit`    | Once, after projected content initialized. Content queries available.    |
+|                  | `ngAfterContentChecked` | Every time content is checked. Runs frequently.                          |
+|                  | `ngAfterViewInit`       | Once, after view initialized. View queries available. Can measure DOM.   |
+|                  | `ngAfterViewChecked`    | Every time view is checked. Runs frequently.                             |
+| Rendering        | `afterNextRender`       | Once after all components render to DOM. Standalone function.            |
+|                  | `afterEveryRender`      | Every render cycle. Standalone function.                                 |
+| Destruction      | `ngOnDestroy`           | Once before destruction. Clean up observers, subscriptions, timers.      |
+
+**Init order**: `constructor` -> `ngOnChanges` -> `ngOnInit` -> `ngDoCheck` -> `ngAfterContentInit` -> `ngAfterContentChecked` -> `ngAfterViewInit` -> `ngAfterViewChecked` -> `afterNextRender`.
+
+**Subsequent**: `ngOnChanges` -> `ngDoCheck` -> `ngAfterContentChecked` -> `ngAfterViewChecked` -> `afterEveryRender`.
 
 ```ts
-ngOnInit() {
-  this.startLogging();
-  this.runBackgroundTask();
-}
-```
-
-Always implement lifecycle hook interfaces for type safety:
-
-```ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
 
 @Component({
-  /*...*/
+  /* ... */
 })
-export class UserProfile implements OnInit {
+export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit() {
-    /* ... */
+    /* inputs ready */
+  }
+  ngAfterViewInit() {
+    /* view queries ready, measure DOM */
+  }
+  ngOnDestroy() {
+    /* cleanup */
   }
 }
 ```
 
-### Avoid Complex Template Logic
+### DestroyRef (Modern Alternative)
 
-When template expressions get too complex, refactor into `computed()` signals:
+Register cleanup callbacks without `OnDestroy`. Keeps setup and teardown together:
 
 ```ts
-// Instead of complex inline expressions in templates
-protected displayName = computed(() => {
-  const first = this.firstName();
-  const last = this.lastName();
+constructor() {
+  const observer = new ResizeObserver(entries => { /* ... */ });
+  observer.observe(someElement);
+  inject(DestroyRef).onDestroy(() => observer.disconnect());
+}
+```
 
-  return last ? `${last}, ${first}` : first;
+### afterNextRender / afterEveryRender
+
+Standalone functions called in an injection context (constructor). Do not run during SSR. Support phased execution (`earlyRead` -> `write` -> `mixedReadWrite` -> `read`) to avoid layout thrashing:
+
+```ts
+afterNextRender({
+  write: () => {
+    el.nativeElement.style.padding = '10px';
+  },
+  read: () => {
+    /* measure after all writes */
+  },
 });
 ```
+
+## Deferred Loading (`@defer`)
+
+Lazy-load heavy components. See [performance.md](performance.md) for full coverage.
+
+```html
+@defer (on viewport) {
+<heavy-chart />
+} @placeholder {
+<div>Loading area</div>
+} @loading (after 100ms; minimum 1s) { <spinner /> } @error {
+<p>Failed to load.</p>
+}
+```
+
+Triggers: `idle` (default), `viewport`, `interaction`, `hover`, `immediate`, `timer(ms)`, `when condition`. Only standalone components can be deferred.
+
+## Core Concepts
+
+- **Host Element**: DOM element matching the component's selector.
+- **View**: DOM rendered by the template inside the host element.
+- **Content**: Children projected via `<ng-content>`.
+- **Standalone**: Default since Angular 19. Do not set `standalone: true` explicitly.
+- **Component Tree**: Apps are structured as a tree of components.
+- **Naming**: Follow your project's convention. Consistency matters more than suffix choice.
+
+## Style Guide
+
+- **`protected`** for template-only members. Public members are the component's API.
+- **`readonly`** for Angular-initialized properties (`input()`, `output()`, `model()`, `viewChild()`, etc.).
+- **Name handlers for actions**: `saveUserData()` not `handleClick()`.
+- **Keep lifecycle methods simple**: Delegate to well-named methods.
+- **Always implement lifecycle interfaces** (`OnInit`, `AfterViewInit`, etc.) for type safety.
+- **Refactor complex template expressions** into `computed()` signals.
