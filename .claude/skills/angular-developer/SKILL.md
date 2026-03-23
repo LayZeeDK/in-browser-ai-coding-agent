@@ -115,6 +115,14 @@ When optimizing application performance, consult the following reference:
 
 If you require deeper documentation, visit the [Angular Performance guide](https://angular.dev/best-practices/performance).
 
+## Web Workers
+
+When offloading CPU-intensive work to background threads, consult the following reference:
+
+- **Web Workers**: Scaffolding with `ng generate web-worker`, message passing, service wrappers, `Transferable` objects, SSR fallbacks. Read [web-workers.md](references/web-workers.md)
+
+If you require deeper documentation, visit the [Angular Web Workers guide](https://angular.dev/ecosystem/web-workers).
+
 ## Routing
 
 When implementing navigation in Angular, consult the following references:
@@ -146,7 +154,7 @@ When writing or updating tests, consult the following references based on the ta
 - **Fundamentals**: Best practices for unit testing (Vitest), async patterns, and `TestBed`. Read [testing-fundamentals.md](references/testing-fundamentals.md)
 - **Component Harnesses**: Standard patterns for robust component interaction. Read [component-harnesses.md](references/component-harnesses.md)
 - **Router Testing**: Using `RouterTestingHarness` for reliable navigation tests. Read [router-testing.md](references/router-testing.md)
-- **End-to-End (E2E) Testing**: Best practices for E2E tests with Cypress. Read [e2e-testing.md](references/e2e-testing.md)
+- **End-to-End (E2E) Testing**: Best practices for E2E tests with Playwright and Cypress. Read [e2e-testing.md](references/e2e-testing.md)
 
 ## Tooling
 
