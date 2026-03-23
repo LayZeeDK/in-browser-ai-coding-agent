@@ -1,66 +1,151 @@
 # End-to-End (E2E) Testing
 
-This project uses [Cypress](https://www.cypress.io/) for end-to-end (E2E) testing, which simulates real user interactions in a browser. The E2E tests are located primarily within the `devtools/` package.
+E2E tests simulate real user interactions in a full browser to verify that your application works correctly from the user's perspective.
 
-## Running E2E Tests
+## Choosing a Framework
 
-The primary way to run E2E tests is through the `pnpm` script defined in the root `package.json`.
+Angular CLI supports multiple E2E frameworks. When you run `ng e2e` for the first time, the CLI prompts you to install one.
 
-1.  **Build DevTools:** The E2E tests run against a built version of the devtools extension. You must build it first:
+- **Playwright** (recommended): The Angular CLI default since v17. Fast, reliable, cross-browser.
+- **Cypress**: Popular alternative with an interactive test runner and time-travel debugging.
 
-    ```shell
-    pnpm -F ng-devtools-mcp build:dev
-    ```
+## Setting Up Playwright
 
-2.  **Run Cypress:** Use the `cy:open` or `cy:run` script:
-    - To open the interactive Cypress Test Runner:
-      ```shell
-      pnpm -F ng-devtools-mcp cy:open
-      ```
-    - To run the tests headlessly in the terminal (ideal for CI):
-      ```shell
-      pnpm -F ng-devtools-mcp cy:run
-      ```
+```bash
+ng e2e
+# CLI prompts: "Would you like to add Playwright?" → Yes
+```
 
-## Test Structure
+This installs `@playwright/test` and creates a default configuration. You can also install manually:
 
-- **Configuration:** The main Cypress configuration is located at `devtools/cypress.json`.
-- **Specs:** Test files (specs) are located in `devtools/cypress/integration/`.
-- **Custom Commands:** Reusable custom commands and actions are defined in `devtools/cypress/support/`.
+```bash
+npm init playwright@latest
+```
 
-### Example E2E Test Snippet
+### Configuration
 
-A typical test might look like this:
+Playwright uses `playwright.config.ts` at the project root:
 
-```typescript
-// in devtools/cypress/integration/profiler.spec.ts
+```ts
+import { defineConfig, devices } from '@playwright/test';
 
-describe('Profiler', () => {
-  beforeEach(() => {
-    cy.visit('/?e2e-app');
-    cy.wait(1000);
-    cy.get('ng-devtools-tabs').find('a').contains('Profiler').click();
+export default defineConfig({
+  testDir: './e2e',
+  baseURL: 'http://localhost:4200',
+  webServer: {
+    command: 'ng serve',
+    url: 'http://localhost:4200',
+    reuseExistingServer: !process.env['CI'],
+  },
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+  ],
+});
+```
+
+### Writing Tests
+
+```ts
+// e2e/app.spec.ts
+import { test, expect } from '@playwright/test';
+
+test.describe('App', () => {
+  test('should display the title', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('h1')).toContainText('Welcome');
   });
 
-  it('should record and display profiling data', () => {
-    // Find the record button and click it
-    cy.get('button[aria-label="start-recording-button"]').click();
-
-    // Interact with the test application to generate profiling data
-    cy.get('body').find('#cards button').first().click();
-    cy.wait(500);
-
-    // Stop recording
-    cy.get('button[aria-label="stop-recording-button"]').click();
-
-    // Assert that the flame graph is now visible
-    cy.get('ng-devtools-recording-timeline').find('canvas').should('be.visible');
+  test('should navigate to about page', async ({ page }) => {
+    await page.goto('/');
+    await page.click('a[href="/about"]');
+    await expect(page).toHaveURL('/about');
+    await expect(page.locator('h1')).toContainText('About');
   });
 });
 ```
 
-### Best Practices
+### Running Tests
 
-- **Use `data-` attributes:** Whenever possible, use `data-cy` or similar attributes for selecting elements to make tests more resilient to CSS or structural changes.
-- **Custom Commands:** Encapsulate common sequences of actions into custom commands in the `support` directory to keep tests clean and readable.
-- **Wait for Application State:** Use `cy.wait()` for arbitrary waits sparingly. Prefer to wait for specific UI elements to appear or for network requests to complete to avoid flaky tests.
+```bash
+# Run all tests headlessly
+npx playwright test
+
+# Run with browser visible
+npx playwright test --headed
+
+# Run a specific test file
+npx playwright test e2e/app.spec.ts
+
+# Open interactive UI mode
+npx playwright test --ui
+```
+
+## Setting Up Cypress
+
+```bash
+ng add @cypress/schematic
+```
+
+### Configuration
+
+Cypress uses `cypress.config.ts` at the project root:
+
+```ts
+import { defineConfig } from 'cypress';
+
+export default defineConfig({
+  e2e: {
+    baseUrl: 'http://localhost:4200',
+    specPattern: 'cypress/e2e/**/*.cy.ts',
+    supportFile: 'cypress/support/e2e.ts',
+  },
+});
+```
+
+### Writing Tests
+
+```ts
+// cypress/e2e/app.cy.ts
+describe('App', () => {
+  it('should display the title', () => {
+    cy.visit('/');
+    cy.get('h1').should('contain.text', 'Welcome');
+  });
+
+  it('should navigate to about page', () => {
+    cy.visit('/');
+    cy.get('a[href="/about"]').click();
+    cy.url().should('include', '/about');
+    cy.get('h1').should('contain.text', 'About');
+  });
+});
+```
+
+### Running Tests
+
+```bash
+# Open interactive Cypress runner
+npx cypress open
+
+# Run headlessly (for CI)
+npx cypress run
+```
+
+## Best Practices
+
+- **Use test IDs for selectors**: Prefer `data-testid` attributes over CSS classes or element structure to make tests resilient to UI changes.
+  ```html
+  <button data-testid="submit-btn">Submit</button>
+  ```
+  ```ts
+  // Playwright
+  await page.getByTestId('submit-btn').click();
+  // Cypress
+  cy.get('[data-testid="submit-btn"]').click();
+  ```
+- **Avoid arbitrary waits**: Never use hard-coded timeouts (`cy.wait(1000)` or `page.waitForTimeout(1000)`). Wait for specific elements, network responses, or application state instead.
+- **Keep tests independent**: Each test should set up its own state and not depend on the order of execution.
+- **Test user-visible behavior**: Focus on what users see and interact with, not implementation details.
+- **Use Page Object Model**: For larger test suites, encapsulate page interactions in reusable classes to reduce duplication.
