@@ -1,6 +1,6 @@
 ---
 name: angular-developer
-description: Generates Angular code and provides architectural guidance. Trigger when creating projects, components, or services, or for best practices on reactivity (signals, linkedSignal, resource), forms, dependency injection, routing, SSR, accessibility (ARIA), animations, styling (component styles, Tailwind CSS), testing, or CLI tooling.
+description: Generates Angular code and provides architectural guidance. Trigger when creating projects, components, or services, or for best practices on reactivity (signals, linkedSignal, resource), AI design patterns (LLM integration, streaming, resource.stream), forms, dependency injection, routing, SSR, security, accessibility (ARIA), error handling, performance, web workers, animations, styling (component styles, Tailwind CSS), testing, or CLI tooling.
 license: MIT
 metadata:
   author: Copyright 2026 Google LLC
@@ -60,6 +60,14 @@ When managing state and data reactivity, use Angular Signals and consult the fol
 - **Dependent State (`linkedSignal`)**: Creating writable state linked to source signals. Read [linked-signal.md](references/linked-signal.md)
 - **Async Reactivity (`resource`)**: Fetching asynchronous data directly into signal state. Read [resource.md](references/resource.md)
 - **Side Effects (`effect`)**: Logging, third-party DOM manipulation (`afterRenderEffect`), and when NOT to use effects. Read [effects.md](references/effects.md)
+
+## AI Design Patterns
+
+When building AI-powered features with LLM or on-device inference APIs, consult the following reference:
+
+- **AI Design Patterns**: Signal-based request triggering, typed resources for LLM responses, chat history with `linkedSignal`, loading/error/retry UX, streaming responses with `resource.stream`. Read [ai-design-patterns.md](references/ai-design-patterns.md)
+
+If you require deeper documentation, visit the [Angular AI Design Patterns guide](https://angular.dev/ai/design-patterns).
 
 ## Forms
 
