@@ -1,7 +1,7 @@
 /**
- * Vitest globalSetup — warms up all on-device AI models.
+ * Vitest globalSetup — seeds profiles and runs diagnostics for all browsers.
  * Used by the default `test` target (both browsers).
  */
-import { allInstances, warmUpInstances } from './global-setup.shared';
+import { allProfiles, setupInstances } from './global-setup.shared';
 
-export const setup = () => warmUpInstances(allInstances);
+export const setup = () => setupInstances(allProfiles);

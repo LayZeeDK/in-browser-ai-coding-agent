@@ -1,8 +1,8 @@
 /**
- * Vitest globalSetup — warms up Chrome Beta / Gemini Nano only.
+ * Vitest globalSetup — seeds profile and runs diagnostics for Chrome Beta / Gemini Nano.
  * Used by the `test-chrome` target.
  */
-import { allInstances, warmUpInstances } from './global-setup.shared';
+import { allProfiles, setupInstances } from './global-setup.shared';
 
 export const setup = () =>
-  warmUpInstances(allInstances.filter((i) => i.name === 'chrome-gemini-nano'));
+  setupInstances(allProfiles.filter((p) => p.name === 'chrome-gemini-nano'));

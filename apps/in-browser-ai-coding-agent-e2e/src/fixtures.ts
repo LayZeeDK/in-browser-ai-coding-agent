@@ -1,104 +1,16 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
 import {
   test as base,
   chromium,
   type BrowserContext,
   type Page,
 } from '@playwright/test';
-import { workspaceRoot } from '@nx/devkit';
+import {
+  AI_IGNORE_DEFAULT_ARGS,
+  allProfiles,
+  seedLocalState,
+} from '../../in-browser-ai-coding-agent/browser-profiles';
 
-/**
- * Playwright's exact --disable-features default arg. Must match exactly
- * for ignoreDefaultArgs to remove it (exact string comparison).
- */
-const PLAYWRIGHT_DISABLE_FEATURES =
-  '--disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument,OptimizationHints';
-
-/** Playwright defaults to remove for LanguageModel API support. */
-const AI_IGNORE_DEFAULT_ARGS = [
-  PLAYWRIGHT_DISABLE_FEATURES,
-  '--disable-field-trial-config',
-  '--disable-background-networking',
-  '--disable-component-update',
-];
-
-/** Same list without OptimizationHints — required for on-device AI. */
-const DISABLE_FEATURES_WITHOUT_OPT_HINTS =
-  '--disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument';
-
-const browserProfiles: Record<
-  string,
-  { profileDir: string; args: string[]; flags: string[] }
-> = {
-  'chrome-gemini-nano': {
-    profileDir: resolve(workspaceRoot, '.playwright-profiles/chrome-beta'),
-    args: [
-      '--enable-features=OptimizationGuideOnDeviceModel,PromptAPIForGeminiNano',
-      DISABLE_FEATURES_WITHOUT_OPT_HINTS,
-    ],
-    flags: [
-      'optimization-guide-on-device-model@1',
-      'prompt-api-for-gemini-nano@1',
-    ],
-  },
-  'edge-phi4-mini': {
-    profileDir: resolve(workspaceRoot, '.playwright-profiles/msedge-dev'),
-    args: [
-      '--enable-features=AIPromptAPI',
-      '--disable-features=OnDeviceModelPerformanceParams',
-      DISABLE_FEATURES_WITHOUT_OPT_HINTS,
-    ],
-    flags: [
-      'edge-llm-prompt-api-for-phi-mini@1',
-      'edge-llm-on-device-model-performance-param@3',
-      'edge-llm-on-device-model-debug-logs@1',
-    ],
-  },
-};
-
-/**
- * Seed the profile's Local State with required chrome://flags entries
- * and enable internal debug pages. Creates the profile directory if
- * it doesn't exist (e.g., container with cache miss and no bootstrap).
- */
-function seedLocalState(profileDir: string, flags: string[]) {
-  const localStatePath = join(profileDir, 'Local State');
-  let state: Record<string, unknown> = {};
-
-  if (existsSync(localStatePath)) {
-    try {
-      state = JSON.parse(readFileSync(localStatePath, 'utf8'));
-    } catch {
-      // ignore corrupt file
-    }
-  }
-
-  // Seed chrome://flags entries
-  if (!state['browser']) {
-    state['browser'] = {};
-  }
-
-  const browser = state['browser'] as Record<string, unknown>;
-  const existing = (browser['enabled_labs_experiments'] as string[]) || [];
-  const existingNames = new Set(existing.map((f: string) => f.split('@')[0]));
-
-  for (const flag of flags) {
-    const name = flag.split('@')[0];
-
-    if (!existingNames.has(name)) {
-      existing.push(flag);
-    }
-  }
-
-  browser['enabled_labs_experiments'] = existing;
-
-  // Enable internal debug pages
-  state['internal_only_uis_enabled'] = true;
-
-  mkdirSync(profileDir, { recursive: true });
-  writeFileSync(localStatePath, JSON.stringify(state, null, 2));
-}
+const profilesByName = Object.fromEntries(allProfiles.map((p) => [p.name, p]));
 
 /**
  * Worker-scoped persistent browser context. Launches once per worker,
@@ -118,17 +30,17 @@ export const test = base.extend<
     // eslint-disable-next-line no-empty-pattern
     async ({}, use, workerInfo) => {
       const projectName = workerInfo.project.name;
-      const profile = browserProfiles[projectName];
+      const profile = profilesByName[projectName];
 
       if (!profile) {
         throw new Error(
           `No browser profile configured for project "${projectName}". ` +
-            `Available: ${Object.keys(browserProfiles).join(', ')}`,
+            `Available: ${allProfiles.map((p) => p.name).join(', ')}`,
         );
       }
 
-      // Seed internal debug pages flag before launching
-      seedLocalState(profile.profileDir, profile.flags);
+      // Seed profile with flags before launching
+      seedLocalState(profile);
 
       // Retry launch — Chrome's ProcessSingleton on Windows may reject
       // the launch if a previous chrome_crashpad_handler is still running
@@ -138,7 +50,7 @@ export const test = base.extend<
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
           context = await chromium.launchPersistentContext(profile.profileDir, {
-            channel: workerInfo.project.use.channel as string,
+            channel: profile.channel,
             headless: false,
             args: profile.args,
             ignoreDefaultArgs: AI_IGNORE_DEFAULT_ARGS,
@@ -161,17 +73,14 @@ export const test = base.extend<
       // Warm up: navigate to on-device-internals and wait for model ready
       const warmupPage = context.pages()[0] || (await context.newPage());
 
-      const onDeviceUrl =
-        workerInfo.project.use.channel === 'msedge-dev'
-          ? 'edge://on-device-internals'
-          : 'chrome://on-device-internals';
-
       const phaseStart = Date.now();
       const elapsed = () => `${((Date.now() - phaseStart) / 1000).toFixed(1)}s`;
 
       try {
-        console.log(`[fixtures] ${projectName}: navigating to ${onDeviceUrl}`);
-        await warmupPage.goto(onDeviceUrl);
+        console.log(
+          `[fixtures] ${projectName}: navigating to ${profile.onDeviceInternalsUrl}`,
+        );
+        await warmupPage.goto(profile.onDeviceInternalsUrl);
 
         // Log on-device-internals diagnostics (Tools tab is default)
         await warmupPage.waitForTimeout(3_000);
@@ -216,12 +125,9 @@ export const test = base.extend<
           }
         }
 
-        // Capture GPU diagnostics — graphics features, driver info,
-        // device performance (memory, cores, D3D level, GPU/NPU)
+        // Capture GPU diagnostics
         const gpuUrl =
-          workerInfo.project.use.channel === 'msedge-dev'
-            ? 'edge://gpu'
-            : 'chrome://gpu';
+          profile.channel === 'msedge-dev' ? 'edge://gpu' : 'chrome://gpu';
         await warmupPage.goto(gpuUrl);
         await warmupPage.waitForTimeout(3_000);
         const gpuSnapshot = await warmupPage.locator('body').ariaSnapshot();
@@ -239,11 +145,9 @@ export const test = base.extend<
         }
 
         // Return to on-device internals for the rest of the warm-up
-        await warmupPage.goto(onDeviceUrl);
+        await warmupPage.goto(profile.onDeviceInternalsUrl);
 
-        // Trigger model registration so the model system starts loading.
-        // create() is lightweight (no inference) but kicks off the
-        // optimization guide pipeline that Model Status reflects.
+        // Trigger model registration
         const availability = await warmupPage.evaluate(async () => {
           if (typeof LanguageModel === 'undefined') {
             return 'no-api';
@@ -270,7 +174,7 @@ export const test = base.extend<
           `[fixtures] ${projectName}: model session created and destroyed (${(createMs / 1000).toFixed(1)}s) [${elapsed()}]`,
         );
 
-        // Step 1: Wait for Model Status tab to report "Ready"
+        // Wait for Model Status tab to report "Ready"
         const modelStatusTab = warmupPage
           .getByRole('tab', { name: /Model Status/i })
           .or(warmupPage.locator('text=Model Status'));
@@ -307,7 +211,6 @@ export const test = base.extend<
               break;
             }
 
-            // Log current state for diagnostics (throttle to ~1 per 30s)
             const now = Date.now();
 
             if (!lastLogTime || now - lastLogTime >= 30_000) {
@@ -322,9 +225,6 @@ export const test = base.extend<
               );
             }
 
-            // Only refresh on explicit error — "NO STATE" is a transient
-            // loading state that resolves on its own. Reload lands on the
-            // default "Tools" tab, so re-click Model Status after.
             const notReady = warmupPage.getByText(
               /Not Ready For Unknown Reason/i,
             );
@@ -340,7 +240,7 @@ export const test = base.extend<
           }
         }
 
-        // Step 2: Warm up the inference pipeline with a prompt
+        // Warm up the inference pipeline with a prompt
         console.log(
           `[fixtures] ${projectName}: warming up model (first inference may take minutes)...`,
         );

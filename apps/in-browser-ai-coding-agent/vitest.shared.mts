@@ -1,68 +1,21 @@
-import { resolve } from 'node:path';
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
+import { AI_IGNORE_DEFAULT_ARGS, allProfiles } from './browser-profiles';
 
-/**
- * Playwright's exact --disable-features default arg. Must match exactly
- * for ignoreDefaultArgs to remove it (exact string comparison).
- */
-const PLAYWRIGHT_DISABLE_FEATURES =
-  '--disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument,OptimizationHints';
-
-/** Same list without OptimizationHints — required for on-device AI. */
-const DISABLE_FEATURES_WITHOUT_OPT_HINTS =
-  '--disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument';
-
-/**
- * Playwright defaults to remove for LanguageModel API support:
- * - OptimizationHints in --disable-features: disables the model system
- * - --disable-field-trial-config: disables model eligibility checks
- * - --disable-background-networking: prevents model registration
- * - --disable-component-update: prevents model component loading
- */
-const AI_IGNORE_DEFAULT_ARGS = [
-  PLAYWRIGHT_DISABLE_FEATURES,
-  '--disable-field-trial-config',
-  '--disable-background-networking',
-  '--disable-component-update',
-];
-
-/** All browser instances for on-device AI testing. */
-export const allInstances = [
-  {
-    browser: 'chromium' as const,
-    name: 'chrome-gemini-nano',
-    provider: playwright({
-      persistentContext: resolve('.playwright-profiles/chrome-beta'),
-      launchOptions: {
-        channel: 'chrome-beta',
-        headless: false,
-        args: [
-          '--enable-features=OptimizationGuideOnDeviceModel,PromptAPIForGeminiNano',
-          DISABLE_FEATURES_WITHOUT_OPT_HINTS,
-        ],
-        ignoreDefaultArgs: AI_IGNORE_DEFAULT_ARGS,
-      },
-    }),
-  },
-  {
-    browser: 'chromium' as const,
-    name: 'edge-phi4-mini',
-    provider: playwright({
-      persistentContext: resolve('.playwright-profiles/msedge-dev'),
-      launchOptions: {
-        channel: 'msedge-dev',
-        headless: false,
-        args: [
-          '--enable-features=AIPromptAPI',
-          '--disable-features=OnDeviceModelPerformanceParams',
-          DISABLE_FEATURES_WITHOUT_OPT_HINTS,
-        ],
-        ignoreDefaultArgs: AI_IGNORE_DEFAULT_ARGS,
-      },
-    }),
-  },
-];
+/** Vitest browser instances built from the shared profile definitions. */
+const allInstances = allProfiles.map((p) => ({
+  browser: 'chromium' as const,
+  name: p.name,
+  provider: playwright({
+    persistentContext: p.profileDir,
+    launchOptions: {
+      channel: p.channel,
+      headless: false,
+      args: p.args,
+      ignoreDefaultArgs: AI_IGNORE_DEFAULT_ARGS,
+    },
+  }),
+}));
 
 const appRoot = 'apps/in-browser-ai-coding-agent';
 
@@ -71,8 +24,8 @@ const appRoot = 'apps/in-browser-ai-coding-agent';
  *
  * @param options.instanceFilter - Instance name to select a single browser.
  *   When omitted, all instances run.
- * @param options.globalSetup - Path to the globalSetup file that warms up
- *   the matching browser(s). Defaults to the all-browsers setup.
+ * @param options.globalSetup - Path to the globalSetup file that seeds the
+ *   profile and runs diagnostics. Defaults to the all-browsers setup.
  */
 export function createVitestConfig(options?: {
   instanceFilter?: string;

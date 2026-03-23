@@ -1,8 +1,8 @@
 /**
- * Vitest globalSetup — warms up Edge Dev / Phi-4 Mini only.
+ * Vitest globalSetup — seeds profile and runs diagnostics for Edge Dev / Phi-4 Mini.
  * Used by the `test-edge` target.
  */
-import { allInstances, warmUpInstances } from './global-setup.shared';
+import { allProfiles, setupInstances } from './global-setup.shared';
 
 export const setup = () =>
-  warmUpInstances(allInstances.filter((i) => i.name === 'edge-phi4-mini'));
+  setupInstances(allProfiles.filter((p) => p.name === 'edge-phi4-mini'));
