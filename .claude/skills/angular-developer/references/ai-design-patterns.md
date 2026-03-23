@@ -200,6 +200,38 @@ Display streaming content in the template:
 
 The `stream` property accepts an async function that returns a signal of `ResourceStreamItem<T>`. Updates to this signal are reflected in the template as data arrives.
 
+**Import:** `ResourceStreamItem` is imported from `@angular/core`:
+
+```ts
+import { resource, signal } from '@angular/core';
+import type { ResourceStreamItem } from '@angular/core';
+```
+
+Many AI SDKs provide helper methods for streaming. For example, the Genkit client library exposes `streamFlow` for calling Genkit flows, which you can use inside the `stream` function instead of raw `fetch`.
+
+## Keeping Previous Data During Refetch
+
+Use `ResourceSnapshot` and `resourceFromSnapshots` to keep stale data visible while new data loads — avoiding the flash-to-loading-spinner pattern common in AI UIs:
+
+```ts
+import { linkedSignal, resourceFromSnapshots, Resource, ResourceSnapshot } from '@angular/core';
+
+function withPreviousValue<T>(input: Resource<T>): Resource<T> {
+  const derived = linkedSignal<ResourceSnapshot<T>, ResourceSnapshot<T>>({
+    source: input.snapshot,
+    computation: (snap, previous) => {
+      if (snap.status === 'loading' && previous && previous.value.status !== 'error') {
+        return { status: 'loading' as const, value: previous.value.value };
+      }
+
+      return snap;
+    },
+  });
+
+  return resourceFromSnapshots(derived);
+}
+```
+
 ## Summary of Patterns
 
 | Pattern                        | Use Case                               | Angular API                        |
