@@ -56,9 +56,10 @@ A **reactive context** is a runtime state where Angular monitors signal reads to
 Angular automatically enters a reactive context when evaluating:
 
 - `computed` signals
-- `effect` callbacks
+- `effect` and `afterRenderEffect` callbacks
 - `linkedSignal` computations
-- Component templates
+- `resource` `params` and `loader` functions
+- Component templates (including `host` bindings)
 
 ### Untracked Reads (`untracked`)
 
@@ -91,4 +92,54 @@ effect(async () => {
   const data = await fetchUserData();
   console.log(currentTheme);
 });
+```
+
+## Signal Equality Functions
+
+By default, signals use referential equality (`Object.is()`). You can provide a custom equality function to control when consumers are notified of changes. This is especially useful for object/array values where a new reference doesn't necessarily mean the data changed.
+
+```ts
+import isEqual from 'lodash/isEqual';
+
+// Deep equality — setting the same data won't trigger updates
+const data = signal(['test'], { equal: isEqual });
+data.set(['test']); // No update — deep equal to current value
+
+// Custom equality on computed — only notify when ID changes
+const activeUser = computed(() => fetchedUser(), { equal: (a, b) => a?.id === b?.id });
+```
+
+Both `signal()` and `computed()` accept `{ equal: fn }` in their options.
+
+## Type Checking Signals
+
+Use `isSignal()` and `isWritableSignal()` to check signal types at runtime:
+
+```ts
+import { signal, computed, isSignal, isWritableSignal } from '@angular/core';
+
+const count = signal(0);
+const doubled = computed(() => count() * 2);
+
+isSignal(count); // true
+isSignal(doubled); // true
+isWritableSignal(count); // true
+isWritableSignal(doubled); // false
+```
+
+## Signals in OnPush Components
+
+When you read a signal in an `OnPush` component's template, Angular tracks it as a dependency and automatically marks the component for check when the signal changes. No manual `markForCheck()` calls are needed.
+
+## Asserting Non-Reactive Context
+
+Use `assertNotInReactiveContext()` to guard functions that should never run inside a reactive context (e.g., subscription setup):
+
+```ts
+import { assertNotInReactiveContext } from '@angular/core';
+
+function subscribeToEvents() {
+  assertNotInReactiveContext(subscribeToEvents);
+  // Safe — subscription logic here
+}
 ```
