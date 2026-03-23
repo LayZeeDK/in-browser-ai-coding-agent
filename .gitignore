@@ -16,6 +16,8 @@ node_modules
 *.launch
 .settings/
 *.sublime-workspace
+# .planning symlink for Typora
+planning
 
 # IDE - VSCode
 .vscode/*
