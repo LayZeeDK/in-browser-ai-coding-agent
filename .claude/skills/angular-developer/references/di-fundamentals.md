@@ -6,8 +6,8 @@ Dependency Injection (DI) is a design pattern used to organize and share code ac
 
 There are two primary ways code interacts with Angular's DI system:
 
-1.  **Providing**: Making values (objects, functions, primitives) available to the DI system.
-2.  **Injecting**: Asking the DI system for those values.
+1. **Providing**: Making values (objects, functions, primitives) available to the DI system.
+2. **Injecting**: Asking the DI system for those values.
 
 Angular components, directives, and services automatically participate in DI.
 
@@ -23,7 +23,7 @@ Use the `providedIn: 'root'` option in the `@Injectable` decorator to make the s
 import { Injectable } from '@angular/core';
 
 @Injectable({
-  providedIn: 'root', // Makes this a singleton available everywhere
+  providedIn: 'root',
 })
 export class AnalyticsLogger {
   trackEvent(category: string, value: string) {
@@ -42,11 +42,7 @@ Common uses for services include:
 
 ## Injecting Dependencies
 
-Use Angular's `inject()` function to request dependencies.
-
-### The `inject()` Function
-
-You can use the `inject()` function to get an instance of a service (or any other provided token).
+Use Angular's `inject()` function to request dependencies. This is the recommended approach over constructor injection.
 
 ```ts
 import { Component, inject } from '@angular/core';
@@ -58,7 +54,6 @@ import { AnalyticsLogger } from './analytics-logger.service';
   template: `<a href="#" (click)="navigateToDetail($event)">Detail Page</a>`,
 })
 export class Navbar {
-  // Injecting dependencies using class field initializers
   private router = inject(Router);
   private analytics = inject(AnalyticsLogger);
 
@@ -70,51 +65,13 @@ export class Navbar {
 }
 ```
 
-### Where can `inject()` be used? (Injection Context)
+### Where `inject()` Is Valid
 
-You can call `inject()` in an **injection context**. The most common injection contexts are during the construction of a component, directive, or service.
+`inject()` works in an **injection context** — during construction of a component, directive, or service. The most common places:
 
-Valid places to call `inject()`:
+1. **Class field initializers** (recommended)
+2. **Constructor body**
+3. **Route guards and resolvers** (functional)
+4. **Factory functions** in providers
 
-1.  **Class field initializers** (Recommended)
-2.  **Constructor body**
-3.  **Route guards and resolvers** (which are executed in an injection context)
-4.  **Factory functions** used in providers
-
-```typescript
-import { Component, Directive, Injectable, inject, ElementRef } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-
-// 1. In a Component (Field Initializer & Constructor)
-@Component({
-  /*...*/
-})
-export class Example {
-  private service1 = inject(MyService); // ✅ Field initializer
-
-  private service2: MyService;
-  constructor() {
-    this.service2 = inject(MyService); // ✅ Constructor body
-  }
-}
-
-// 2. In a Directive
-@Directive({
-  /*...*/
-})
-export class MyDirective {
-  private element = inject(ElementRef); // ✅ Field initializer
-}
-
-// 3. In a Service
-@Injectable({ providedIn: 'root' })
-export class MyService {
-  private http = inject(HttpClient); // ✅ Field initializer
-}
-
-// 4. In a Route Guard (Functional)
-export const authGuard = () => {
-  const auth = inject(AuthService); // ✅ Route Guard
-  return auth.isAuthenticated();
-};
-```
+For advanced injection context topics (running `inject()` outside construction, `DestroyRef`, `takeUntilDestroyed`), see [injection-context.md](injection-context.md).
