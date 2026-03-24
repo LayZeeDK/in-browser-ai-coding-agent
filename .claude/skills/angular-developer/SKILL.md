@@ -119,7 +119,7 @@ If you require deeper documentation, visit the [Angular HTTP Client guide](https
 
 When implementing error handling patterns for unhandled errors and global error listeners, consult the following reference:
 
-- **Unhandled Errors**: `ErrorHandler`, `provideBrowserGlobalErrorListeners()`, `TestBed` error behavior (`rethrowApplicationErrors`), `resource()` error patterns (errors exposed via `status`/`error`, not thrown). For HTTP-specific error handling (`HttpErrorResponse`, retry interceptors, `httpResource` error signals), see [http-client.md](references/http-client.md). Read [error-handling.md](references/error-handling.md)
+- **Unhandled Errors**: Custom `@Injectable() ErrorHandler` with analytics, `provideBrowserGlobalErrorListeners()`, `TestBed` error behavior (`rethrowApplicationErrors`), Angular catch boundary (what Angular catches vs what it does not -- `resource()`/`httpResource()` errors surface via signals, not ErrorHandler). For HTTP-specific error handling (`HttpErrorResponse`, retry interceptors, `httpResource` error signals), see [http-client.md](references/http-client.md). Read [error-handling.md](references/error-handling.md)
 
 If you require deeper documentation, visit the [Angular Error Handling guide](https://angular.dev/best-practices/error-handling).
 

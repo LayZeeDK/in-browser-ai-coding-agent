@@ -29,9 +29,10 @@ export class UserService {
 Angular reports unhandled errors to the application's root `ErrorHandler`. Create a custom one for logging and analytics:
 
 ```ts
-import { ErrorHandler, inject } from '@angular/core';
+import { ErrorHandler, Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 
+@Injectable()
 export class GlobalErrorHandler implements ErrorHandler {
   private readonly analyticsService = inject(AnalyticsService);
   private readonly router = inject(Router);
@@ -48,13 +49,13 @@ export class GlobalErrorHandler implements ErrorHandler {
 }
 ```
 
-Provide it in your application config:
+Provide it in your application config alongside `provideBrowserGlobalErrorListeners()`:
 
 ```ts
-import { ApplicationConfig } from '@angular/core';
+import { ApplicationConfig, ErrorHandler, provideBrowserGlobalErrorListeners } from '@angular/core';
 
 export const appConfig: ApplicationConfig = {
-  providers: [{ provide: ErrorHandler, useClass: GlobalErrorHandler }],
+  providers: [{ provide: ErrorHandler, useClass: GlobalErrorHandler }, provideBrowserGlobalErrorListeners()],
 };
 ```
 
@@ -69,27 +70,14 @@ Angular catches errors from:
 
 Angular does **not** catch errors from:
 
-- Service methods called directly by your code
-- `resource()` errors (exposed via `status` and `error` properties instead)
+- Service methods called directly by your code (use `try...catch` or RxJS `catchError`)
+- `resource()` and `httpResource()` errors (exposed via `.status()` and `.error()` signals instead -- see [http-client.md](http-client.md) for `httpResource` error patterns)
 
 ## Global Error Listeners
 
 ### Browser (CSR)
 
-Add `provideBrowserGlobalErrorListeners()` to catch `'error'` and `'unhandledrejection'` events at the window level:
-
-```ts
-import { provideBrowserGlobalErrorListeners } from '@angular/core';
-
-export const appConfig: ApplicationConfig = {
-  providers: [
-    provideBrowserGlobalErrorListeners(),
-    // ... other providers
-  ],
-};
-```
-
-The Angular CLI includes this provider by default in new applications.
+`provideBrowserGlobalErrorListeners()` catches `'error'` and `'unhandledrejection'` events at the window level. The Angular CLI includes it by default in new applications. Wire it alongside the custom ErrorHandler as shown above.
 
 ### Server (SSR)
 
