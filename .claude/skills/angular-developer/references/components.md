@@ -60,6 +60,8 @@ export class App {}
 
 ### `@for` (track is required)
 
+The `track` expression must uniquely identify each item for DOM reuse. Use a unique property (like `id`). Fall back to `$index` only when items lack a unique identifier -- never track by a non-unique property like `name` or `label`.
+
 ```html
 @for (item of items(); track item.id; let i = $index) {
 <li>{{ i }}: {{ item.name }}</li>
@@ -86,23 +88,28 @@ Implicit variables: `$index`, `$count`, `$first`, `$last`, `$even`, `$odd`.
 
 ### Multi-Slot Projection
 
-Use `select` to route content to named slots. Prefer **component or directive selectors** over bare attributes or CSS classes — component selectors are discoverable, type-checked, and self-documenting. An `<ng-content>` without `select` catches unmatched content.
+Use `select` to route content to named slots. Prefer **directive selectors** over bare attributes or CSS classes -- directives are discoverable, type-checked, and self-documenting without adding a DOM element. Use a directive (not a component) when the slot marker doesn't need its own template. An `<ng-content>` without `select` catches unmatched content.
 
 ```ts
-@Component({ selector: 'card-title', template: `<ng-content />` })
-export class CardTitle {}
+@Directive({ selector: 'card-header' })
+export class CardHeader {}
 
-@Component({ selector: 'card-body', template: `<ng-content />` })
+@Directive({ selector: 'card-body' })
 export class CardBody {}
+
+@Directive({ selector: 'card-actions' })
+export class CardActions {}
 
 @Component({
   selector: 'custom-card',
-  imports: [CardTitle, CardBody],
+  imports: [CardHeader, CardBody, CardActions],
   template: `
-    <ng-content select="card-title" />
+    <ng-content select="card-header" />
     <div class="divider"></div>
     <ng-content select="card-body" />
-    <ng-content />
+    <ng-content select="card-actions">
+      <button (click)="close()">Close</button>
+    </ng-content>
   `,
 })
 export class CustomCard {}
@@ -110,13 +117,7 @@ export class CustomCard {}
 
 ### Fallback Content
 
-Default content renders when nothing is projected:
-
-```html
-<ng-content select="card-actions">
-  <button (click)="close()">Close</button>
-</ng-content>
-```
+Place default content inside `<ng-content>` -- it renders when nothing is projected into that slot (shown in the `card-actions` slot above).
 
 ### `ngProjectAs`
 
