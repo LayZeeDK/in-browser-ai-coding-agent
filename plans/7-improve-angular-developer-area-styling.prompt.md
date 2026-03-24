@@ -4,7 +4,8 @@ Use all of your capabilities if relevant, including:
 
 - Run evals on the skill
 - Improve the skill based on relevant synthetic test cases
-- Benchmark the skill across 10 runs and show variance
+- Benchmark the skill across 5 runs and show variance
+- When running benchmark agents in the background, wait for all task completion notifications before grading or reporting results -- do not poll or check early
 
 Notice that the skill covers many different concerns. Only improve the **Styling & Animations** concern area.
 
