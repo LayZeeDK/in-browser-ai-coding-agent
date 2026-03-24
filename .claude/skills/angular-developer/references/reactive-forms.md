@@ -1,108 +1,188 @@
 # Reactive Forms
 
-Reactive forms provide a model-driven approach to handling form inputs. They are built around observable streams and provide synchronous access to the data model, making them more scalable and testable than template-driven forms.
+Model-driven forms built around observable streams with synchronous data model access.
 
-## Core Classes
+**Core classes** from `@angular/forms`: `FormControl<T>` (individual input), `FormGroup` (object structure), `FormArray` (indexed list), `FormBuilder` / `NonNullableFormBuilder` (factory service).
 
-Reactive forms are built using these fundamental classes from `@angular/forms`:
+## Typed Forms (Angular 14+)
 
-- `FormControl`: Manages the value and validity of an individual input.
-- `FormGroup`: Manages a group of controls (an object-like structure).
-- `FormArray`: Manages a numerically indexed array of controls.
-- `FormBuilder`: A service that provides factory methods for creating control instances.
-
-## Setup
-
-Import `ReactiveFormsModule` into your component.
+All reactive form classes are strictly typed by default. A `FormControl` initialized with a string is `FormControl<string | null>` because `.reset()` sets the value to `null`.
 
 ```ts
-import { Component, inject } from '@angular/core';
-import { ReactiveFormsModule, FormGroup, FormControl, Validators, FormBuilder } from '@angular/forms';
+const name = new FormControl('Alice'); // FormControl<string | null>
+name.reset();
+console.log(name.value); // null
+```
 
+### Eliminating null with `nonNullable`
+
+Use the `nonNullable` option so `.reset()` restores the initial value instead of `null`:
+
+```ts
+const name = new FormControl('Alice', { nonNullable: true }); // FormControl<string>
+name.reset();
+console.log(name.value); // 'Alice'
+```
+
+### NonNullableFormBuilder
+
+Use `fb.nonNullable.group()` to make every control in a group non-nullable, eliminating boilerplate:
+
+```ts
+private fb = inject(FormBuilder);
+
+profileForm = this.fb.nonNullable.group({
+  firstName: ['', Validators.required],
+  lastName: [''],
+  email: ['', [Validators.required, Validators.email]],
+});
+// All controls are FormControl<string> (never null)
+```
+
+You can also inject `NonNullableFormBuilder` directly:
+
+```ts
+private fb = inject(NonNullableFormBuilder);
+```
+
+### `getRawValue()` for disabled controls
+
+`FormGroup.value` is `Partial<T>` because disabled controls are excluded. Use `getRawValue()` to get the full typed value including disabled controls:
+
+```ts
+const { firstName, lastName, email } = this.profileForm.getRawValue();
+// All fields present, even if some controls are disabled
+```
+
+## Setup and Template Binding
+
+Import `ReactiveFormsModule`. Use `[formGroup]`, `formControlName`, `formGroupName`, `formArrayName`, `[formControl]` directives.
+
+```ts
 @Component({
   selector: 'app-profile-editor',
   imports: [ReactiveFormsModule],
-  templateUrl: './profile-editor.component.html',
+  template: `
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+      <input formControlName="firstName" />
+      <div formGroupName="address">
+        <input formControlName="street" />
+      </div>
+      <div formArrayName="aliases">
+        @for (alias of aliases.controls; track $index) {
+          <input [formControlName]="$index" />
+        }
+      </div>
+      <button type="submit" [disabled]="!profileForm.valid">Submit</button>
+    </form>
+  `,
 })
 export class ProfileEditor {
   private fb = inject(FormBuilder);
 
-  // Using FormBuilder for concise definition
-  profileForm = this.fb.group({
+  profileForm = this.fb.nonNullable.group({
     firstName: ['', Validators.required],
     lastName: [''],
-    address: this.fb.group({
-      street: [''],
-      city: [''],
-    }),
-    aliases: this.fb.array([this.fb.control('')]),
+    address: this.fb.nonNullable.group({ street: [''], city: [''] }),
+    aliases: this.fb.array([this.fb.nonNullable.control('')]),
   });
 
-  onSubmit() {
-    console.warn(this.profileForm.value);
+  get aliases() {
+    return this.profileForm.controls.aliases;
   }
-}
-```
 
-## Template Binding
+  addAlias() {
+    this.aliases.push(this.fb.nonNullable.control(''));
+  }
 
-Use directives to bind the model to the view:
-
-- `[formGroup]`: Binds a `FormGroup` to a `<form>` or `<div>`.
-- `formControlName`: Binds a named control within a group to an input.
-- `formGroupName`: Binds a nested `FormGroup`.
-- `formArrayName`: Binds a nested `FormArray`.
-- `[formControl]`: Binds a standalone `FormControl`.
-
-```html
-<form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
-  <input type="text" formControlName="firstName" />
-
-  <div formGroupName="address">
-    <input type="text" formControlName="street" />
-  </div>
-
-  <div formArrayName="aliases">
-    @for (alias of aliases.controls; track $index) {
-    <input type="text" [formControlName]="$index" />
-    }
-  </div>
-
-  <button type="submit" [disabled]="!profileForm.valid">Submit</button>
-</form>
-```
-
-## Accessing Controls
-
-Use getters for easy access to controls, especially for `FormArray`.
-
-```ts
-get aliases() {
-  return this.profileForm.get('aliases') as FormArray;
-}
-
-addAlias() {
-  this.aliases.push(this.fb.control(''));
+  onSubmit() {
+    console.log(this.profileForm.getRawValue());
+  }
 }
 ```
 
 ## Updating Values
 
-- `patchValue()`: Updates only the specified properties. Fails silently on structural mismatches.
-- `setValue()`: Replaces the entire model. Strictly enforces the form structure.
+- `patchValue()`: Updates specified properties only. Silently ignores structural mismatches.
+- `setValue()`: Replaces entire model. Strictly enforces form structure.
+
+## Custom Validators
+
+### Sync validators (`ValidatorFn`)
+
+A validator is a function that receives a control and returns `ValidationErrors | null`:
 
 ```ts
-updateProfile() {
-  this.profileForm.patchValue({
-    firstName: 'Nancy',
-    address: { street: '123 Drew Street' }
-  });
+import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+
+export function forbiddenNameValidator(nameRe: RegExp): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const forbidden = nameRe.test(control.value);
+    return forbidden ? { forbiddenName: { value: control.value } } : null;
+  };
+}
+
+// Usage: pass as second argument (sync validators)
+name = new FormControl('', [Validators.required, forbiddenNameValidator(/bob/i)]);
+```
+
+### Async validators (`AsyncValidatorFn`)
+
+Async validators return `Observable<ValidationErrors | null>` or `Promise`. They run only after all sync validators pass. The control enters a `pending` state while async validation runs.
+
+```ts
+import { AsyncValidatorFn } from '@angular/forms';
+import { Observable, map, catchError, of } from 'rxjs';
+
+export function uniqueNameValidator(service: NameService): AsyncValidatorFn {
+  return (control: AbstractControl): Observable<ValidationErrors | null> => {
+    return service.isNameTaken(control.value).pipe(
+      map((isTaken) => (isTaken ? { nameTaken: true } : null)),
+      catchError(() => of(null)),
+    );
+  };
+}
+
+// Usage: pass as third argument or via asyncValidators option
+username = new FormControl('', {
+  validators: [Validators.required, Validators.minLength(3)],
+  asyncValidators: [uniqueNameValidator(this.nameService)],
+  nonNullable: true,
+});
+```
+
+### Cross-field validation
+
+Apply a validator to the `FormGroup` (not individual controls) to compare sibling control values:
+
+```ts
+export const passwordMatchValidator: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
+  const password = group.get('password');
+  const confirm = group.get('confirmPassword');
+  return password && confirm && password.value !== confirm.value ? { passwordMismatch: true } : null;
+};
+
+// Attach to the FormGroup
+form = this.fb.nonNullable.group(
+  {
+    password: ['', [Validators.required, Validators.minLength(8)]],
+    confirmPassword: ['', Validators.required],
+  },
+  { validators: passwordMatchValidator },
+);
+```
+
+Check the group-level error in the template:
+
+```html
+@if (form.hasError('passwordMismatch') && form.get('confirmPassword')?.touched) {
+<p class="error">Passwords do not match.</p>
 }
 ```
 
 ## Unified Change Events
 
-Modern Angular (v18+) provides a single `events` observable on all controls to track value, status, pristine, touched, reset, and submit events.
+Angular v18+ provides a single `events` observable on all controls to track value, status, pristine, touched, reset, and submit events.
 
 ```ts
 import { ValueChangeEvent, StatusChangeEvent } from '@angular/forms';
