@@ -60,23 +60,28 @@ export class App {}
 
 ### `@for` (track is required)
 
-`track` maps data items to DOM nodes so Angular can perform minimal DOM operations when data changes. Choose a track expression by priority:
+`track` maps data items to DOM nodes so Angular performs minimal DOM operations when data changes. Before writing a `track` expression, inspect the item's type and apply this decision procedure:
 
-1. **Unique property** (best): `track item.id` -- use `id`, `uuid`, or any uniquely identifying field. If the data lacks one, strongly consider adding it.
-2. **`$index`** (static collections only): `track $index` -- acceptable when the collection never changes (reordering, inserting, or removing items will destroy and recreate all affected views).
-3. **Item reference** (last resort): `track item` -- uses `===` identity. Avoid whenever possible; Angular cannot map data to DOM nodes efficiently, leading to significantly slower rendering updates.
-
-Never track by a non-unique property like `name` or `label` -- duplicate values cause incorrect DOM reuse.
-
-Unlike `*ngFor`, `@for` prioritizes **view reuse**: if the tracked property changes but the object reference stays the same, Angular updates the view's bindings (including component inputs) rather than destroying and recreating the element.
+1. **Does the item have a unique identifier** (`id`, `uuid`, `key`)? Use it: `track item.id`
+2. **No unique identifier exists?** Use `$index`: `track $index`
+3. **Never track by a non-unique property** (`name`, `label`, `title`, `text`). Duplicate values cause Angular to reuse the wrong DOM nodes, producing rendering bugs that are hard to diagnose.
+4. **Avoid `track item`** (reference identity via `===`). Angular cannot map data to DOM efficiently, leading to significantly slower updates.
 
 ```html
+<!-- Items have an id field -->
 @for (item of items(); track item.id; let i = $index) {
 <li>{{ i }}: {{ item.name }}</li>
 } @empty {
 <li>No items.</li>
 }
+
+<!-- Items lack a unique identifier (e.g., projected components, simple strings) -->
+@for (tab of tabs(); track $index; let i = $index) {
+<button (click)="select(i)">{{ tab.label() }}</button>
+}
 ```
+
+Unlike `*ngFor`, `@for` prioritizes **view reuse**: if the tracked property changes but the object reference stays the same, Angular updates bindings (including component inputs) rather than destroying and recreating the element.
 
 Implicit variables: `$index`, `$count`, `$first`, `$last`, `$even`, `$odd`.
 
