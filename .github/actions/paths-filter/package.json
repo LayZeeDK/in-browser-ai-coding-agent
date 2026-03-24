@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "name": "paths-filter",
+  "type": "module",
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@actions/exec": "^1.1.1"
+  }
+}

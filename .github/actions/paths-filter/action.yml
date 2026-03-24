@@ -1,0 +1,27 @@
+name: Paths filter
+description: Detect file changes using named path filters
+
+inputs:
+  base:
+    description: Base commit SHA for comparison
+    required: true
+  head:
+    description: Head commit SHA for comparison
+    default: HEAD
+  filters:
+    description: |
+      Named filters with path patterns.
+      Patterns prefixed with '!' are exclusions.
+      Example:
+        code:
+          - '!.planning/**'
+          - '!.claude/**'
+    required: true
+
+outputs:
+  changes:
+    description: JSON object mapping filter names to booleans
+
+runs:
+  using: node24
+  main: index.mjs
