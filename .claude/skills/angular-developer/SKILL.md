@@ -102,7 +102,7 @@ If you require deeper documentation, visit the [Angular Security guide](https://
 
 When building accessible applications, consult the following references:
 
-- **General Accessibility**: ARIA attributes, focus management, routing a11y, `@defer` a11y, Angular CDK a11y tools. Read [accessibility.md](references/accessibility.md)
+- **General Accessibility**: ARIA attributes, focus management, routing a11y, `@defer` a11y, Angular CDK a11y tools (`cdkTrapFocus`, `cdkFocusInitial`, `LiveAnnouncer`, `FocusMonitor`), modal dialog patterns (`inert`, focus restoration), accessibility testing (axe-core + TestBed, custom Vitest matcher, angular-eslint template rules). Read [accessibility.md](references/accessibility.md)
 - **Angular Aria Components**: Building headless, accessible components (Accordion, Listbox, Combobox, Menu, Tabs, Toolbar, Tree, Grid) and styling ARIA attributes. Read [angular-aria.md](references/angular-aria.md)
 
 If you require deeper documentation, visit the [Angular Accessibility guide](https://angular.dev/best-practices/a11y).
