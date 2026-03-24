@@ -107,11 +107,19 @@ When building accessible applications, consult the following references:
 
 If you require deeper documentation, visit the [Angular Accessibility guide](https://angular.dev/best-practices/a11y).
 
+## HTTP Client
+
+When making HTTP requests, configuring interceptors, or using reactive data fetching, consult the following reference:
+
+- **HTTP Client**: `provideHttpClient()` setup with feature functions (`withFetch`, `withInterceptors`), typed requests, `HttpParams`/`HttpHeaders`, `observe: 'response'`/`'events'`, timeouts, advanced fetch options, `httpResource` (reactive signal-based fetching with Zod/Valibot validation), functional interceptors (`HttpInterceptorFn`, `inject()`, `HttpContext`/`HttpContextToken`, retry with exponential backoff, synthetic responses), `HttpErrorResponse` (network vs backend vs timeout), testing with `HttpTestingController` (`provideHttpClientTesting`, `expectOne`/`match`/`expectNone`, error flushing, interceptor testing, httpResource testing). Read [http-client.md](references/http-client.md)
+
+If you require deeper documentation, visit the [Angular HTTP Client guide](https://angular.dev/guide/http).
+
 ## Error Handling
 
-When implementing error handling patterns, consult the following reference:
+When implementing error handling patterns for unhandled errors and global error listeners, consult the following reference:
 
-- **Unhandled Errors**: `ErrorHandler`, global error listeners, `TestBed` error behavior, `resource()` error patterns. Read [error-handling.md](references/error-handling.md)
+- **Unhandled Errors**: `ErrorHandler`, `provideBrowserGlobalErrorListeners()`, `TestBed` error behavior (`rethrowApplicationErrors`), `resource()` error patterns (errors exposed via `status`/`error`, not thrown). For HTTP-specific error handling (`HttpErrorResponse`, retry interceptors, `httpResource` error signals), see [http-client.md](references/http-client.md). Read [error-handling.md](references/error-handling.md)
 
 If you require deeper documentation, visit the [Angular Error Handling guide](https://angular.dev/best-practices/error-handling).
 
