@@ -22,17 +22,6 @@ Use these directly on elements to apply CSS classes during the enter or leave ph
 ```
 
 ```css
-/* Ensure you have a starting style if using transitions instead of keyframes */
-.enter-container {
-  border: 1px solid #dddddd;
-  margin-top: 1em;
-  padding: 20px;
-  font-weight: bold;
-  font-size: 20px;
-}
-.enter-container p {
-  margin: 0;
-}
 .enter-animation {
   animation: slide-fade 1s;
 }
@@ -48,35 +37,71 @@ Use these directly on elements to apply CSS classes during the enter or leave ph
 }
 ```
 
-_Note: `animate.leave` may be added to child elements being removed._
+### `animate.leave`
 
-### Event Bindings and Third-party Libraries
+Use `animate.leave` to animate elements as they _leave_ the DOM. Angular adds the CSS class and **waits for the animation to finish** before removing the element.
 
-You can bind to `(animate.enter)` and `(animate.leave)` to call functions or use JS libraries like GSAP.
+```html
+@if (isShown()) {
+<div animate.enter="enter-anim" animate.leave="leave-anim">Content</div>
+}
+```
+
+```css
+.leave-anim {
+  animation: fade-slide-out 0.5s ease-in;
+}
+@keyframes fade-slide-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+```
+
+**Important:** `animate.enter` and `animate.leave` only fire when elements enter or leave the DOM (via `@if`, `@for`, etc.). They do NOT fire for show/hide toggles where the element stays in the DOM -- use CSS transitions with class bindings for that.
+
+### Attribute vs Event Binding
+
+There are two forms -- do not mix both on the same element:
+
+- **Attribute** `animate.leave="css-class"` -- Angular applies the CSS class and waits for the CSS animation to finish automatically. Use for CSS-driven animations.
+- **Event** `(animate.leave)="handler($event)"` -- Angular calls your function and waits for `animationComplete()`. Use for JS-driven animations (GSAP, Web Animations API).
+
+### Event Bindings for Third-party Libraries
+
+Bind `(animate.leave)` to run JS animations. `AnimationCallbackEvent` does not expose the element -- get it via `viewChild()`.
 
 ```html
 @if(show()) {
-<div (animate.leave)="onLeave($event)">...</div>
+<div #dialog (animate.leave)="onLeave($event)">...</div>
 }
 ```
 
 ```ts
-import { AnimationCallbackEvent } from '@angular/core';
+import { AnimationCallbackEvent, viewChild, ElementRef } from '@angular/core';
+
+private readonly dialogEl = viewChild<ElementRef>('dialog');
 
 onLeave(event: AnimationCallbackEvent) {
-  // Custom animation logic here
-  // CRITICAL: You MUST call animationComplete() when done so Angular removes the element!
-  event.animationComplete();
+  const el = this.dialogEl()!.nativeElement;
+  el.animate(
+    [{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(0.9)', opacity: 0 }],
+    { duration: 300, easing: 'ease-in' }
+  ).finished.then(() => event.animationComplete());
+  // CRITICAL: always call animationComplete() or the element is never removed!
 }
 ```
 
-## 2. Advanced CSS Animations
+## 2. Advanced CSS Patterns
 
-CSS offers robust tools for advanced animation sequences.
+### Animating State Changes
 
-### Animating State and Styles
-
-Toggle CSS classes on elements using property binding to trigger transitions.
+Toggle CSS classes via property binding to trigger transitions.
 
 ```html
 <div [class.open]="isOpen">...</div>
@@ -94,26 +119,36 @@ div.open {
 
 ### Animating Auto Height
 
-You can use `css-grid` to animate to auto height.
+Use `css-grid` to animate to auto height: set `grid-template-rows: 0fr` (closed) / `1fr` (open) with a `transition` on the container, and `overflow: hidden` on the child.
 
-```css
-.container {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.3s;
-}
-.container.open {
-  grid-template-rows: 1fr;
-}
-.container > div {
-  overflow: hidden;
+### Staggering List Items with `animate.enter` / `animate.leave`
+
+For lists rendered with `@for`, bind `[style.animation-delay]` per item using the loop index:
+
+```html
+@for (item of items(); track item.id; let i = $index) {
+<div animate.enter="item-enter" animate.leave="item-leave" [style.animation-delay]="(Math.min(i, 9) * 60) + 'ms'">{{ item.name }}</div>
 }
 ```
 
-### Staggering and Parallel Animations
+```css
+.item-enter {
+  animation: fade-slide-in 300ms ease-out both;
+}
+.item-leave {
+  animation: fade-slide-out 250ms ease-in both;
+}
+```
 
-- **Staggering**: Use `animation-delay` or `transition-delay` with different values for items in a list.
-- **Parallel**: Apply multiple animations in the `animation` shorthand (e.g., `animation: rotate 3s, fade-in 2s;`).
+Key points:
+
+- `animation-fill-mode: both` holds the `from` state during the delay, preventing a flash of the final state.
+- Cap the index (e.g., `Math.min(i, 9)`) to avoid excessive delays when adding many items at once.
+- The delay applies to both enter and leave since the same `[style.animation-delay]` binding is used.
+
+### Parallel Animations
+
+Apply multiple animations in the `animation` shorthand (e.g., `animation: rotate 3s, fade-in 2s;`).
 
 ### Programmatic Control
 
@@ -126,22 +161,12 @@ animations.forEach((anim) => anim.pause());
 
 ## 3. Legacy Animations DSL (Deprecated)
 
-For older projects (pre v20.2 or where `@angular/animations` is already heavily used), you use the component metadata DSL.
+For older projects (pre v20.2), you use `@angular/animations` with `provideAnimationsAsync()`. Do not mix legacy animations and `animate.enter`/`leave` in the same component.
 
-**Important:** Do not mix legacy animations and `animate.enter`/`leave` in the same component.
-
-### Setup
+For **route transition animations**, see [route-animations.md](route-animations.md) (`withViewTransitions()`).
 
 ```ts
-bootstrapApplication(App, {
-  providers: [provideAnimationsAsync()],
-});
-```
-
-### Defining Transitions
-
-```ts
-import { signal } from '@angular/core';
+// Setup: bootstrapApplication(App, { providers: [provideAnimationsAsync()] });
 import { trigger, state, style, animate, transition } from '@angular/animations';
 
 @Component({
