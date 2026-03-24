@@ -136,7 +136,7 @@ Place default content inside `<ng-content>` -- it renders when nothing is projec
 
 Project a standard element into a named slot: `<h3 ngProjectAs="card-title">Hello</h3>`. Static only — cannot bind dynamically.
 
-**Important**: Never conditionally wrap `<ng-content>` with `@if`/`@for`/`@switch`. Angular always instantiates projected content regardless.
+**Important**: Never conditionally wrap `<ng-content>` with `@if`/`@for`/`@switch`. Angular always instantiates projected content regardless. Additionally, `<ng-content>` inside an `@for` loop does not distribute one projected item per iteration -- all projected content appears in every iteration. When you need per-item content (e.g., tab panels), have each projected item expose its content as a `TemplateRef` (via `inject(TemplateRef)` on a directive applied to `<ng-template>`), then render it with `NgTemplateOutlet` in the loop body.
 
 ## Queries (View and Content)
 
