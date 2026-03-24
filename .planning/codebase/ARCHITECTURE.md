@@ -1,179 +1,310 @@
 # Architecture
 
-**Analysis Date:** 2026-03-23
+**Analysis Date:** 2026-03-24
 
 ## Pattern Overview
 
-**Overall:** Single-page application (SPA) with layered service-driven architecture using Angular 21.
+**Overall:** Angular SPA with in-browser AI inference, organized as an Nx monorepo
 
 **Key Characteristics:**
 
-- Standalone Angular components with signal-based reactivity
-- W3C LanguageModel API wrapper service for on-device AI inference
-- Browser-agnostic API abstraction supporting Chrome Beta (Gemini Nano) and Edge Dev (Phi-4 Mini)
-- Multi-platform testing with persistent browser contexts and model warm-up
+- No server-side AI -- all inference happens in the browser via W3C LanguageModel API (Gemini Nano in Chrome Beta, Phi-4 Mini in Edge Dev)
+- Signal-based reactivity throughout (Angular 21 signals, `signal()`, `computed()`, `inject()`)
+- Two-level AI agent architecture: Claude Code plugin agents (`.claude/`) and GitHub-hosted agents (`.github/agents/`) for CI automation
+- Nx task orchestration with per-browser CI targets, Nx Cloud self-healing integration
 
 ## Layers
 
-**Presentation Layer:**
+**Application Layer:**
 
-- Purpose: Render UI and handle user interactions
+- Purpose: Angular UI for interacting with the on-device AI model
 - Location: `apps/in-browser-ai-coding-agent/src/app/`
-- Contains: Angular components (standalone), templates, and styles
-- Depends on: Services (LanguageModelService), DomSanitizer
-- Used by: Root component bootstrap
+- Contains: Standalone components, root configuration, route definitions
+- Depends on: `LanguageModelService`, Angular core, `marked` (Markdown rendering)
+- Used by: Browser entry point `apps/in-browser-ai-coding-agent/src/main.ts`
 
 **Service Layer:**
 
-- Purpose: Encapsulate business logic and API interactions
+- Purpose: Wrap the W3C LanguageModel browser API with typed Angular-friendly methods
 - Location: `apps/in-browser-ai-coding-agent/src/app/language-model.service.ts`
-- Contains: LanguageModelService with model availability checks, downloads, and inference
-- Depends on: W3C LanguageModel API (global)
-- Used by: Components (ModelStatusComponent)
+- Contains: `LanguageModelService` (availability check, model download, prompt execution)
+- Depends on: W3C `LanguageModel` global (browser API, available in Chrome Beta and Edge Dev only)
+- Used by: `ModelStatusComponent`
 
-**Configuration & Bootstrap Layer:**
+**Shared Library Layer:**
 
-- Purpose: Initialize application state and routing
-- Location: `apps/in-browser-ai-coding-agent/src/app/app.config.ts`, `apps/in-browser-ai-coding-agent/src/app/app.routes.ts`
-- Contains: ApplicationConfig with providers, empty route definitions
-- Depends on: Angular core providers
-- Used by: Root bootstrap in `main.ts`
-
-**Shared Infrastructure Layer:**
-
-- Purpose: Provide cross-cutting browser configuration
+- Purpose: Cross-project browser profile configuration as the single source of truth
 - Location: `libs/shared/browser-profiles/src/lib/browser-profiles.ts`
-- Contains: Profile definitions (Chrome, Edge), flag seeding, launch options
-- Depends on: Node.js fs, @nx/devkit workspaceRoot
-- Used by: E2E fixtures, Vitest global setup, unit test configuration
+- Contains: `BrowserProfile` interface, `allProfiles` array, `getLaunchOptions()`, `seedLocalState()`
+- Depends on: `@nx/devkit` (workspaceRoot), Node.js `fs`/`path`
+- Used by: Vitest configs, e2e fixtures, global setup files, bootstrap script
 
-**Testing Support Layer:**
+**Testing Infrastructure Layer:**
 
-- Purpose: Warm up models and provide test fixtures
-- Location: `apps/in-browser-ai-coding-agent/browser-warmup.ts`, `apps/in-browser-ai-coding-agent-e2e/src/fixtures.ts`, `apps/in-browser-ai-coding-agent/global-setup.shared.ts`
-- Contains: Model warm-up routines, persistent context fixtures, profile seeding
-- Depends on: W3C LanguageModel API, Playwright, browser-profiles lib
-- Used by: Vitest (setupFiles), Playwright E2E tests
+- Purpose: Warm the on-device AI model before tests run, configure browser instances
+- Location: `apps/in-browser-ai-coding-agent/`
+- Contains:
+  - `browser-warmup.ts` -- Vitest setupFile (runs in browser process, preserves ONNX compilation state)
+  - `global-setup.ts` / `global-setup.shared.ts` -- profile file seeding only (no browser launch)
+  - `global-setup.chrome.ts` / `global-setup.edge.ts` -- per-browser globalSetup entry points
+  - `vitest.shared.mts` -- factory producing Vitest config from profile definitions
+  - `vitest.config.mts` / `vitest.config.chrome.mts` / `vitest.config.edge.mts`
+- Depends on: `@layzeedk/browser-profiles`, `@vitest/browser-playwright`
+
+**E2E Layer:**
+
+- Purpose: End-to-end tests with real browser + real AI model inference
+- Location: `apps/in-browser-ai-coding-agent-e2e/src/`
+- Contains: Playwright fixtures with persistent context warm-up, basic and prompt specs
+- Depends on: `@layzeedk/browser-profiles`, Playwright
 
 ## Data Flow
 
-**Model Availability Check:**
+**User Prompt Flow:**
 
-1. Component initialization (ngOnInit) calls `LanguageModelService.checkAvailability()`
-2. Service checks if `LanguageModel` API is globally defined
-3. Service calls `LanguageModel.availability()` which returns status: available | downloading | downloadable | unavailable
-4. Component receives status and displays appropriate UI
-5. If downloading, component polls every 2 seconds until available
-6. User downloads model via `onDownload()` which calls `downloadModel()` with progress callback
+1. User types in `<input>` in `ModelStatusComponent` template
+2. `promptText` signal updated via `(input)` event binding
+3. `onSubmit()` called on form submit
+4. `LanguageModelService.prompt(text)` called -- creates a new LanguageModel session
+5. Session calls W3C `session.prompt(text)` -- runs local ONNX inference in the browser
+6. Response returned, `response` signal set; session destroyed in `finally`
+7. `responseHtml` computed signal renders Markdown via `marked.parse()`
+8. `[innerHTML]` binding renders sanitized HTML (via `DomSanitizer.bypassSecurityTrustHtml`)
 
-**Inference Flow:**
+**Model Availability Flow:**
 
-1. User submits prompt in `ModelStatusComponent.onSubmit()`
-2. Component calls `LanguageModelService.prompt(text)`
-3. Service creates a new LanguageModel session via `LanguageModel.create()`
-4. Service calls `session.prompt(text)` to get response
-5. Service destroys session in finally block
-6. Component receives response, parses as markdown via `marked.parse()`, sanitizes HTML, displays
+1. `ModelStatusComponent.ngOnInit()` calls `languageModel.checkAvailability()`
+2. `LanguageModelService` calls `LanguageModel.availability()` (browser API)
+3. Result mapped to typed `ModelAvailability` union: `'available' | 'downloadable' | 'downloading' | 'unavailable'`
+4. `availability` signal set, `loading` signal cleared
+5. If `'downloading'`, component polls every 2 seconds until `'available'`
+
+**Browser Warm-up Flow (CI and local tests):**
+
+1. Nx target invoked (e.g., `test-chrome` or `test-edge`)
+2. Vitest `globalSetup` runs `seedLocalState()` -- writes browser flags to profile dir (file ops only, no browser)
+3. Vitest launches browser via `@vitest/browser-playwright` with persistent context
+4. `browser-warmup.ts` setupFile runs in the same browser process as tests
+5. `LanguageModel.create()` called, then `session.prompt('warmup')` -- triggers ONNX compilation/caching
+6. After warm-up completes, test files execute (all subsequent prompts respond in 1-3s)
+7. `session.destroy()` called only after warm-up succeeds (premature destroy unloads model from memory)
 
 **State Management:**
 
-- Local component state using Angular signals (`signal()`)
-- Derived state using `computed()` for formatted HTML output
-- No global state management — all state is component-scoped
-- Signal updates via `set()` and `update()` methods
+- All UI state lives in `ModelStatusComponent` as signals: `loading`, `availability`, `downloading`, `downloadProgress`, `promptText`, `prompting`, `response`, `error`
+- Derived rendering via `computed()` (`responseHtml`)
+- No shared state store -- `LanguageModelService` is stateless, component owns all UI state
 
 ## Key Abstractions
 
 **LanguageModelService:**
 
-- Purpose: Abstract W3C LanguageModel API specifics from components
-- Examples: `apps/in-browser-ai-coding-agent/src/app/language-model.service.ts`
-- Pattern: Dependency-injectable singleton (providedIn: 'root') with async methods returning Promise<string> or Promise<ModelAvailability>
-- Public methods: `checkAvailability()`, `downloadModel(onProgress?)`, `prompt(text)`
-- API detection: `isApiSupported` getter checks typeof LanguageModel !== 'undefined'
-
-**ModelStatusComponent:**
-
-- Purpose: Display model availability and provide inference UI
-- Examples: `apps/in-browser-ai-coding-agent/src/app/model-status.component.ts`
-- Pattern: Standalone component with template/style inline, signal-driven reactivity
-- Signals: loading, availability, downloading, downloadProgress, promptText, prompting, response, error, responseHtml (computed)
-- Key feature: Polling loop during download (2s interval until available)
+- Purpose: Typed Angular facade over the W3C LanguageModel browser global
+- File: `apps/in-browser-ai-coding-agent/src/app/language-model.service.ts`
+- Pattern: Singleton service (`providedIn: 'root'`), creates and destroys sessions per call, throws on missing API
 
 **BrowserProfile:**
 
-- Purpose: Centralize browser configuration across unit tests, E2E tests, and CI
-- Examples: `libs/shared/browser-profiles/src/lib/browser-profiles.ts`
-- Pattern: Shared interface and configuration objects (Chrome Beta, Edge Dev)
-- Key methods: `getLaunchOptions()` (returns launch config), `seedLocalState()` (writes chrome://flags to Local State)
-- Uses: Playwright ignore-default-args, feature flags, profile directory management
+- Purpose: Typed descriptor for a browser+model combination (channel, profile dir, launch args, chrome://flags entries)
+- File: `libs/shared/browser-profiles/src/lib/browser-profiles.ts`
+- Pattern: Plain data objects in `allProfiles` array consumed by Vitest configs and Playwright fixtures
+
+**createVitestConfig factory:**
+
+- Purpose: Builds a Vitest config from the shared profile definitions, with optional instance filtering
+- File: `apps/in-browser-ai-coding-agent/vitest.shared.mts`
+- Pattern: Factory function accepting `{ instanceFilter?, globalSetup? }` -- per-browser configs call it with one filter
+
+**Nx Task Targets:**
+
+- Purpose: Separate named Nx targets (`test-chrome`, `test-edge`) rather than configurations, because `@angular/build:unit-test` silently ignores configuration overrides for `runnerConfig`
+- Configured in: `apps/in-browser-ai-coding-agent/project.json`
 
 ## Entry Points
 
-**Application Entry:**
+**Angular App:**
 
 - Location: `apps/in-browser-ai-coding-agent/src/main.ts`
-- Triggers: Browser page load
-- Responsibilities: Bootstrap Angular application with `bootstrapApplication()`, pass app config and root component
+- Triggers: Browser navigation to the served URL
+- Responsibilities: Bootstrap Angular application with `appConfig`
 
-**Root Component:**
+**Dev Server:**
 
-- Location: `apps/in-browser-ai-coding-agent/src/app/app.ts`
-- Triggers: Bootstrap completion
-- Responsibilities: Render title, import ModelStatusComponent, render router outlet
+- Location: Nx `serve` target on `in-browser-ai-coding-agent`
+- Triggers: `npm start` / `npm exec nx serve in-browser-ai-coding-agent`
 
-**Unit Test Entry (Vitest):**
+**Production Build:**
 
-- Location: `apps/in-browser-ai-coding-agent/browser-warmup.ts` (setupFile)
-- Triggers: Before any test file runs
-- Responsibilities: Detect LanguageModel API availability, create and destroy session with warmup prompt, log duration
+- Location: Nx `build` target, output to `dist/apps/in-browser-ai-coding-agent/`
+- Triggers: `npm run build`
 
-**E2E Test Entry (Playwright):**
+**E2E Tests:**
 
-- Location: `apps/in-browser-ai-coding-agent-e2e/src/fixtures.ts` (worker fixture)
-- Triggers: Worker startup
-- Responsibilities: Seed profile, retry persistent context launch, warm up model, provide shared context for all tests
+- Location: `apps/in-browser-ai-coding-agent-e2e/playwright.config.ts`
+- Triggers: `npm exec nx -- e2e in-browser-ai-coding-agent-e2e -c chrome|edge`
 
-**Global Setup (Pre-test):**
+**Bootstrap Script:**
 
-- Location: `apps/in-browser-ai-coding-agent/global-setup.ts` (Vitest globalSetup)
-- Triggers: Before Vitest starts
-- Responsibilities: Iterate profiles, seed Local State with flags
+- Location: `scripts/bootstrap-ai-model.mjs`
+- Triggers: `node scripts/bootstrap-ai-model.mjs --browser <name> --profile <path>`
+- Responsibilities: Seeds profile Local State, launches browser, triggers model download
+
+## CI/CD Architecture
+
+**Workflow file:** `.github/workflows/ci.yml`
+
+**Job Dependency Graph:**
+
+```
+changes (ubuntu)
+  |-- custom paths-filter action: detect code vs non-code changes
+  |
+  +-- format (ubuntu, always runs)
+  |     |-- nx format:check
+  |
+  +-- lint-typecheck-build (ubuntu, skipped if no code changes)
+  |     |-- nx run-many -t lint typecheck build
+  |
+  +-- build-chrome-image (ubuntu, skipped if no code changes)
+  |     |-- builds/caches ghcr.io/{repo}/playwright-chrome-beta Docker image
+  |     |-- tag formula: v{playwright_version}-node{node_version}-{dockerfile_sha8}
+  |     |-- skips build if matching tag already exists in GHCR
+  |     |
+  |     +-- e2e-chrome (ubuntu container)
+  |     |     |-- xvfb-run (headed mode on headless Linux)
+  |     |     |-- nx e2e in-browser-ai-coding-agent-e2e -c chrome (45 min timeout)
+  |     |
+  |     +-- test-chrome (ubuntu container)
+  |           |-- xvfb-run (headed mode on headless Linux)
+  |           |-- nx test-chrome in-browser-ai-coding-agent (45 min timeout)
+  |           |-- inline Node script extracts prompt responses to job summary
+  |
+  +-- e2e-edge (windows-11-arm, independent of build-chrome-image)
+  |     |-- node_modules cache key: {OS}-{arch}-node{hash}-nm-{lockfile_hash}
+  |     |-- AI model cache: .playwright-profiles/msedge-dev
+  |     |     key: msedge-dev-e2e-edge-v1-run{run_number}
+  |     |-- bootstrap if cache miss: scripts/bootstrap-ai-model.mjs
+  |     |-- saves bootstrap cache after bootstrap success
+  |     |-- nx e2e in-browser-ai-coding-agent-e2e -c edge (180 min timeout)
+  |     |-- saves model cache only on test success (no corrupt profiles)
+  |
+  +-- test-edge (windows-11-arm, independent of build-chrome-image)
+        |-- same node_modules + model cache pattern as e2e-edge
+        |-- separate cache key: msedge-dev-test-edge-v1-run{run_number}
+        |-- logs ONNX Runtime DLL versions + genai_config.json
+        |-- nx test-edge in-browser-ai-coding-agent (180 min timeout)
+        |-- extracts prompt responses to job summary
+        |-- logs inference cache files (adapter_cache.bin, encoder_cache.bin)
+```
+
+**Change Detection (Custom Action):**
+
+- Location: `.github/actions/paths-filter/`
+- Implementation: `.github/actions/paths-filter/index.mjs` uses `git diff --name-only` with git pathspec exclusions
+- Input format: Named filters with include/exclude patterns (YAML-like syntax)
+- `code` filter: excludes `.planning/**`, `.claude/**`, `plans/**`
+- Output: JSON object `{ code: boolean }` -- downstream jobs check `fromJSON(needs.changes.outputs.changes).code`
+
+**Docker Image Strategy:**
+
+- Location: `.github/docker/Dockerfile`
+- Base: `ubuntu:24.04`, Node.js via NodeSource, Playwright system deps, Chrome Beta
+- Rebuild triggers: Playwright version bump, Node version change, Dockerfile edit (content hash)
+- Registry: GitHub Container Registry (`ghcr.io`)
+- Build cache: GitHub Actions cache with `scope=playwright-chrome-beta`
+- Concurrency: `cancel-in-progress` on PRs, persists on main-branch pushes
+
+**Cache Keys:**
+
+- npm download cache: `ubuntu-latest` via `actions/setup-node`
+- node_modules (Windows ARM64): `{runner.os}-{runner.arch}-node{.node-version hash}-nm-{package-lock.json hash}`
+- AI model (e2e Edge): `msedge-dev-e2e-edge-v1-run{run_number}` (restore: prefix match)
+- AI model (unit Edge): `msedge-dev-test-edge-v1-run{run_number}` (restore: prefix match)
+- Docker image layers: GHA cache with `scope=playwright-chrome-beta`
+
+## Claude Code Agent Architecture (.claude/)
+
+**Settings:** `.claude/settings.json`
+
+- Registers `nx-claude-plugins` marketplace (`source: github, repo: nrwl/nx-ai-agents-config`)
+- Enables `nx@nx-claude-plugins` plugin set (loads `.github/skills/` as Claude Code skills)
+
+**Skills** (`.claude/skills/{name}/SKILL.md` + optional `references/`):
+Skills are reusable prompt modules loaded on demand by Claude Code when the trigger description matches.
+
+**`angular-developer` skill** (`.claude/skills/angular-developer/`):
+
+- SKILL.md: `angular-developer/SKILL.md`
+- Trigger: Creating Angular projects/components/services, reactivity, AI patterns, forms, DI, routing, SSR, security, accessibility, testing, CLI
+- References: 40+ topic-specific Markdown files in `angular-developer/references/`
+  - `ai-design-patterns.md` -- LLM integration, streaming, `resource.stream`
+  - `signals-overview.md` -- signals, `computed`, reactive contexts
+  - `testing-fundamentals.md` -- async-first testing, TestBed, signal inputs, `resource()` testing
+  - `accessibility.md` -- ARIA, focus management, CDK a11y tools
+  - 37 more covering components, DI, routing, forms, HTTP, error handling, performance, animations, styling
+- License: MIT (Google LLC, 2026)
+
+**`playwright-cli` skill** (`.claude/skills/playwright-cli/`):
+
+- SKILL.md: `playwright-cli/SKILL.md`
+- Trigger: Browser automation, web testing, form filling, screenshots, data extraction
+- Allowed tools restricted to: `Bash(playwright-cli:*)` only
+- References: `request-mocking.md`, `running-code.md`, `session-management.md`, `storage-state.md`, `test-generation.md`, `tracing.md`, `video-recording.md`
+
+## GitHub AI Agent Architecture (.github/agents/ and .github/skills/)
+
+**Relationship to .claude/:** The `.claude/settings.json` enables `nx@nx-claude-plugins`, which causes Claude Code to load `.github/skills/` as additional Claude Code skills alongside `.claude/skills/`. Both directories are active simultaneously.
+
+**Agent:** `.github/agents/ci-monitor-subagent.agent.md`
+
+- Model: haiku (lightweight, single-purpose)
+- Role: Execute exactly one MCP tool call and return structured result -- no polling, no decisions
+- Commands accepted: `FETCH_STATUS`, `FETCH_HEAVY`, `UPDATE_FIX`, `FETCH_THROTTLE_INFO`
+- MCP tools used: `ci_information`, `update_self_healing_fix`
+
+**Prompt file:** `.github/prompts/monitor-ci.prompt.md`
+
+- Same content as `monitor-ci/SKILL.md` but in VS Code Copilot format with `${input:args}` placeholders
+- Used when invoked as a VS Code Copilot prompt (`/monitor-ci`)
+
+**Skills in `.github/skills/`:**
+
+| Skill                     | File                               | Trigger                                    | Purpose                                                         |
+| ------------------------- | ---------------------------------- | ------------------------------------------ | --------------------------------------------------------------- |
+| `monitor-ci`              | `monitor-ci/SKILL.md`              | "monitor ci", "watch ci", CI tracking      | Orchestrates Nx Cloud CI polling + self-healing fix application |
+| `nx-generate`             | `nx-generate/SKILL.md`             | scaffold, create, generate                 | Nx generator discovery, dry-run, pattern matching               |
+| `nx-import`               | `nx-import/SKILL.md`               | adopt Nx, merge repos, import project      | `nx import` workflow with issue reference files                 |
+| `nx-plugins`              | `nx-plugins/SKILL.md`              | discover/install plugins                   | `nx list` and `nx add` guidance                                 |
+| `nx-run-tasks`            | `nx-run-tasks/SKILL.md`            | build, test, lint, serve                   | Nx task execution patterns                                      |
+| `nx-workspace`            | `nx-workspace/SKILL.md`            | explore workspace, project config, targets | `nx show project`, `nx graph`, affected projects                |
+| `link-workspace-packages` | `link-workspace-packages/SKILL.md` | new package wiring, resolution errors      | Correct workspace dep linking per package manager               |
+
+**monitor-ci Skill Architecture:**
+
+- Orchestrator pattern: skill spawns lightweight `ci-monitor-subagent` for MCP calls, runs deterministic Node scripts for decisions
+- `ci-poll-decide.mjs` -- reads CI state, outputs `{ action: "poll"|"wait"|"done", code, message, delay? }`
+- `ci-state-update.mjs` -- manages budget gates (max local-fix attempts), post-action state transitions, cycle classification
+- Fix flows documented in `monitor-ci/references/fix-flows.md`
+- MCP field sets: WAIT_FIELDS (3 fields), LIGHT_FIELDS (16 fields), HEAVY_FIELDS (4 fields) -- uses lightest sufficient set
 
 ## Error Handling
 
-**Strategy:** Async try-finally with explicit error capture.
+**Strategy:** Explicit error state in UI signals; no global error boundary for AI errors; service methods throw on missing API
 
 **Patterns:**
 
-- **Service Layer:** Throw descriptive errors when API unavailable (`throw new Error('LanguageModel API is not available')`). Session destroy in finally block to prevent resource leaks.
-- **Component Layer:** Catch errors in try-catch, set error signal for display, reset prompting state in finally block.
-- **Warm-up (setupFile):** Log warnings if warm-up fails, do not throw (tests should run even if warm-up fails). Catch and report duration.
-- **Test Fixtures:** Retry browser launch up to 5 times (2s delay between attempts) for ProcessSingleton conflicts on Windows. Throw on final attempt. Log all retry attempts.
+- `LanguageModelService` throws `Error('LanguageModel API is not available')` if `typeof LanguageModel === 'undefined'`
+- `ModelStatusComponent` catches all errors in `onSubmit()` and `onDownload()` with `try/catch`, sets `error` signal
+- `try/finally` in `LanguageModelService.prompt()` ensures `session.destroy()` always runs
+- CI: `monitor-ci` skill distinguishes environment failures (bail immediately, no budget consumed) from code failures (local-fix attempt with budget gate)
 
 ## Cross-Cutting Concerns
 
-**Logging:**
-
-- Approach: Console.log for diagnostics, tagged with [source-name] (e.g., [browser-warmup], [fixtures], [global-setup])
-- Unit test responses logged with test-specific prefix: [unit-response] for test assertion verification
-
-**Validation:**
-
-- Model API check: `typeof LanguageModel !== 'undefined'` (API presence)
-- Status validation: Check returned status against known values (available, downloading, downloadable, unavailable)
-- Prompt input: Trim and check length > 0 before submit
-
-**Authentication:**
-
-- Approach: None. On-device API requires no authentication. Browser flags enable feature access.
-
-**Browser Feature Detection:**
-
-- Profile-based: Two pre-configured profiles (Chrome Beta, Edge Dev) with distinct feature flags
-- Runtime check: `isApiSupported` property detects API presence at runtime
-- Graceful degradation: Functions check API support and throw explicit errors if unavailable
+**Logging:** `console.log`/`console.warn` with `[browser-warmup]` prefix in setup files; inline Node.js scripts in CI parse tee'd log output for GitHub Actions job summaries using regex pattern `[unit] name: "prompt"\n[unit-response]...[/unit-response]`
+**Validation:** Browser API availability checked via `typeof LanguageModel !== 'undefined'` before any API call
+**Authentication:** None -- no server-side code, no auth
+**Nx Cloud:** Connected via `nxCloudId` in `nx.json`; enables distributed task caching and Nx Cloud self-healing CI (auto-fix broken PRs)
 
 ---
 
-_Architecture analysis: 2026-03-23_
+_Architecture analysis: 2026-03-24_
