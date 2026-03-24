@@ -68,42 +68,111 @@ Targets the host element based on some condition in its ancestry.
 }
 ```
 
-### `::ng-deep`
+### `::ng-deep` (Deprecated)
 
 Disables view encapsulation for a specific rule, allowing it to "leak" into child components.
-**Note: The Angular team strongly discourages the use of `::ng-deep`.** It is supported only for backwards compatibility.
+**The Angular team strongly discourages new use of `::ng-deep`.** It is supported only for backwards compatibility. Use CSS custom properties instead (see below).
 
-## Styles in Templates
+## CSS Custom Properties for Cross-Component Theming
 
-You can use `<style>` elements directly in a component's template. View encapsulation rules still apply.
+CSS custom properties (variables) are the modern replacement for `::ng-deep` when sharing styles across components. They inherit through the DOM tree regardless of view encapsulation mode because Angular's attribute rewriting never touches `var()` resolution or custom property declarations.
 
-```html
-<style>
-  .dynamic-class {
-    color: red;
+### How It Works
+
+1. A **theme boundary** component defines CSS custom properties on its host element (via a class selector in global CSS or inline styles).
+2. All descendant components consume them with `var(--token-name)` in their own encapsulated styles.
+3. No `::ng-deep`, no `ViewEncapsulation.None` required.
+
+### Defining Theme Variables
+
+Define variables in a global stylesheet (added to `angular.json` `styles` array):
+
+```css
+/* src/styles/theme.css */
+:root,
+.theme-light {
+  --color-primary: #1a73e8;
+  --color-surface: #ffffff;
+  --color-on-surface: #202124;
+  --color-outline: #dadce0;
+}
+
+.theme-dark {
+  --color-primary: #8ab4f8;
+  --color-surface: #202124;
+  --color-on-surface: #e8eaed;
+  --color-outline: #5f6368;
+}
+```
+
+### Theme Boundary Component
+
+Apply the theme class on a host element. All children inherit the variables automatically.
+
+```ts
+@Component({
+  selector: 'app-shell',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class.theme-light]': 'isLight()',
+    '[class.theme-dark]': 'isDark()',
+  },
+  styles: `
+    :host {
+      display: block;
+      background-color: var(--color-surface);
+      color: var(--color-on-surface);
+    }
+  `,
+  template: `<ng-content />`,
+})
+export class AppShell {
+  private readonly theme = inject(ThemeService);
+  protected readonly isLight = computed(() => this.theme.mode() === 'light');
+  protected readonly isDark = computed(() => this.theme.mode() === 'dark');
+}
+```
+
+### Consuming in Child Components
+
+Child components use `var()` directly -- no imports, no awareness of the theme boundary:
+
+```css
+/* Any child component's styles */
+.card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-outline);
+}
+.card-title {
+  color: var(--color-primary);
+}
+```
+
+### Why This Works with Emulated Encapsulation
+
+Angular's emulated encapsulation rewrites selectors with attribute qualifiers (e.g., `.card[_ngcontent-abc]`), but `var(--color-primary)` resolves through the browser's computed style cascade -- not through selector matching. The variables flow from the theme boundary through every descendant element regardless of which component owns them.
+
+### `@media (prefers-color-scheme)` Integration
+
+Combine class-based switching with OS preference detection:
+
+```css
+@media (prefers-color-scheme: dark) {
+  :root:not(.theme-light) {
+    --color-primary: #8ab4f8;
+    --color-surface: #202124;
+    /* ... dark values ... */
   }
-</style>
-<div class="dynamic-class">Hello</div>
+}
 ```
 
 ## Prefer `class` and `style` Bindings Over `ngClass` / `ngStyle`
 
-Use Angular's built-in `class` and `style` bindings instead of the `NgClass` and `NgStyle` directives. They are more readable, align with standard HTML, and have better performance.
+Use Angular's built-in `class` and `style` bindings instead of `NgClass` and `NgStyle`:
 
 ```html
-<!-- Prefer -->
-<div [class.admin]="isAdmin" [class.dense]="density === 'high'">
-  <div [style.color]="textColor" [style.background-color]="backgroundColor">
-    <!-- Or with object syntax -->
-    <div [class]="{ admin: isAdmin, dense: density === 'high' }">
-      <div [style]="{ color: textColor, 'background-color': backgroundColor }">
-        <!-- Avoid -->
-        <div [ngClass]="{ admin: isAdmin, dense: density === 'high' }">
-          <div [ngStyle]="{ color: textColor, 'background-color': backgroundColor }"></div>
-        </div>
-      </div>
-    </div>
-  </div>
+<div [class.admin]="isAdmin" [style.color]="textColor">
+  <div [class]="{ admin: isAdmin, dense: density === 'high' }"></div>
 </div>
 ```
 
