@@ -60,7 +60,15 @@ export class App {}
 
 ### `@for` (track is required)
 
-The `track` expression must uniquely identify each item for DOM reuse. Use a unique property (like `id`). Fall back to `$index` only when items lack a unique identifier -- never track by a non-unique property like `name` or `label`.
+`track` maps data items to DOM nodes so Angular can perform minimal DOM operations when data changes. Choose a track expression by priority:
+
+1. **Unique property** (best): `track item.id` -- use `id`, `uuid`, or any uniquely identifying field. If the data lacks one, strongly consider adding it.
+2. **`$index`** (static collections only): `track $index` -- acceptable when the collection never changes (reordering, inserting, or removing items will destroy and recreate all affected views).
+3. **Item reference** (last resort): `track item` -- uses `===` identity. Avoid whenever possible; Angular cannot map data to DOM nodes efficiently, leading to significantly slower rendering updates.
+
+Never track by a non-unique property like `name` or `label` -- duplicate values cause incorrect DOM reuse.
+
+Unlike `*ngFor`, `@for` prioritizes **view reuse**: if the tracked property changes but the object reference stays the same, Angular updates the view's bindings (including component inputs) rather than destroying and recreating the element.
 
 ```html
 @for (item of items(); track item.id; let i = $index) {
