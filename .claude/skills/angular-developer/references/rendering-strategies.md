@@ -30,9 +30,18 @@ Content is rendered on the server for the **initial request**. Subsequent naviga
 
 Hydration is the process of making server-rendered HTML interactive in the browser.
 
-- **Full Hydration**: The entire app becomes interactive at once.
-- **Incremental Hydration**: (Advanced) Parts become interactive as needed using `@defer` blocks.
-- **Event Replay**: Captures and replays user events that happened before hydration finished.
+- **Full Hydration**: The entire app becomes interactive at once. Enable with `provideClientHydration()` in your app config (see [performance.md](performance.md) for setup).
+- **Incremental Hydration**: Parts become interactive as needed using `@defer` blocks. Reduces the amount of JavaScript executed on page load.
+- **Event Replay**: Captures and replays user events that happened before hydration finished. Enable with `withEventReplay()` inside `provideClientHydration()`.
+
+```ts
+// app.config.ts (SSR hydration setup)
+import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
+
+export const appConfig: ApplicationConfig = {
+  providers: [provideRouter(routes), provideClientHydration(withEventReplay())],
+};
+```
 
 ## Decision Matrix
 
