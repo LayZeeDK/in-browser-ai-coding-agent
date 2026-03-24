@@ -20,8 +20,39 @@ env:
   npm_config_audit: 'false'
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      changes: ${{ steps.filter.outputs.changes }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.node-version'
+          cache: 'npm'
+          cache-dependency-path: '.github/actions/paths-filter/package-lock.json'
+
+      - uses: nrwl/nx-set-shas@v5
+        id: shas
+
+      - run: npm ci --prefix .github/actions/paths-filter
+
+      - id: filter
+        uses: ./.github/actions/paths-filter
+        with:
+          base: ${{ steps.shas.outputs.base }}
+          head: ${{ steps.shas.outputs.head }}
+          filters: |
+            code:
+              - '!.planning/**'
+              - '!.claude/**'
+              - '!plans/**'
+
   format:
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -40,6 +71,8 @@ jobs:
       - run: npm exec nx -- format:check
 
   lint-typecheck-build:
+    needs: [changes]
+    if: fromJSON(needs.changes.outputs.changes).code
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -58,6 +91,8 @@ jobs:
       - run: npm exec nx -- run-many -t lint typecheck build
 
   build-chrome-image:
+    needs: [changes]
+    if: fromJSON(needs.changes.outputs.changes).code
     runs-on: ubuntu-latest
     outputs:
       image: ${{ steps.meta.outputs.image }}
@@ -119,7 +154,8 @@ jobs:
           cache-to: type=gha,scope=playwright-chrome-beta,mode=max
 
   e2e-chrome:
-    needs: build-chrome-image
+    needs: [changes, build-chrome-image]
+    if: fromJSON(needs.changes.outputs.changes).code
     runs-on: ubuntu-latest
     container:
       image: ${{ needs.build-chrome-image.outputs.image }}:latest
@@ -144,7 +180,8 @@ jobs:
         run: xvfb-run --auto-servernum npm exec nx -- e2e in-browser-ai-coding-agent-e2e -c chrome
 
   test-chrome:
-    needs: build-chrome-image
+    needs: [changes, build-chrome-image]
+    if: fromJSON(needs.changes.outputs.changes).code
     runs-on: ubuntu-latest
     container:
       image: ${{ needs.build-chrome-image.outputs.image }}:latest
@@ -188,6 +225,8 @@ jobs:
           "
 
   e2e-edge:
+    needs: [changes]
+    if: fromJSON(needs.changes.outputs.changes).code
     runs-on: windows-11-arm
     steps:
       - uses: actions/checkout@v6
@@ -265,6 +304,8 @@ jobs:
           key: ${{ runner.os }}-${{ runner.arch }}-node${{ hashFiles('.node-version') }}-nm-${{ hashFiles('package-lock.json') }}
 
   test-edge:
+    needs: [changes]
+    if: fromJSON(needs.changes.outputs.changes).code
     runs-on: windows-11-arm
     steps:
       - uses: actions/checkout@v6
