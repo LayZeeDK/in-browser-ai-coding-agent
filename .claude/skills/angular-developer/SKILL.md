@@ -84,11 +84,11 @@ In most cases for new apps, **prefer signal forms**. When making a forms decisio
 
 When implementing dependency injection in Angular, follow these guidelines:
 
-- **Fundamentals**: Overview of Dependency Injection, services, and the `inject()` function. Read [di-fundamentals.md](references/di-fundamentals.md)
-- **Creating and Using Services**: Creating services, the `providedIn: 'root'` option, and injecting into components or other services. Read [creating-services.md](references/creating-services.md)
-- **Defining Dependency Providers**: Automatic vs manual provision, `InjectionToken`, `useClass`, `useValue`, `useFactory`, and scopes. Read [defining-providers.md](references/defining-providers.md)
-- **Injection Context**: Where `inject()` is allowed, `runInInjectionContext`, and `assertInInjectionContext`. Read [injection-context.md](references/injection-context.md)
-- **Hierarchical Injectors**: The `EnvironmentInjector` vs `ElementInjector`, resolution rules, modifiers (`optional`, `skipSelf`), and `providers` vs `viewProviders`. Read [hierarchical-injectors.md](references/hierarchical-injectors.md)
+- **Fundamentals**: Overview of DI, services, and the `inject()` function. Read [di-fundamentals.md](references/di-fundamentals.md)
+- **Creating and Using Services**: `providedIn` options (`'root'`, `'platform'`, `'any'`), service lifecycle, component-specific instances. Read [creating-services.md](references/creating-services.md)
+- **Defining Dependency Providers**: `InjectionToken`, `useClass`/`useValue`/`useFactory`/`useExisting`, `provideAppInitializer`, `provideEnvironmentInitializer`, `makeEnvironmentProviders`, and the `provide*` library pattern. Read [defining-providers.md](references/defining-providers.md)
+- **Injection Context**: Where `inject()` is allowed, `runInInjectionContext`, `assertInInjectionContext`, `DestroyRef` for lifecycle cleanup, and `takeUntilDestroyed()` for RxJS subscription management. Read [injection-context.md](references/injection-context.md)
+- **Hierarchical Injectors**: `EnvironmentInjector` vs `ElementInjector`, resolution rules, modifiers (`optional`, `skipSelf`, `host`), `providers` vs `viewProviders` with content projection isolation, and `createEnvironmentInjector`. Read [hierarchical-injectors.md](references/hierarchical-injectors.md)
 
 ## Security
 

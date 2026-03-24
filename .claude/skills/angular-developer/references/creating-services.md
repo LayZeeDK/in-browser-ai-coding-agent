@@ -4,13 +4,13 @@ Services in Angular are reusable pieces of code that handle data fetching, busin
 
 ## Creating a Service
 
-You can generate a service using the Angular CLI:
+Generate a service using the Angular CLI:
 
 ```bash
 ng generate service my-data
 ```
 
-Or you can manually create a TypeScript class and decorate it with `@Injectable()`.
+Or manually create a TypeScript class decorated with `@Injectable()`.
 
 ```ts
 import { Injectable } from '@angular/core';
@@ -31,17 +31,32 @@ export class BasicDataStore {
 }
 ```
 
-### The `providedIn: 'root'` Option
+### The `providedIn` Option
 
-Using `providedIn: 'root'` is the recommended approach for most services. It tells Angular to:
+`providedIn: 'root'` is the recommended approach for most services. It tells Angular to:
 
 - **Create a single instance (singleton)** for the entire application.
-- **Make it available everywhere** automatically, without needing to list it in any `providers` array.
-- **Enable tree-shaking**, meaning the service is only included in the final JavaScript bundle if it is actually injected somewhere.
+- **Make it available everywhere** without listing it in any `providers` array.
+- **Enable tree-shaking** — the service is only bundled if actually injected.
+
+Other `providedIn` values:
+
+| Value        | Scope                                                | Use When                                  |
+| ------------ | ---------------------------------------------------- | ----------------------------------------- |
+| `'root'`     | App-wide singleton                                   | Most services (data clients, auth, state) |
+| `'platform'` | Shared across multiple Angular apps on the same page | Micro-frontends, multi-app pages          |
+| `'any'`      | One instance per lazy-loaded module boundary         | Rarely needed — prefer explicit scoping   |
+| _(omitted)_  | Must be provided manually in `providers`             | Component-scoped or route-scoped services |
+
+### Service Lifecycle
+
+- **Root-provided services** (`providedIn: 'root'`) live for the entire application lifetime. They are created lazily on first injection.
+- **Component-provided services** (in `@Component({ providers: [...] })`) are created when the component is instantiated and destroyed when the component is destroyed. Each component instance gets its own service instance.
+- **Route-provided services** (in route `providers` array) are created when the route activates and destroyed when the route is deactivated.
 
 ## Injecting a Service
 
-Once a service is created, you can inject it into components, directives, or other services using the `inject()` function.
+Use the `inject()` function in components, directives, or other services.
 
 ### Injecting into a Component
 
@@ -59,7 +74,6 @@ import { BasicDataStore } from './basic-data-store.service';
   `,
 })
 export class Example {
-  // Inject the service as a class field
   dataStore = inject(BasicDataStore);
 }
 ```
@@ -76,22 +90,29 @@ import { AdvancedDataStore } from './advanced-data-store.service';
   providedIn: 'root',
 })
 export class BasicDataStore {
-  // Injecting another service
   private advancedDataStore = inject(AdvancedDataStore);
 
   private data: string[] = [];
 
   getData(): string[] {
-    // Combine data from this service and the injected service
     return [...this.data, ...this.advancedDataStore.getData()];
   }
 }
 ```
 
-## Advanced Service Patterns
+## Component-Specific Instances
 
-While `providedIn: 'root'` covers most scenarios, you may sometimes need:
+When a component needs its own isolated instance of a service, provide it directly in the component's `providers` array. This is the standard pattern for component-specific state (forms, edit sessions, local caches).
 
-- **Component-specific instances**: If a component needs its own isolated instance of a service, provide it directly in the component's `@Component({ providers: [MyService] })` array.
-- **Factory providers**: For dynamic creation.
-- **Value providers**: For injecting configuration objects.
+```ts
+@Component({
+  selector: 'app-editor',
+  providers: [EditorStateService],
+  template: `...`,
+})
+export class EditorComponent {
+  private state = inject(EditorStateService);
+}
+```
+
+Each `EditorComponent` instance gets its own `EditorStateService`. When the component is destroyed, so is its service instance.
