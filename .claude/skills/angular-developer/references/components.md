@@ -86,11 +86,18 @@ Implicit variables: `$index`, `$count`, `$first`, `$last`, `$even`, `$odd`.
 
 ### Multi-Slot Projection
 
-Use `select` to route content to named slots. An `<ng-content>` without `select` catches unmatched content.
+Use `select` to route content to named slots. Prefer **component or directive selectors** over bare attributes or CSS classes — component selectors are discoverable, type-checked, and self-documenting. An `<ng-content>` without `select` catches unmatched content.
 
 ```ts
+@Component({ selector: 'card-title', template: `<ng-content />` })
+export class CardTitle {}
+
+@Component({ selector: 'card-body', template: `<ng-content />` })
+export class CardBody {}
+
 @Component({
   selector: 'custom-card',
+  imports: [CardTitle, CardBody],
   template: `
     <ng-content select="card-title" />
     <div class="divider"></div>
@@ -106,7 +113,7 @@ export class CustomCard {}
 Default content renders when nothing is projected:
 
 ```html
-<ng-content select=".actions">
+<ng-content select="card-actions">
   <button (click)="close()">Close</button>
 </ng-content>
 ```
@@ -213,7 +220,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
 
 ### DestroyRef (Modern Alternative)
 
-Register cleanup callbacks without `OnDestroy`. Keeps setup and teardown together:
+`DestroyRef` is an **alternative** to `ngOnDestroy`, not a supplement. Choose one approach per cleanup concern — do not split the same cleanup between both. `DestroyRef` co-locates setup and teardown, which is its main advantage:
 
 ```ts
 constructor() {
@@ -222,6 +229,8 @@ constructor() {
   inject(DestroyRef).onDestroy(() => observer.disconnect());
 }
 ```
+
+When the class already implements `OnDestroy` (e.g., because the prompt or interface requires it), put all cleanup in `ngOnDestroy` and do not also register `DestroyRef.onDestroy` for the same resource.
 
 ### afterNextRender / afterEveryRender
 
@@ -271,3 +280,4 @@ Triggers: `idle` (default), `viewport`, `interaction`, `hover`, `immediate`, `ti
 - **Keep lifecycle methods simple**: Delegate to well-named methods.
 - **Always implement lifecycle interfaces** (`OnInit`, `AfterViewInit`, etc.) for type safety.
 - **Refactor complex template expressions** into `computed()` signals.
+- **Do not expose internal state in reusable component templates.** Measurement values (element height, scroll position), debug info, and implementation details belong in private fields or outputs — not rendered in the template. If the consumer needs the data, expose it via an output or a public signal, not inline text.
