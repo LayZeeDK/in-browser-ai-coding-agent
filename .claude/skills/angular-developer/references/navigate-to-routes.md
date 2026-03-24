@@ -24,7 +24,7 @@ export class Nav {
 ```
 
 - **Absolute Paths**: Start with `/` (e.g., `/settings`).
-- **Relative Paths**: No leading `/`. Use `../` to go up a level.
+- **Relative Paths**: No leading `/`. Use `../` to go up a level, `['..', 'list']` for sibling routes.
 
 ## Programmatic Navigation (`Router`)
 
@@ -38,17 +38,20 @@ Uses an array of commands.
 private router = inject(Router);
 private route = inject(ActivatedRoute);
 
-// Standard navigation
+// Absolute navigation
 this.router.navigate(['/profile']);
 
-// With parameters
+// With query parameters and fragment
 this.router.navigate(['/search'], {
   queryParams: { q: 'angular' },
-  fragment: 'results'
+  fragment: 'results',
 });
 
-// Relative navigation
+// Relative navigation (requires relativeTo)
 this.router.navigate(['edit'], { relativeTo: this.route });
+
+// Navigate to parent
+this.router.navigate(['..'], { relativeTo: this.route });
 ```
 
 ### `router.navigateByUrl()`
@@ -57,10 +60,37 @@ Uses a string path. Ideal for absolute navigation or full URLs.
 
 ```ts
 this.router.navigateByUrl('/products/123?view=details');
-
-// Replace current entry in history
-this.router.navigateByUrl('/login', { replaceUrl: true });
 ```
+
+### `NavigationExtras` Options
+
+Both `navigate()` and `navigateByUrl()` accept options:
+
+| Option                | Purpose                                                           |
+| --------------------- | ----------------------------------------------------------------- |
+| `replaceUrl`          | Replace current history entry (user cannot press Back to return)  |
+| `skipLocationChange`  | Navigate without updating the browser URL                         |
+| `browserUrl`          | Display a different URL in the address bar than the actual route  |
+| `state`               | Attach arbitrary data to the `History.state` object               |
+| `queryParams`         | Set query parameters (`navigate()` only)                          |
+| `fragment`            | Set URL fragment (`navigate()` only)                              |
+| `relativeTo`          | Base `ActivatedRoute` for relative navigation (`navigate()` only) |
+| `onSameUrlNavigation` | Per-navigation override: `'ignore'` or `'reload'`                 |
+
+```ts
+// Replace history entry (e.g., after login redirect)
+this.router.navigateByUrl('/dashboard', { replaceUrl: true });
+
+// Display different URL in address bar
+this.router.navigateByUrl('/not-found', { browserUrl: '/products/missing-item' });
+
+// Attach state for the destination component
+this.router.navigate(['/checkout'], { state: { fromCart: true } });
+```
+
+## Binding Route Data to Component Inputs
+
+Instead of injecting `ActivatedRoute`, enable `withComponentInputBinding()` in `provideRouter` to pass route params, query params, and resolved data directly to component `input()` properties by name. See [data-resolvers.md](data-resolvers.md) for setup and examples.
 
 ## URL Parameters
 
