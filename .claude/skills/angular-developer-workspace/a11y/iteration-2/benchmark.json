@@ -1,0 +1,67 @@
+{
+  "metadata": {
+    "skill_name": "angular-developer",
+    "skill_path": ".claude/skills/angular-developer",
+    "executor_model": "claude-sonnet-4-6",
+    "analyzer_model": "claude-opus-4-6",
+    "timestamp": "2026-03-24T13:30:00Z",
+    "evals_run": [1, 2, 3],
+    "runs_per_configuration": "3-4 per eval (10 total per config)"
+  },
+  "runs": [],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0},
+      "time_seconds": {"mean": 117.7, "stddev": 29.1, "min": 79.8, "max": 157.8},
+      "tokens": {"mean": 29905, "stddev": 5614, "min": 22643, "max": 39236}
+    },
+    "without_skill": {
+      "pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0},
+      "time_seconds": {"mean": 96.5, "stddev": 22.1, "min": 62.0, "max": 133.7},
+      "tokens": {"mean": 17108, "stddev": 3352, "min": 12976, "max": 23423}
+    },
+    "delta": {
+      "pass_rate": "+0.00 (quantitative assertions still non-discriminating)",
+      "time_seconds": "+21.2",
+      "tokens": "+12797"
+    }
+  },
+  "qualitative_analysis": {
+    "eval_1_axe_a11y_testing": {
+      "discriminating_patterns": {
+        "lazy_load_axe": {"with_skill": "4/4 runs (100%)", "without_skill": "0/4 runs (0%)"},
+        "scoped_audit": {"with_skill": "4/4 runs (100%)", "without_skill": "0/4 runs (0%)"},
+        "custom_matcher": {"with_skill": "4/4 runs (100%)", "without_skill": "0/4 runs (0%)"},
+        "configure_once": {"with_skill": "4/4 runs (100%)", "without_skill": "0/4 runs (0%)"},
+        "role_status_vs_alert": {"with_skill": "4/4 runs (100%)", "without_skill": "0/4 runs (0%)"}
+      },
+      "summary": "The improved accessibility.md testing section directly transferred to all with-skill runs. Zero without-skill runs adopted any of the 5 key patterns, confirming these are genuinely additive to the model's base knowledge."
+    },
+    "eval_2_modal_focus_trap": {
+      "discriminating_patterns": {
+        "cdkFocusInitial": {"with_skill": "3/3 runs (100%)", "without_skill": "2/3 runs (67%)"},
+        "LiveAnnouncer": {"with_skill": "3/3 runs (100%)", "without_skill": "1/3 runs (33%)"},
+        "inert_attribute": {"with_skill": "3/3 runs (100%)", "without_skill": "3/3 runs (100%)"},
+        "host_object": {"with_skill": "3/3 runs (100%)", "without_skill": "3/3 runs (100%)"}
+      },
+      "summary": "LiveAnnouncer usage is the clearest differentiator (100% vs 33%). cdkFocusInitial improved but was partially known without skill. inert and host object are now universally adopted even without skill (model learned since iteration-1)."
+    },
+    "eval_3_http_error_handling": {
+      "discriminating_patterns": {
+        "httpResource_error_flow_note": {"with_skill": "3/3 runs reference resource errors not reaching ErrorHandler", "without_skill": "2/3 runs mention this"},
+        "effect_for_resource_errors": {"with_skill": "3/3 runs use effect() to bridge", "without_skill": "2/3 runs use computed() instead"},
+        "typed_ApiError_class": {"with_skill": "3/3 runs", "without_skill": "3/3 runs"}
+      },
+      "summary": "Marginal skill lift. The improved error-handling.md patterns (typed ApiError, functional interceptor, effect-based httpResource error bridging) were largely matched by baseline knowledge. The resource-error-flow note is the only consistent differentiator."
+    }
+  },
+  "notes": [
+    "Quantitative pass rates remain 100% both configs -- assertions test broad capabilities the model knows regardless of skill.",
+    "The QUALITATIVE improvement is dramatic for eval 1 (axe a11y testing): 5 key patterns went from 0% to 100% adoption with the improved skill.",
+    "Eval 2 (modal) shows moderate lift: LiveAnnouncer (100% vs 33%) and consistent cdkFocusInitial usage.",
+    "Eval 3 (HTTP errors) shows minimal lift: the model already knows HTTP error patterns well.",
+    "With-skill runs use ~1.75x more tokens on average due to reading skill references.",
+    "Variance is low within configs: stddev ~15-20% of mean for both time and tokens.",
+    "The accessibility.md improvements are the clear winner -- they teach patterns genuinely absent from model training data."
+  ]
+}

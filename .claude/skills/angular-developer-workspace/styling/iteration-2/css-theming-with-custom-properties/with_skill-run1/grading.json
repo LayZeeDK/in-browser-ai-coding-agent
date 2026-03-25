@@ -1,0 +1,32 @@
+{
+  "eval_id": 0,
+  "eval_name": "css-theming-with-custom-properties",
+  "configuration": "with_skill",
+  "expectations": [
+    {
+      "text": "uses_css_custom_properties",
+      "passed": true,
+      "evidence": "Defines --color-primary, --color-surface etc. with var() consumption throughout components"
+    },
+    {
+      "text": "no_ng_deep",
+      "passed": true,
+      "evidence": "Explicitly states 'No ::ng-deep' multiple times; none present in code"
+    },
+    {
+      "text": "runtime_theme_switching",
+      "passed": true,
+      "evidence": "ThemeService with signal<ThemeMode> and toggle() method; AppShell uses host class bindings to switch .theme-light/.theme-dark"
+    },
+    {
+      "text": "works_with_emulated_encapsulation",
+      "passed": true,
+      "evidence": "Uses default ViewEncapsulation.Emulated throughout; detailed explanation of why var() works across encapsulation boundaries"
+    },
+    {
+      "text": "child_component_consumption",
+      "passed": true,
+      "evidence": "ProductCard uses var(--color-surface), var(--color-primary) etc.; StatusBadge uses var(--color-primary), var(--color-secondary)"
+    }
+  ]
+}

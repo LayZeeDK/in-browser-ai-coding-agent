@@ -1,0 +1,45 @@
+{
+  "expectations": [
+    {
+      "text": "Configures TestBed with provideHttpClient() and provideHttpClientTesting()",
+      "passed": true,
+      "evidence": "Lines 52-53: `providers: [provideHttpClient(), provideHttpClientTesting()]`"
+    },
+    {
+      "text": "Injects HttpTestingController from TestBed",
+      "passed": true,
+      "evidence": "Line 57: `httpTesting = TestBed.inject(HttpTestingController);`"
+    },
+    {
+      "text": "Injects the TodoService from TestBed using TestBed.inject()",
+      "passed": true,
+      "evidence": "Line 56: `service = TestBed.inject(TodoService);`"
+    },
+    {
+      "text": "Tests httpResource by expecting a request with HttpTestingController and flushing a response",
+      "passed": true,
+      "evidence": "Lines 69-85: `httpTesting.expectOne('/api/todos')` with method check and flush, then asserts `service.todos.value()`"
+    },
+    {
+      "text": "Tests the addTodo method triggers an HTTP POST request",
+      "passed": true,
+      "evidence": "Lines 182-199: `service.addTodo('Write tests')`, then `httpTesting.expectOne('/api/todos')` with `expect(postReq.request.method).toBe('POST')` and body check. The service at line 37 uses `this.http.post<Todo>('/api/todos', { title })`"
+    },
+    {
+      "text": "Tests the completedCount computed signal returns the correct derived value",
+      "passed": true,
+      "evidence": "Lines 114-175: tests return 0 for no completed, 2 for two completed, updates reactively after reload"
+    },
+    {
+      "text": "Includes afterEach or cleanup that calls httpTesting.verify() to ensure no unexpected requests",
+      "passed": true,
+      "evidence": "Lines 60-62: `afterEach(() => { httpTesting.verify(); });`"
+    },
+    {
+      "text": "Tests an error scenario (e.g., flush with error status, verify resource error state)",
+      "passed": true,
+      "evidence": "Lines 265-338: flushes with status 500, checks `service.todos.error()` truthy; flushes with 404, checks status is 'error'"
+    }
+  ],
+  "summary": { "passed": 8, "failed": 0, "total": 8, "pass_rate": 1.0 }
+}

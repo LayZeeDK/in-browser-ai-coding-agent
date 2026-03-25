@@ -1,0 +1,47 @@
+{
+  "eval_id": 0,
+  "eval_name": "api-error-toast-service",
+  "summary": {"passed": 8, "failed": 0, "total": 8, "pass_rate": 1.0},
+  "expectations": [
+    {
+      "text": "http-error-response-distinction",
+      "passed": true,
+      "evidence": "api-http.service.ts handleError() checks error.status === 0 for network errors vs numeric status codes for backend errors, typed as HttpErrorResponse"
+    },
+    {
+      "text": "401-redirect-to-login",
+      "passed": true,
+      "evidence": "handleError() calls this.router.navigate(['/login']) on status 401 with a session-expired toast"
+    },
+    {
+      "text": "retry-on-503",
+      "passed": true,
+      "evidence": "retry.interceptor.ts uses retry({ count: MAX_RETRIES, delay }) with exponential backoff (2^retryCount * 1000 ms), only retries on status 503"
+    },
+    {
+      "text": "global-error-handler-injectable",
+      "passed": true,
+      "evidence": "global-error-handler.ts: @Injectable() present (no providedIn), class implements ErrorHandler"
+    },
+    {
+      "text": "provide-browser-global-listeners",
+      "passed": true,
+      "evidence": "app.config.ts: provideBrowserGlobalErrorListeners() is the first provider in the array"
+    },
+    {
+      "text": "functional-interceptor",
+      "passed": true,
+      "evidence": "retry.interceptor.ts exports retryInterceptor as HttpInterceptorFn — functional, not class-based"
+    },
+    {
+      "text": "inject-function",
+      "passed": true,
+      "evidence": "All services use inject() for DI (e.g., inject(HttpClient), inject(ToastService), inject(Router))"
+    },
+    {
+      "text": "tests-with-http-testing-controller",
+      "passed": true,
+      "evidence": "api-http.service.spec.ts and retry.interceptor.spec.ts both use provideHttpClient() followed by provideHttpClientTesting() and HttpTestingController"
+    }
+  ]
+}

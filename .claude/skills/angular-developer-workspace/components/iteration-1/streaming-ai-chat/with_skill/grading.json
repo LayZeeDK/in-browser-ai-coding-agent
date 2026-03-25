@@ -1,0 +1,45 @@
+{
+  "expectations": [
+    {
+      "text": "Uses resource() with the stream property for streaming responses",
+      "passed": true,
+      "evidence": "ai-chat.component.ts:116 uses `resource({ stream: async () => { ... } })` — correct streaming resource pattern"
+    },
+    {
+      "text": "Uses ResourceStreamItem signal pattern inside the stream function",
+      "passed": true,
+      "evidence": "ai-chat.component.ts:9 imports ResourceStreamItem, lines 121-124 create `signal<ResourceStreamItem<string>>({ value: '' })` and update it with chunk data"
+    },
+    {
+      "text": "Separates user input signal from submitted prompt signal (no fetch on keystroke)",
+      "passed": true,
+      "evidence": "ai-chat.component.ts:110-113: `promptInput = signal('')` for live input, `submittedPrompt = signal('')` for triggering — resource only reads submittedPrompt"
+    },
+    {
+      "text": "Uses linkedSignal to accumulate chat history across multiple responses",
+      "passed": true,
+      "evidence": "ai-chat.component.ts:164-199 uses `linkedSignal` with source/computation to accumulate ChatMessage[] history, preserving previous messages"
+    },
+    {
+      "text": "Template shows loading state while streaming",
+      "passed": true,
+      "evidence": "ai-chat.component.html:15-17 shows 'Thinking...' indicator when `chatResponse.isLoading()`"
+    },
+    {
+      "text": "Template displays error state with retry option",
+      "passed": true,
+      "evidence": "ai-chat.component.html:19-24 shows error with Retry button calling `retryLastPrompt()` which calls `chatResponse.reload()`"
+    },
+    {
+      "text": "Component uses ChangeDetectionStrategy.OnPush",
+      "passed": true,
+      "evidence": "ai-chat.component.ts:19 has `changeDetection: ChangeDetectionStrategy.OnPush`"
+    }
+  ],
+  "summary": {
+    "passed": 7,
+    "failed": 0,
+    "total": 7,
+    "pass_rate": 1.0
+  }
+}

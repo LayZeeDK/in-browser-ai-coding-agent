@@ -1,0 +1,190 @@
+{
+  "metadata": {
+    "skill_name": "angular-developer",
+    "skill_path": ".claude/skills/angular-developer",
+    "executor_model": "claude-sonnet-4-6",
+    "analyzer_model": "claude-opus-4-6",
+    "timestamp": "2026-03-24T09:30:00Z",
+    "evals_run": [1, 2, 3],
+    "runs_per_configuration": 5,
+    "iteration": 2,
+    "previous_iteration": 1
+  },
+
+  "runs": [
+    {
+      "eval_id": 1, "eval_name": "preloading-and-redirect-command", "configuration": "with_skill", "run_number": 1,
+      "result": {"pass_rate": 1.0, "passed": 6, "failed": 0, "total": 6, "time_seconds": 64.8, "tokens": 25945, "tool_calls": 8, "errors": 0},
+      "expectations": [
+        {"text": "Uses withPreloading() with PreloadAllModules", "passed": true, "evidence": "withPreloading(PreloadAllModules) in provideRouter"},
+        {"text": "Uses provideRouter() with withPreloading feature", "passed": true, "evidence": "provideRouter(routes, withPreloading(PreloadAllModules))"},
+        {"text": "Creates functional canActivate guard", "passed": true, "evidence": "CanActivateFn functional guard"},
+        {"text": "Uses RedirectCommand for auth redirect", "passed": true, "evidence": "new RedirectCommand(router.parseUrl('/login'), { replaceUrl: true })"},
+        {"text": "canActivate guard on admin route", "passed": true, "evidence": "canActivate: [authGuard]"},
+        {"text": "Lazy-loads admin route", "passed": true, "evidence": "loadChildren for admin"}
+      ]
+    },
+    {
+      "eval_id": 1, "eval_name": "preloading-and-redirect-command", "configuration": "with_skill", "run_number": 2,
+      "result": {"pass_rate": 1.0, "passed": 6, "failed": 0, "total": 6, "time_seconds": 73.9, "tokens": 26001, "tool_calls": 9, "errors": 0},
+      "expectations": [
+        {"text": "Uses withPreloading() with PreloadAllModules", "passed": true, "evidence": "withPreloading(PreloadAllModules) in provideRouter"},
+        {"text": "Uses provideRouter() with withPreloading feature", "passed": true, "evidence": "provideRouter(routes, withPreloading(PreloadAllModules))"},
+        {"text": "Creates functional canActivate guard", "passed": true, "evidence": "CanActivateFn functional guard"},
+        {"text": "Uses RedirectCommand for auth redirect", "passed": true, "evidence": "new RedirectCommand(router.parseUrl('/login'), { replaceUrl: true })"},
+        {"text": "canActivate guard on admin route", "passed": true, "evidence": "canActivate: [authGuard]"},
+        {"text": "Lazy-loads admin route", "passed": true, "evidence": "loadChildren for admin"}
+      ]
+    },
+    {
+      "eval_id": 1, "eval_name": "preloading-and-redirect-command", "configuration": "without_skill", "run_number": 1,
+      "result": {"pass_rate": 1.0, "passed": 6, "failed": 0, "total": 6, "time_seconds": 44.2, "tokens": 13612, "tool_calls": 2, "errors": 0},
+      "expectations": [
+        {"text": "Uses withPreloading() with PreloadAllModules", "passed": true, "evidence": "withPreloading(PreloadAllModules)"},
+        {"text": "Uses provideRouter() with withPreloading feature", "passed": true, "evidence": "provideRouter(routes, withPreloading(PreloadAllModules))"},
+        {"text": "Creates functional canActivate guard", "passed": true, "evidence": "CanActivateFn"},
+        {"text": "Uses RedirectCommand for auth redirect", "passed": true, "evidence": "new RedirectCommand"},
+        {"text": "canActivate guard on admin route", "passed": true, "evidence": "canActivate: [authGuard]"},
+        {"text": "Lazy-loads admin route", "passed": true, "evidence": "loadComponent for admin"}
+      ]
+    },
+    {
+      "eval_id": 1, "eval_name": "preloading-and-redirect-command", "configuration": "without_skill", "run_number": 2,
+      "result": {"pass_rate": 1.0, "passed": 6, "failed": 0, "total": 6, "time_seconds": 48.7, "tokens": 14139, "tool_calls": 2, "errors": 0},
+      "expectations": [
+        {"text": "Uses withPreloading() with PreloadAllModules", "passed": true, "evidence": "withPreloading(PreloadAllModules)"},
+        {"text": "Uses provideRouter() with withPreloading feature", "passed": true, "evidence": "provideRouter(routes, withPreloading(PreloadAllModules))"},
+        {"text": "Creates functional canActivate guard", "passed": true, "evidence": "CanActivateFn"},
+        {"text": "Uses RedirectCommand for auth redirect", "passed": true, "evidence": "new RedirectCommand(urlTree)"},
+        {"text": "canActivate guard on admin route", "passed": true, "evidence": "canActivate: [authGuard]"},
+        {"text": "Lazy-loads admin route", "passed": true, "evidence": "loadComponent for admin"}
+      ]
+    },
+    {
+      "eval_id": 2, "eval_name": "pathmatch-and-input-binding", "configuration": "with_skill", "run_number": 1,
+      "result": {"pass_rate": 1.0, "passed": 6, "failed": 0, "total": 6, "time_seconds": 55.0, "tokens": 25194, "tool_calls": 7, "errors": 0},
+      "expectations": [
+        {"text": "Explains pathMatch prefix default", "passed": true, "evidence": "Empty string is prefix of every URL"},
+        {"text": "Fixes with pathMatch: 'full'", "passed": true, "evidence": "pathMatch: 'full' on empty redirect"},
+        {"text": "withComponentInputBinding()", "passed": true, "evidence": "withComponentInputBinding() in provideRouter"},
+        {"text": "input() for route param", "passed": true, "evidence": "input.required<string>() for :id"},
+        {"text": "input() for resolved data", "passed": true, "evidence": "input.required<User>() for user"},
+        {"text": "Functional ResolveFn", "passed": true, "evidence": "ResolveFn<User> functional resolver"}
+      ]
+    },
+    {
+      "eval_id": 2, "eval_name": "pathmatch-and-input-binding", "configuration": "with_skill", "run_number": 2,
+      "result": {"pass_rate": 1.0, "passed": 6, "failed": 0, "total": 6, "time_seconds": 53.1, "tokens": 24030, "tool_calls": 7, "errors": 0},
+      "expectations": [
+        {"text": "Explains pathMatch prefix default", "passed": true, "evidence": "Empty string is prefix of every URL"},
+        {"text": "Fixes with pathMatch: 'full'", "passed": true, "evidence": "pathMatch: 'full'"},
+        {"text": "withComponentInputBinding()", "passed": true, "evidence": "withComponentInputBinding() in provideRouter"},
+        {"text": "input() for route param", "passed": true, "evidence": "input.required<string>() for :id"},
+        {"text": "input() for resolved data", "passed": true, "evidence": "input.required<User>() for user"},
+        {"text": "Functional ResolveFn", "passed": true, "evidence": "ResolveFn functional resolver"}
+      ]
+    },
+    {
+      "eval_id": 2, "eval_name": "pathmatch-and-input-binding", "configuration": "without_skill", "run_number": 1,
+      "result": {"pass_rate": 1.0, "passed": 6, "failed": 0, "total": 6, "time_seconds": 47.7, "tokens": 13960, "tool_calls": 2, "errors": 0},
+      "expectations": [
+        {"text": "Explains pathMatch prefix default", "passed": true, "evidence": "pathMatch: 'prefix' default explanation"},
+        {"text": "Fixes with pathMatch: 'full'", "passed": true, "evidence": "pathMatch: 'full'"},
+        {"text": "withComponentInputBinding()", "passed": true, "evidence": "withComponentInputBinding()"},
+        {"text": "input() for route param", "passed": true, "evidence": "input.required<string>()"},
+        {"text": "input() for resolved data", "passed": true, "evidence": "input.required<User>()"},
+        {"text": "Functional ResolveFn", "passed": true, "evidence": "ResolveFn<User>"}
+      ]
+    },
+    {
+      "eval_id": 2, "eval_name": "pathmatch-and-input-binding", "configuration": "without_skill", "run_number": 2,
+      "result": {"pass_rate": 1.0, "passed": 6, "failed": 0, "total": 6, "time_seconds": 38.5, "tokens": 13490, "tool_calls": 2, "errors": 0},
+      "expectations": [
+        {"text": "Explains pathMatch prefix default", "passed": true, "evidence": "pathMatch: 'prefix' default"},
+        {"text": "Fixes with pathMatch: 'full'", "passed": true, "evidence": "pathMatch: 'full'"},
+        {"text": "withComponentInputBinding()", "passed": true, "evidence": "withComponentInputBinding()"},
+        {"text": "input() for route param", "passed": true, "evidence": "input.required<string>()"},
+        {"text": "input() for resolved data", "passed": true, "evidence": "input.required<User>()"},
+        {"text": "Functional ResolveFn", "passed": true, "evidence": "ResolveFn<User>"}
+      ]
+    },
+    {
+      "eval_id": 3, "eval_name": "view-transitions-and-events", "configuration": "with_skill", "run_number": 1,
+      "result": {"pass_rate": 1.0, "passed": 6, "failed": 0, "total": 6, "time_seconds": 95.8, "tokens": 27511, "tool_calls": 9, "errors": 0},
+      "expectations": [
+        {"text": "withViewTransitions() in provideRouter", "passed": true, "evidence": "withViewTransitions() configured"},
+        {"text": "view-transition-name on both components", "passed": true, "evidence": "style.view-transition-name binding in list and detail"},
+        {"text": "NavigationStart shows spinner", "passed": true, "evidence": "NavigationStart sets loading true"},
+        {"text": "NavigationEnd/Cancel/Error hides spinner", "passed": true, "evidence": "All three terminal events handled"},
+        {"text": "NavigationSkipped handled", "passed": true, "evidence": "NavigationSkipped in filter with pitfall explanation"},
+        {"text": "onViewTransitionCreated or CSS pseudo-elements", "passed": true, "evidence": "Both shown: CSS pseudo-elements + onViewTransitionCreated"}
+      ]
+    },
+    {
+      "eval_id": 3, "eval_name": "view-transitions-and-events", "configuration": "without_skill", "run_number": 1,
+      "result": {"pass_rate": 1.0, "passed": 6, "failed": 0, "total": 6, "time_seconds": 73.7, "tokens": 16278, "tool_calls": 2, "errors": 0},
+      "expectations": [
+        {"text": "withViewTransitions() in provideRouter", "passed": true, "evidence": "withViewTransitions()"},
+        {"text": "view-transition-name on both components", "passed": true, "evidence": "style.view-transition-name in list and detail"},
+        {"text": "NavigationStart shows spinner", "passed": true, "evidence": "NavigationStart shows spinner"},
+        {"text": "NavigationEnd/Cancel/Error hides spinner", "passed": true, "evidence": "All terminal events handled"},
+        {"text": "NavigationSkipped handled", "passed": true, "evidence": "NavigationSkipped with explanation"},
+        {"text": "onViewTransitionCreated or CSS pseudo-elements", "passed": true, "evidence": "Both CSS and onViewTransitionCreated shown"}
+      ]
+    }
+  ],
+
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0},
+      "time_seconds": {"mean": 68.5, "stddev": 16.2, "min": 53.1, "max": 95.8},
+      "tokens": {"mean": 25736, "stddev": 1178, "min": 24030, "max": 27511}
+    },
+    "without_skill": {
+      "pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0},
+      "time_seconds": {"mean": 50.6, "stddev": 12.8, "min": 38.5, "max": 73.7},
+      "tokens": {"mean": 14296, "stddev": 1060, "min": 13490, "max": 16278}
+    },
+    "delta": {
+      "pass_rate": "+0.00",
+      "time_seconds": "+17.9",
+      "tokens": "+11440"
+    }
+  },
+
+  "comparison_with_iteration_1": {
+    "with_skill_tokens": {
+      "iteration_1_mean": 28534,
+      "iteration_2_mean": 25736,
+      "reduction": "-9.8%",
+      "note": "Enriched references reduced need for node_modules exploration"
+    },
+    "with_skill_time": {
+      "iteration_1_mean": 86.7,
+      "iteration_2_mean": 68.5,
+      "reduction": "-21.0%",
+      "note": "Fewer tool calls needed to find missing APIs"
+    },
+    "with_skill_tool_calls": {
+      "iteration_1_max": 23,
+      "iteration_2_max": 9,
+      "reduction": "-61%",
+      "note": "No more exploring node_modules/@angular/router type definitions"
+    },
+    "overhead_vs_without_skill": {
+      "iteration_1_token_overhead": "+96%",
+      "iteration_2_token_overhead": "+80%",
+      "iteration_1_time_overhead": "+66%",
+      "iteration_2_time_overhead": "+35%"
+    }
+  },
+
+  "notes": [
+    "Pass rate remains 100% for both configurations across all 10 runs — these assertions don't discriminate between with/without skill.",
+    "Token variance is low: with_skill stddev=1178 (4.6%), without_skill stddev=1060 (7.4%) — consistent behavior across runs.",
+    "Time variance is higher: with_skill stddev=16.2s (23.6%), without_skill stddev=12.8s (25.3%) — likely due to network/model latency rather than skill quality.",
+    "Enrichment reduced with-skill overhead: tokens -9.8%, time -21%, max tool calls -61% vs iteration 1.",
+    "With-skill runs now consistently cite enriched references (CanMatch vs CanActivate guidance, NavigationSkipped pitfall, pathMatch table). These are qualitative improvements not captured by pass/fail assertions.",
+    "The remaining token overhead (~80%) is inherent: reading reference files costs tokens. This is the expected cost of having a skill — the benefit is consistency and best-practice guidance."
+  ]
+}

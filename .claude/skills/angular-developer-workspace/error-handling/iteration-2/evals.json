@@ -1,0 +1,23 @@
+{
+  "skill_name": "angular-developer",
+  "evals": [
+    {
+      "id": 0,
+      "name": "api-error-toast-service",
+      "prompt": "I have an Angular 21 app that calls a REST API for user management. Right now errors just get swallowed silently. I need:\n\n- A service that wraps HttpClient calls and shows toast notifications on failure (network errors should say \"Connection lost\", 401 should redirect to login, other errors show the server message)\n- The service should retry on 503s a couple times before giving up\n- Also need a global error handler that logs unhandled errors to our analytics endpoint\n- Tests for all of it\n\nWe're using signals and standalone components. Can you set this up?",
+      "expected_output": "UserApiService with HttpErrorResponse handling, retry interceptor, toast service, GlobalErrorHandler with analytics, tests with HttpTestingController"
+    },
+    {
+      "id": 1,
+      "name": "dashboard-httpresource-loading-states",
+      "prompt": "I'm building a dashboard page in Angular 21 that loads data from 3 different API endpoints. I want to use httpResource for the read-only data and show proper loading/error states for each panel independently. When one panel fails, the others should still work. Users should be able to retry failed panels.\n\nAlso one of the panels needs to validate the response shape because the backend team keeps changing the contract -- maybe use zod or something?\n\nCan you build the component with tests? We use vitest in this project.",
+      "expected_output": "Dashboard with 3 independent httpResource instances, hasValue/error/isLoading guards, Zod parse validation, reload() retry, vitest tests with HttpTestingController"
+    },
+    {
+      "id": 2,
+      "name": "error-logging-setup-from-scratch",
+      "prompt": "Starting a new Angular 21 project and need to set up error handling from scratch. What's the right way to wire up:\n- catching unhandled errors globally and sending them to Sentry (or similar)\n- making sure errors from httpResource and resource() are handled in the components, not globally\n- testing that errors flow to the right place\n\nJust give me the setup code and the tests, I'll adapt the Sentry part to our actual SDK.",
+      "expected_output": "ErrorHandler with Sentry-like integration, provideBrowserGlobalErrorListeners, clear explanation of resource/httpResource error boundary, tests with rethrowApplicationErrors"
+    }
+  ]
+}

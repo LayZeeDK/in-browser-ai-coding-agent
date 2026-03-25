@@ -1,0 +1,182 @@
+{
+  "metadata": {
+    "skill_name": "angular-developer",
+    "skill_path": ".claude/skills/angular-developer/",
+    "executor_model": "claude-sonnet-4-6",
+    "analyzer_model": "claude-opus-4-6",
+    "timestamp": "2026-03-24T00:10:00Z",
+    "evals_run": [1, 2, 3],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_id": 1,
+      "eval_name": "DestroyRef + takeUntilDestroyed",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Uses DestroyRef from @angular/core for cleanup registration", "passed": true, "evidence": "Found DestroyRef imported from @angular/core"},
+        {"text": "Uses takeUntilDestroyed() from @angular/core/rxjs-interop", "passed": true, "evidence": "Found takeUntilDestroyed usage"},
+        {"text": "Does NOT implement OnDestroy interface or ngOnDestroy method", "passed": true, "evidence": "No OnDestroy implementation found"},
+        {"text": "Imports takeUntilDestroyed from @angular/core/rxjs-interop", "passed": true, "evidence": "Correct import from @angular/core/rxjs-interop"},
+        {"text": "If used outside injection context, passes DestroyRef explicitly", "passed": true, "evidence": "Used takeUntilDestroyed() in injection context (no arg needed)"},
+        {"text": "Component uses ChangeDetectionStrategy.OnPush", "passed": true, "evidence": "Found OnPush change detection"}
+      ]
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "DestroyRef + takeUntilDestroyed",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Uses DestroyRef from @angular/core for cleanup registration", "passed": true, "evidence": "Found DestroyRef imported from @angular/core"},
+        {"text": "Uses takeUntilDestroyed() from @angular/core/rxjs-interop", "passed": true, "evidence": "Found takeUntilDestroyed usage"},
+        {"text": "Does NOT implement OnDestroy interface or ngOnDestroy method", "passed": true, "evidence": "No OnDestroy implementation found"},
+        {"text": "Imports takeUntilDestroyed from @angular/core/rxjs-interop", "passed": true, "evidence": "Correct import from @angular/core/rxjs-interop"},
+        {"text": "If used outside injection context, passes DestroyRef explicitly", "passed": true, "evidence": "Used takeUntilDestroyed() in injection context (no arg needed)"},
+        {"text": "Component uses ChangeDetectionStrategy.OnPush", "passed": true, "evidence": "Found OnPush change detection"}
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "viewProviders + Content Projection",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Uses viewProviders array in the form wrapper component", "passed": true, "evidence": "Found viewProviders in component"},
+        {"text": "Uses ng-content for content projection", "passed": true, "evidence": "Found ng-content for projection"},
+        {"text": "FormStateService is injectable and demonstrates isolated state", "passed": true, "evidence": "Found injectable form state service"},
+        {"text": "Projected content does NOT receive the viewProviders instance", "passed": true, "evidence": "Demonstrates isolation of projected content"},
+        {"text": "Code or comments explain viewProviders isolation behavior", "passed": true, "evidence": "Explains viewProviders isolation behavior"},
+        {"text": "Components use ChangeDetectionStrategy.OnPush", "passed": true, "evidence": "Found OnPush"}
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "viewProviders + Content Projection",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Uses viewProviders array in the form wrapper component", "passed": true, "evidence": "Found viewProviders in component"},
+        {"text": "Uses ng-content for content projection", "passed": true, "evidence": "Found ng-content for projection"},
+        {"text": "FormStateService is injectable and demonstrates isolated state", "passed": true, "evidence": "Found injectable form state service"},
+        {"text": "Projected content does NOT receive the viewProviders instance", "passed": true, "evidence": "Demonstrates isolation of projected content"},
+        {"text": "Code or comments explain viewProviders isolation behavior", "passed": true, "evidence": "Explains viewProviders isolation behavior"},
+        {"text": "Components use ChangeDetectionStrategy.OnPush", "passed": true, "evidence": "Found OnPush"}
+      ]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "App + Environment Initializers",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Uses provideAppInitializer() function from @angular/core", "passed": true, "evidence": "Uses provideAppInitializer()"},
+        {"text": "Does not use deprecated APP_INITIALIZER multi token", "passed": true, "evidence": "Does not use deprecated token"},
+        {"text": "Creates an InjectionToken for the feature flags config", "passed": true, "evidence": "Creates InjectionToken for config"},
+        {"text": "The app initializer returns a Promise or Observable", "passed": true, "evidence": "Async initialization detected"},
+        {"text": "Uses inject() inside the initializer", "passed": true, "evidence": "Uses inject() in initializer"},
+        {"text": "Uses provideEnvironmentInitializer() for lazy-loaded route setup", "passed": true, "evidence": "Uses provideEnvironmentInitializer()"}
+      ]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "App + Environment Initializers",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Uses provideAppInitializer() function from @angular/core", "passed": true, "evidence": "Uses provideAppInitializer()"},
+        {"text": "Does not use deprecated APP_INITIALIZER multi token", "passed": true, "evidence": "Does not use deprecated token"},
+        {"text": "Creates an InjectionToken for the feature flags config", "passed": true, "evidence": "Creates InjectionToken for config"},
+        {"text": "The app initializer returns a Promise or Observable", "passed": true, "evidence": "Async initialization detected"},
+        {"text": "Uses inject() inside the initializer", "passed": true, "evidence": "Uses inject() in initializer"},
+        {"text": "Uses provideEnvironmentInitializer() for lazy-loaded route setup", "passed": true, "evidence": "Uses ENVIRONMENT_INITIALIZER deprecated token, not provideEnvironmentInitializer() - grading script was too lenient"}
+      ]
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0},
+      "time_seconds": {"mean": 0, "stddev": 0, "min": 0, "max": 0},
+      "tokens": {"mean": 0, "stddev": 0, "min": 0, "max": 0}
+    },
+    "without_skill": {
+      "pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0},
+      "time_seconds": {"mean": 0, "stddev": 0, "min": 0, "max": 0},
+      "tokens": {"mean": 0, "stddev": 0, "min": 0, "max": 0}
+    },
+    "delta": {
+      "pass_rate": "+0.00",
+      "time_seconds": "+0",
+      "tokens": "+0"
+    }
+  },
+  "notes": [
+    "All assertions pass 100% in both configurations - the assertions are not discriminating enough for these DI topics",
+    "Eval 3 (initializers): without-skill used deprecated ENVIRONMENT_INITIALIZER token with multi:true, while with-skill used modern provideEnvironmentInitializer() - a real qualitative difference the grading script missed",
+    "Eval 1 (DestroyRef): Both configurations produced correct code. Sonnet already knows takeUntilDestroyed well - this is basic knowledge, not a skill gap",
+    "Eval 2 (viewProviders): Both configurations correctly used viewProviders with content projection - Sonnet handles this well without guidance",
+    "Key qualitative difference: with-skill outputs included more educational context (why provideEnvironmentInitializer replaced ENVIRONMENT_INITIALIZER) due to reading the reference files",
+    "The grading script accepted ENVIRONMENT_INITIALIZER as equivalent to provideEnvironmentInitializer() - the assertion should distinguish modern vs deprecated API"
+  ]
+}

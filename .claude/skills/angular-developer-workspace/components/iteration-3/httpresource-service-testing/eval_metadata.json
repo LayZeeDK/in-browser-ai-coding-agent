@@ -1,0 +1,15 @@
+{
+  "eval_id": 6,
+  "eval_name": "httpresource-service-testing",
+  "prompt": "Write unit tests for an Angular 21 service called `TodoService` that uses `httpResource()` to manage a todo list. The service has: a `todos` httpResource that fetches from `/api/todos`, an `addTodo(title: string)` method that POSTs to the API and calls reload(), and a `completedCount` computed signal derived from the todos resource value. I need comprehensive tests covering: the httpResource request, the addTodo method with HTTP verification, the computed signal derivation, and error scenarios. Use Vitest with provideHttpClient and HttpTestingController.",
+  "assertions": [
+    "Configures TestBed with provideHttpClient() and provideHttpClientTesting()",
+    "Injects HttpTestingController from TestBed",
+    "Injects the TodoService from TestBed using TestBed.inject()",
+    "Tests httpResource by expecting a request with HttpTestingController and flushing a response",
+    "Tests the addTodo method triggers an HTTP POST request",
+    "Tests the completedCount computed signal returns the correct derived value",
+    "Includes afterEach or cleanup that calls httpTesting.verify() to ensure no unexpected requests",
+    "Tests an error scenario (e.g., flush with error status, verify resource error state)"
+  ]
+}

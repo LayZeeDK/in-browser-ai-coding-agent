@@ -1,0 +1,21 @@
+{
+  "expectations": [
+    {"text": "Configures TestBed with provideHttpClient() and provideHttpClientTesting()", "passed": true, "evidence": "Lines 15-21: providers: [TodoService, provideHttpClient(), provideHttpClientTesting()]"},
+    {"text": "Injects HttpTestingController from TestBed", "passed": true, "evidence": "Line 24: httpTesting = TestBed.inject(HttpTestingController)"},
+    {"text": "Injects the TodoService from TestBed using TestBed.inject()", "passed": true, "evidence": "Line 23: service = TestBed.inject(TodoService)"},
+    {"text": "Tests httpResource by expecting a request with HttpTestingController and flushing a response", "passed": true, "evidence": "Lines 32-36: httpTesting.expectOne('/api/todos') then req.flush([])"},
+    {"text": "Tests the addTodo method triggers an HTTP POST request", "passed": true, "evidence": "Lines 156-171: service.addTodo('Write tests'); httpTesting.expectOne('/api/todos'); expect(postReq.request.method).toBe('POST'). The inlined service uses HttpClient for POST (unlike with-skill version)"},
+    {"text": "Tests the completedCount computed signal returns the correct derived value", "passed": true, "evidence": "Lines 76-152: Multiple tests verify completedCount returns correct values based on flushed data"},
+    {"text": "Includes afterEach or cleanup that calls httpTesting.verify() to ensure no unexpected requests", "passed": true, "evidence": "Lines 27-29: afterEach(() => { httpTesting.verify(); })"},
+    {"text": "Tests an error scenario (e.g., flush with error status, verify resource error state)", "passed": true, "evidence": "Lines 238-309: Tests HTTP 500, 404, completedCount during error, recovery after reload, failed POST doesn't trigger reload"}
+  ],
+  "summary": {"passed": 8, "failed": 0, "total": 8, "pass_rate": 1.0},
+  "eval_feedback": {
+    "suggestions": [
+      {"reason": "Uses deprecated TestBed.flushEffects() throughout (16+ occurrences) — this API is deprecated in Angular 21. No assertion checks for deprecated API usage"},
+      {"reason": "Imports Todo from './todo.service' (line 8) which would fail since the interface is defined in the same file. Self-contained specs should not have external imports for inlined types"},
+      {"reason": "The without-skill version actually performs better on eval 6 because it uses HttpClient for addTodo (making POST interceptable), while the with-skill version uses native fetch. This suggests the skill needs explicit guidance on keeping all HTTP in HttpClient for testability"}
+    ],
+    "overall": "Paradoxically, the without-skill output is more correct for the addTodo testing scenario. The skill actively hurts here because it doesn't guide httpResource testing patterns."
+  }
+}

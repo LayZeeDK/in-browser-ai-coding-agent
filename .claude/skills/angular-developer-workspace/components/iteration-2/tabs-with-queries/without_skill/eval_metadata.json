@@ -1,0 +1,14 @@
+{
+  "eval_id": 2,
+  "eval_name": "tabs-with-queries",
+  "prompt": "Build a tabs component that uses viewChildren() to query tab panel components in its template and contentChildren() to discover tab items projected by the consumer. Each tab item should have a label input. The tabs component should track the active tab index with a signal and show only the active panel. Use the modern signal-based query APIs.",
+  "assertions": [
+    {"text": "Uses viewChildren() function (not @ViewChildren decorator)", "type": "code_pattern"},
+    {"text": "Uses contentChildren() function (not @ContentChildren decorator)", "type": "code_pattern"},
+    {"text": "TabItem has a label defined with input() function (not @Input decorator)", "type": "code_pattern"},
+    {"text": "Active tab is tracked with a signal (signal() or computed())", "type": "code_pattern"},
+    {"text": "Uses ChangeDetectionStrategy.OnPush on all components", "type": "code_pattern"},
+    {"text": "Uses @for for iteration (not *ngFor)", "type": "code_pattern"},
+    {"text": "Does NOT import ViewChildren, ContentChildren, or ContentChild decorators", "type": "negative_pattern"}
+  ]
+}

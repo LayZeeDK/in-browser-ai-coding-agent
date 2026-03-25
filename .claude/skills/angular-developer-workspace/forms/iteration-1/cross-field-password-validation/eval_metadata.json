@@ -1,0 +1,13 @@
+{
+  "eval_id": 2,
+  "eval_name": "cross-field-password-validation",
+  "prompt": "I have an Angular 18 app with a password change form. I need to add cross-field validation so that the newPassword and confirmPassword fields must match. The form already has currentPassword, newPassword, and confirmPassword fields in a FormGroup. Show me how to write the cross-field validator, attach it to the FormGroup, and display the mismatch error in the template. Use typed reactive forms.",
+  "assertions": [
+    "Cross-field validator is a ValidatorFn (not applied to individual controls)",
+    "Validator is attached to the FormGroup via the second argument or validators option",
+    "Validator uses control.get('newPassword') and control.get('confirmPassword') to compare",
+    "Returns a ValidationErrors object (like { passwordMismatch: true }) or null",
+    "Template checks formGroup.hasError('passwordMismatch') for displaying the error message",
+    "Uses typed forms (FormControl<string> or nonNullable, not UntypedFormGroup)"
+  ]
+}

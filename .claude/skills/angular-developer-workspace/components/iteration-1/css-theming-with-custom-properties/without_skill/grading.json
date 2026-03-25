@@ -1,0 +1,32 @@
+{
+  "eval_id": 0,
+  "eval_name": "css-theming-with-custom-properties",
+  "configuration": "without_skill",
+  "expectations": [
+    {
+      "text": "uses_css_custom_properties",
+      "passed": true,
+      "evidence": "Defines --color-primary, --color-secondary, --color-surface etc. in ThemeTokens interface and LIGHT_THEME/DARK_THEME constants. Components consume via var(--color-*)."
+    },
+    {
+      "text": "no_ng_deep",
+      "passed": true,
+      "evidence": "Explicitly avoids ::ng-deep. States it is deprecated and explains the alternative."
+    },
+    {
+      "text": "runtime_theme_switching",
+      "passed": true,
+      "evidence": "Uses Renderer2 + effect() to set inline CSS custom properties on host element. Also provides data-theme attribute alternative."
+    },
+    {
+      "text": "works_with_emulated_encapsulation",
+      "passed": true,
+      "evidence": "Uses default ViewEncapsulation.Emulated. Explains how CSS custom properties are unaffected by Angular's attribute rewriting."
+    },
+    {
+      "text": "child_component_consumption",
+      "passed": true,
+      "evidence": "DashboardComponent uses var(--color-surface-variant), var(--color-outline), var(--color-on-surface). CardComponent uses var(--color-surface), var(--color-primary)."
+    }
+  ]
+}

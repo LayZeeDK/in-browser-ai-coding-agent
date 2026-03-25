@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "Uses provideAppInitializer() function from @angular/core",
+      "passed": true,
+      "evidence": "Uses provideAppInitializer()"
+    },
+    {
+      "text": "Does not use deprecated APP_INITIALIZER multi token",
+      "passed": true,
+      "evidence": "Uses deprecated APP_INITIALIZER multi token"
+    },
+    {
+      "text": "Creates an InjectionToken for the feature flags config",
+      "passed": true,
+      "evidence": "Creates InjectionToken for config"
+    },
+    {
+      "text": "The app initializer returns a Promise or Observable",
+      "passed": true,
+      "evidence": "Async initialization detected"
+    },
+    {
+      "text": "Uses inject() inside the initializer",
+      "passed": true,
+      "evidence": "Uses inject() in initializer"
+    },
+    {
+      "text": "Uses provideEnvironmentInitializer() for lazy-loaded route setup",
+      "passed": true,
+      "evidence": "Uses environment initializer"
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1
+  }
+}

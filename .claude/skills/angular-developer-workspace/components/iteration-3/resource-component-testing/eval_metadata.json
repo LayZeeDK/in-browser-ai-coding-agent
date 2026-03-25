@@ -1,0 +1,15 @@
+{
+  "eval_id": 4,
+  "eval_name": "resource-component-testing",
+  "prompt": "Write unit tests for an Angular 21 component called `UserProfileComponent` that uses `resource()` to fetch user data from `/api/users/:id` based on a signal input. The component has: an `id` input signal, a `userResource` created with `resource()`, and displays loading/error/success states in the template. I need tests that cover: initial loading state, successful data display, error handling, and that changing the input triggers a refetch. Use Vitest and TestBed.",
+  "assertions": [
+    "Uses TestBed.configureTestingModule with imports: [UserProfileComponent]",
+    "Uses componentRef.setInput() or fixture.componentRef.setInput() to set the id input signal",
+    "Uses await fixture.whenStable() for async change detection (not just detectChanges)",
+    "Provides a mock or spy for the HTTP/fetch dependency (vi.fn, vi.spyOn, or provider override)",
+    "Tests loading state (checks for loading indicator in DOM)",
+    "Tests successful data display (checks rendered user data)",
+    "Tests error state (simulates fetch failure and checks error display)",
+    "Tests that changing the input signal value triggers a new fetch"
+  ]
+}

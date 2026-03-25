@@ -1,0 +1,105 @@
+{
+  "expectations": [
+    {
+      "text": "Defines a typed interface for the backend error response (code, message, details)",
+      "passed": true,
+      "evidence": "ApiErrorBody interface defined in api-error.model.ts with fields: code: string, message: string, details?: Record<string, string>. Quoted from transcript: 'export interface ApiErrorBody { code: string; message: string; details?: Record<string, string>; }'"
+    },
+    {
+      "text": "Uses HttpInterceptorFn or functional interceptor (not class-based HttpInterceptor)",
+      "passed": true,
+      "evidence": "retry.interceptor.ts exports 'export const retryInterceptor: HttpInterceptorFn = (req, next) => { ... }' — a functional interceptor, not a class implementing HttpInterceptor."
+    },
+    {
+      "text": "Implements retry logic for specific HTTP status codes (503, 429) using RxJS retry/retryWhen",
+      "passed": true,
+      "evidence": "retry.interceptor.ts uses 'retry({ count: MAX_RETRIES, delay: (error, attempt) => { ... } })' from rxjs/operators. RETRYABLE_STATUSES = new Set([429, 503]) — only 429 and 503 trigger retries; all others rethrow immediately."
+    },
+    {
+      "text": "Distinguishes transient (retryable) errors from permanent errors in the error service",
+      "passed": true,
+      "evidence": "ErrorClassificationService.classify() returns a ClassifiedError with category: 'retryable' | 'fatal' | 'client'. The categorize() method uses RETRYABLE_STATUSES.has(error.status) to mark 429/503 as 'retryable', 4xx as 'client', and everything else as 'fatal'. isRetryable() method also exposes this distinction directly."
+    },
+    {
+      "text": "Custom ErrorHandler class extends or implements ErrorHandler and reports to analytics",
+      "passed": true,
+      "evidence": "'export class GlobalErrorHandler implements ErrorHandler' with handleError() calling 'this.analytics.trackError({ category, code, message, details, stack, timestamp })' via AnalyticsService."
+    },
+    {
+      "text": "Component uses httpResource() or resource() for at least one API call",
+      "passed": true,
+      "evidence": "Three resource services (UsersResource, OrdersResource, AnalyticsDataResource) each use httpResource<T>(...) and are injected into DashboardComponent. E.g. 'readonly resource = httpResource<User[]>(\'/api/users\');'"
+    },
+    {
+      "text": "Error states in the component template use resource status/error properties or catchError patterns",
+      "passed": true,
+      "evidence": "Dashboard template uses 'users.resource.isLoading()', '@else if (users.classifiedError())' (derived from resource.error() via computed()), and equivalent patterns for orders and analyticsData panels. Error rendering delegates to <app-error-message [error]='...'/>."
+    },
+    {
+      "text": "Uses provideHttpClient with withInterceptors() in the app config",
+      "passed": true,
+      "evidence": "app.config.ts shows: 'provideHttpClient(withInterceptors([retryInterceptor]))' inside the providers array of appConfig."
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "output_chars": 19464,
+    "transcript_chars": 19464
+  },
+  "timing": {
+    "executor_duration_seconds": 105.4,
+    "grader_duration_seconds": null,
+    "total_duration_seconds": 105.4
+  },
+  "claims": [
+    {
+      "claim": "httpResource is stable in Angular 21 (introduced in Angular 19)",
+      "type": "factual",
+      "verified": true,
+      "evidence": "The transcript states 'Angular 21's httpResource (introduced in Angular 19, stable in 21)'. httpResource was introduced as experimental in Angular 19 and is consistent with the Angular 21 context of this project."
+    },
+    {
+      "claim": "The interceptor respects Retry-After headers",
+      "type": "factual",
+      "verified": true,
+      "evidence": "retryDelayMs() reads error.headers?.get('Retry-After') and converts to milliseconds before falling back to exponential back-off."
+    },
+    {
+      "claim": "GlobalErrorHandler does not catch httpResource errors by default",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Section 9 explicitly notes: 'httpResource swallows exceptions into its .error() signal — they do not propagate to ErrorHandler by default.' The design correctly documents this limitation and positions GlobalErrorHandler as a safety net for other error paths."
+    },
+    {
+      "claim": "computed() is used instead of resource() for classifiedError derivation",
+      "type": "process",
+      "verified": true,
+      "evidence": "OrdersResource and AnalyticsDataResource use computed(() => { ... }). UsersResource uses resource() + loader as an alternative, but the transcript notes computed() is preferred (Section 9, 'Why computed() instead of resource()?')."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": []
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "reason": "No assertion checks that the retry logic has an upper bound (max retry count) or uses back-off delay, rather than retrying indefinitely or immediately. The current assertion only checks that retry is used for 503/429 — a naive implementation that retries once with no delay would also pass."
+      },
+      {
+        "assertion": "Custom ErrorHandler class extends or implements ErrorHandler and reports to analytics",
+        "reason": "The assertion passes even though the design correctly documents that httpResource errors do NOT reach GlobalErrorHandler. A stronger assertion would verify the handler is wired as the primary error surface for non-resource errors, or that the response to this limitation is documented."
+      },
+      {
+        "reason": "No assertion checks that the component handles the loading state (resource.isLoading()) alongside error states. The output does this well, but it goes unverified by the evals."
+      }
+    ],
+    "overall": "All 8 expectations are satisfied with genuine, substantive implementations. The evals are reasonably discriminating but could be tightened on retry quality (back-off, max count) and the known gap between GlobalErrorHandler and httpResource error propagation."
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "Cross-field validator is a ValidatorFn (not applied to individual controls)",
+      "passed": true,
+      "evidence": "password-match.validator.ts exports a factory returning ValidatorFn, applied at the FormGroup level."
+    },
+    {
+      "text": "Validator is attached to the FormGroup via the second argument or validators option",
+      "passed": true,
+      "evidence": "Line 79: `{ validators: passwordMatchValidator('newPassword', 'confirmPassword') }`"
+    },
+    {
+      "text": "Validator uses control.get('newPassword') and control.get('confirmPassword') to compare",
+      "passed": true,
+      "evidence": "Validator lines 16-17: `group.get(passwordKey)` and `group.get(confirmKey)` with defaults 'newPassword' and 'confirmPassword'."
+    },
+    {
+      "text": "Returns a ValidationErrors object (like { passwordMismatch: true }) or null",
+      "passed": true,
+      "evidence": "Line 31: `return { passwordMismatch: true }` and line 36: `return null`."
+    },
+    {
+      "text": "Template checks formGroup.hasError('passwordMismatch') for displaying the error message",
+      "passed": false,
+      "evidence": "Line 58 checks `confirmPassword.hasError('passwordMismatch')` on the control, not `form.hasError('passwordMismatch')` on the group. The validator uses setErrors() to propagate the error to the control, bypassing the group-level check the assertion expects."
+    },
+    {
+      "text": "Uses typed forms (FormControl<string> or nonNullable, not UntypedFormGroup)",
+      "passed": true,
+      "evidence": "Uses `FormControl<string>` type alias (line 12-14) and `fb.nonNullable.control()` (lines 72-77)."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 1,
+    "total": 6,
+    "pass_rate": 0.83
+  }
+}

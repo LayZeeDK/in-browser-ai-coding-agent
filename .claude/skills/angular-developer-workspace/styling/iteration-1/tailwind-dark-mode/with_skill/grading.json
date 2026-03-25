@@ -1,0 +1,32 @@
+{
+  "eval_id": 1,
+  "eval_name": "tailwind-dark-mode",
+  "configuration": "with_skill",
+  "expectations": [
+    {
+      "text": "no_tailwind_config_js",
+      "passed": true,
+      "evidence": "No tailwind.config.js created. Uses CSS-first @variant dark configuration in styles.css."
+    },
+    {
+      "text": "uses_v4_dark_mode",
+      "passed": true,
+      "evidence": "Uses @variant dark (&:where(.dark, .dark *)) in styles.css. Templates use dark: prefix classes throughout."
+    },
+    {
+      "text": "os_preference_detection",
+      "passed": true,
+      "evidence": "ThemeService uses window.matchMedia('(prefers-color-scheme: dark)') for initial value and watchOsPreference() with addEventListener('change') for live updates."
+    },
+    {
+      "text": "manual_toggle",
+      "passed": true,
+      "evidence": "DarkModeToggleComponent with toggle() method that cycles light/dark. Uses inject(ThemeService)."
+    },
+    {
+      "text": "uses_signals",
+      "passed": true,
+      "evidence": "ThemeService uses signal<ColorScheme>('light') for _scheme, computed() for isDark. Toggle component uses computed() for isDark and ariaLabel."
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "expectations": [
+    {
+      "text": "Test file imports and uses axe-core or jest-axe for accessibility audits",
+      "passed": true,
+      "evidence": "Test file line: `import axe from 'axe-core';` and the helper function calls `axe.run(element, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] } })`."
+    },
+    {
+      "text": "Tests render the component via TestBed and run axe against the DOM",
+      "passed": true,
+      "evidence": "Tests use `TestBed.configureTestingModule({ imports: [NotificationBannerComponent] })`, `TestBed.createComponent(TestHostComponent)`, `fixture.detectChanges()`, and `runAxe(fixture.nativeElement)` which calls `axe.run(element)`."
+    },
+    {
+      "text": "Tests cover multiple component states (at least success and error)",
+      "passed": true,
+      "evidence": "Three separate `it()` blocks: 'has no axe violations in success state', 'has no axe violations in error state', and 'has no axe violations in warning state', each rendering a distinct severity via `render('success', ...)`, `render('error', ...)`, and `render('warning', ...)`."
+    },
+    {
+      "text": "Each axe test asserts that violations array is empty or uses toHaveNoViolations",
+      "passed": true,
+      "evidence": "All three state tests assert `expect(violations).toHaveLength(0)`. The colour-contrast spot-check also asserts `expect(contrastViolations).toHaveLength(0)`. `toHaveNoViolations` (jest-axe matcher) is not used, but `toHaveLength(0)` on the violations array is semantically equivalent and clearly satisfies the intent."
+    },
+    {
+      "text": "ESLint config includes @angular-eslint template accessibility rules (e.g., accessibility-elements-content, accessibility-alt-text, or accessibility-label-for)",
+      "passed": true,
+      "evidence": "The ESLint config block for `**/*.html` includes `@angular-eslint/template/accessibility-elements-content`, `@angular-eslint/template/accessibility-img-redundant-alt`, `@angular-eslint/template/accessibility-label-has-associated-control`, `@angular-eslint/template/accessibility-label-for-attribute`, and five additional accessibility rules, all set to `'error'`."
+    },
+    {
+      "text": "Explanation distinguishes runtime axe checks (color contrast, ARIA validity, focus order) from static lint rules (missing alt text, empty interactive elements)",
+      "passed": true,
+      "evidence": "Section 5 ('What Axe Checks vs. What the Linter Catches') has a detailed table listing runtime axe checks including 'Colour contrast', 'ARIA validity in context', and 'Focus order', and a separate table for static angular-eslint rules including missing alt (`accessibility-img-redundant-alt`), empty headings (`accessibility-elements-content`), and missing keyboard handlers. A summary comparison table and a 'cannot catch' list for each tool further reinforce the distinction."
+    },
+    {
+      "text": "Uses ChangeDetectionStrategy.OnPush on the component",
+      "passed": true,
+      "evidence": "Component decorator: `changeDetection: ChangeDetectionStrategy.OnPush` is present in `notification-banner.component.ts`. The `TestHostComponent` in the test file also uses `changeDetection: ChangeDetectionStrategy.OnPush`."
+    },
+    {
+      "text": "Uses signal-based input() for the notification state/type",
+      "passed": true,
+      "evidence": "Component class body: `readonly severity = input.required<NotificationSeverity>();` and `readonly message = input.required<string>();` — both use the `input()` signal-based API, not `@Input()` decorators."
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "tool_calls": {},
+    "total_tool_calls": null,
+    "total_steps": null,
+    "errors_encountered": 0,
+    "output_chars": null,
+    "transcript_chars": 15800
+  },
+  "timing": {
+    "executor_duration_seconds": 126.3,
+    "grader_duration_seconds": null,
+    "total_duration_seconds": 126.3
+  },
+  "claims": [
+    {
+      "claim": "axe-core is called directly (low-level axe.run() API) because the workspace uses Vitest browser mode, not Karma/Jasmine",
+      "type": "process",
+      "verified": true,
+      "evidence": "The test file imports `axe from 'axe-core'` and calls `axe.run()` directly. The transcript notes section 6 explicitly states '@axe-core/angular is a convenience wrapper originally built for Karma. In Vitest you do not need it; using axe-core directly is simpler and more portable.'"
+    },
+    {
+      "claim": "The ESLint config uses flat config format (eslint.config.mjs)",
+      "type": "factual",
+      "verified": true,
+      "evidence": "The config block is written as an ES module default export array (`export default [...]`), consistent with ESLint flat config. File is named `eslint.config.mjs`."
+    },
+    {
+      "claim": "whenStable() is necessary because OnPush defers rendering",
+      "type": "quality",
+      "verified": true,
+      "evidence": "Section 6 notes: 'The whenStable() call in the test helper is important. Angular's ChangeDetectionStrategy.OnPush defers rendering; calling detectChanges() alone is not always sufficient when async operations are involved.' The render helper calls both `fixture.detectChanges()` and `await fixture.whenStable()`."
+    },
+    {
+      "claim": "The TestHostComponent drives inputs reactively via signals",
+      "type": "process",
+      "verified": true,
+      "evidence": "TestHostComponent declares `readonly severity = signal<NotificationSeverity>('success')` and `readonly message = signal<string>('')`. The render helper calls `host.severity.set(severity)` and `host.message.set(message)` before `detectChanges()`."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": []
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "Each axe test asserts that violations array is empty or uses toHaveNoViolations",
+        "reason": "The assertion accepts `toHaveLength(0)` as equivalent to `toHaveNoViolations`. This is semantically correct but worth noting: `toHaveNoViolations` (from jest-axe) produces a richer failure message listing rule IDs and node HTML automatically, without the manual error-formatting block the output uses. The output manually reimplements that diagnostic. This is fine functionally but the eval could explicitly allow `toHaveLength(0)` to avoid ambiguity, or tighten it to require the diagnostic output on failure."
+      },
+      {
+        "reason": "No assertion checks that the component actually compiles and the test file would be valid TypeScript in this workspace — the transcript shows a plausible but complete standalone artifact. There is no evidence the code was compiled or tests were run against a real project. An assertion like 'nx lint passes on the generated ESLint config' or 'tsc type-checks the test file without errors' would distinguish a generated-but-correct file from one that only looks correct."
+      },
+      {
+        "reason": "No assertion checks that the ESLint config correctly wires up `@angular-eslint/template-parser` as the `languageOptions.parser` for HTML files. The config block is present and correct, but an assertion explicitly verifying the parser binding would prevent a plausible failure mode where the rules are listed but the parser is missing (making the rules silently inoperative)."
+      }
+    ],
+    "overall": "All 8 expectations pass with clear, substantive evidence. The output is high quality: thorough test coverage (5 it-blocks), well-structured ESLint config with 9 accessibility rules, and a detailed runtime-vs-static distinction. The main eval gap is the absence of any execution/compilation check — the output is a textual artifact with no evidence it was validated against the actual workspace."
+  }
+}

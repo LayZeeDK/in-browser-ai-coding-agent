@@ -1,0 +1,41 @@
+{
+  "eval-0": {
+    "name": "api-error-toast-service",
+    "assertions": [
+      {"name": "http-error-response-distinction", "description": "Distinguishes network errors (status 0) from backend errors using HttpErrorResponse"},
+      {"name": "401-redirect-to-login", "description": "Handles 401 specifically by redirecting to login (via Router or similar)"},
+      {"name": "retry-on-503", "description": "Retries 503 errors with backoff (via interceptor or retry operator)"},
+      {"name": "global-error-handler-injectable", "description": "GlobalErrorHandler has @Injectable() decorator and implements ErrorHandler"},
+      {"name": "provide-browser-global-listeners", "description": "App config includes provideBrowserGlobalErrorListeners()"},
+      {"name": "functional-interceptor", "description": "Uses functional HttpInterceptorFn, not class-based interceptor"},
+      {"name": "inject-function", "description": "Uses inject() for DI, not constructor injection"},
+      {"name": "tests-with-http-testing-controller", "description": "Tests use provideHttpClientTesting() with correct provider ordering (after provideHttpClient)"}
+    ]
+  },
+  "eval-1": {
+    "name": "dashboard-httpresource-loading-states",
+    "assertions": [
+      {"name": "three-independent-httpresources", "description": "Creates 3 separate httpResource instances for independent loading"},
+      {"name": "has-value-guard", "description": "Guards .value() reads with .hasValue() in template"},
+      {"name": "error-signal-display", "description": "Shows error state via .error() signal per panel"},
+      {"name": "reload-retry", "description": "Retry button calls .reload() on the failed httpResource"},
+      {"name": "zod-parse-validation", "description": "At least one httpResource uses parse option with Zod schema"},
+      {"name": "onpush", "description": "Component uses ChangeDetectionStrategy.OnPush"},
+      {"name": "vitest-apis", "description": "Tests use vitest APIs (vi.fn, expect, describe) not jasmine"},
+      {"name": "httpresource-test-pattern", "description": "Tests use TestBed.tick() and/or ApplicationRef.whenStable() for httpResource"}
+    ]
+  },
+  "eval-2": {
+    "name": "error-logging-setup-from-scratch",
+    "assertions": [
+      {"name": "error-handler-injectable", "description": "Custom ErrorHandler has @Injectable() decorator"},
+      {"name": "provide-browser-global-listeners", "description": "App config includes provideBrowserGlobalErrorListeners()"},
+      {"name": "resource-errors-not-global", "description": "Explicitly states resource()/httpResource() errors don't reach ErrorHandler"},
+      {"name": "rethrow-application-errors", "description": "Tests use rethrowApplicationErrors: false where needed"},
+      {"name": "sentry-like-integration", "description": "ErrorHandler calls an external error tracking service (Sentry-like stub)"},
+      {"name": "error-handler-provider-wiring", "description": "App config has { provide: ErrorHandler, useClass: ... }"},
+      {"name": "inject-function", "description": "Uses inject() for DI throughout"},
+      {"name": "component-level-error-handling", "description": "Shows how to handle resource/httpResource errors in component template with signals"}
+    ]
+  }
+}

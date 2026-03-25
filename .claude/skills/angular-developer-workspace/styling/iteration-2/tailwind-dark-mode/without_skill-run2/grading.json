@@ -1,0 +1,32 @@
+{
+  "eval_id": 1,
+  "eval_name": "tailwind-dark-mode",
+  "configuration": "without_skill",
+  "expectations": [
+    {
+      "text": "no_tailwind_config_js",
+      "passed": true,
+      "evidence": "Uses @variant dark in CSS; no tailwind.config.js file created"
+    },
+    {
+      "text": "uses_v4_dark_mode",
+      "passed": true,
+      "evidence": "Uses @variant dark (&:where(.dark, .dark *)) in styles.css; templates use dark: variants like dark:bg-slate-900, dark:text-slate-100"
+    },
+    {
+      "text": "os_preference_detection",
+      "passed": true,
+      "evidence": "ThemeService uses matchMedia('(prefers-color-scheme: dark)') with addEventListener for changes; resolveIsDark checks system preference"
+    },
+    {
+      "text": "manual_toggle",
+      "passed": true,
+      "evidence": "DarkModeToggleComponent with toggle button; ThemeService.toggle() switches between dark/light; also includes ThemeSelectorComponent with Light/Dark/System radio options"
+    },
+    {
+      "text": "uses_signals",
+      "passed": true,
+      "evidence": "signal<ColorScheme>(this.loadPersistedScheme()) for colorScheme and signal<boolean> for isDark"
+    }
+  ]
+}

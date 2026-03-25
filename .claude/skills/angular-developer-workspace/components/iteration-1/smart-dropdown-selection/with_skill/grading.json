@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "Uses resource() to fetch dropdown options based on category signal",
+      "passed": true,
+      "evidence": "smart-dropdown.component.ts:87-91 uses `resource({ params: () => ({ categoryId: this.categoryId() }), loader: ... })` — correct params-based reactive pattern"
+    },
+    {
+      "text": "Uses linkedSignal with object syntax (source + computation + previous) to preserve valid selection",
+      "passed": true,
+      "evidence": "smart-dropdown.component.ts:117-135 uses `linkedSignal<DropdownOption[], DropdownOption | undefined>({ source: this.options, computation: (newOptions, previous) => { ... } })` — finds previous selection in new list"
+    },
+    {
+      "text": "Uses computed() for derived display string",
+      "passed": true,
+      "evidence": "smart-dropdown.component.ts:142-150 uses `computed(() => { ... return `Selected: ${option.label} (ID: ${option.id})` })`"
+    },
+    {
+      "text": "Uses custom equality function ({equal: fn}) on at least one signal",
+      "passed": true,
+      "evidence": "smart-dropdown.component.ts:99-105 uses `computed(..., { equal: (a, b) => a.length === b.length && a.every((opt, i) => opt.id === b[i].id) })` — deep equality by option IDs"
+    },
+    {
+      "text": "Does NOT use effect() to sync selection state",
+      "passed": true,
+      "evidence": "No effect() calls anywhere. Selection sync handled by linkedSignal computation."
+    },
+    {
+      "text": "Component uses ChangeDetectionStrategy.OnPush",
+      "passed": true,
+      "evidence": "smart-dropdown.component.ts:39 has `changeDetection: ChangeDetectionStrategy.OnPush`"
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  }
+}

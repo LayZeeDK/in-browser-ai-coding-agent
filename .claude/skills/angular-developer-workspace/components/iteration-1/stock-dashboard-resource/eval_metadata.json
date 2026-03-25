@@ -1,0 +1,14 @@
+{
+  "eval_id": 1,
+  "eval_name": "stock-dashboard-resource",
+  "prompt": "I'm building an Angular 21 dashboard that shows real-time stock prices. I need a service that fetches stock data from an API endpoint /api/stocks/:symbol, where the symbol comes from a signal. The data should automatically refetch when the symbol changes, and I need to handle loading states, errors, and let users manually refresh. Also, I want to keep showing the old price while a new one loads instead of flashing a loading spinner. Can you write the service and a component that uses it?",
+  "assertions": [
+    {"text": "Uses resource() with params that tracks the symbol signal reactively", "type": "code_pattern"},
+    {"text": "Passes abortSignal to fetch/http call for request cancellation", "type": "code_pattern"},
+    {"text": "Uses resource status signals (isLoading, hasValue, error) in the template", "type": "code_pattern"},
+    {"text": "Provides reload() for manual refresh", "type": "code_pattern"},
+    {"text": "Preserves previous value during loading (via resourceFromSnapshots, linkedSignal, or reloading status check)", "type": "code_pattern"},
+    {"text": "Component uses ChangeDetectionStrategy.OnPush", "type": "code_pattern"},
+    {"text": "Does NOT use effect() to sync resource state to another signal", "type": "anti_pattern"}
+  ]
+}

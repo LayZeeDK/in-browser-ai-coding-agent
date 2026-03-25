@@ -1,0 +1,94 @@
+{
+  "expectations": [
+    {
+      "text": "Defines a typed interface for the backend error response (code, message, details)",
+      "passed": true,
+      "evidence": "api-error.ts defines `export interface ApiErrorBody { code: string; message: string; details?: Record<string, string>; }` — matches the prompt's described shape exactly."
+    },
+    {
+      "text": "Uses HttpInterceptorFn or functional interceptor (not class-based HttpInterceptor)",
+      "passed": true,
+      "evidence": "error-handling.interceptor.ts declares `export const errorHandlingInterceptor: HttpInterceptorFn = (req, next) => ...` — no class, no `implement HttpInterceptor`."
+    },
+    {
+      "text": "Implements retry logic for specific HTTP status codes (503, 429) using RxJS retry/retryWhen",
+      "passed": true,
+      "evidence": "The interceptor uses `retry({ count: 3, delay: (error, attempt) => { if (error instanceof HttpErrorResponse && isTransientStatus(error.status)) { return timer(...) } return throwError(...) } })` where `TRANSIENT_STATUSES = new Set([429, 503])`. Only 429 and 503 are retried; all other statuses abort immediately."
+    },
+    {
+      "text": "Distinguishes transient (retryable) errors from permanent errors in the error service",
+      "passed": true,
+      "evidence": "ErrorService.classifySeverity() returns `'retryable'` for statuses in `RETRYABLE_STATUSES` (0, 429, 503) and `'fatal'` for 4xx client errors and all others. The `UserFacingError` interface carries a `severity: ErrorSeverity` ('retryable' | 'fatal') field used by ErrorBannerComponent to show a retry button vs a contact-support link."
+    },
+    {
+      "text": "Custom ErrorHandler class extends or implements ErrorHandler and reports to analytics",
+      "passed": true,
+      "evidence": "global-error-handler.ts declares `export class GlobalErrorHandler implements ErrorHandler` with `handleError(error: unknown)` that calls `this.analytics.trackEvent(...)` for both ApiError (eventName: 'http_error') and generic errors (eventName: 'exception'). Registered via `{ provide: ErrorHandler, useClass: GlobalErrorHandler }` in app.config.ts."
+    },
+    {
+      "text": "Component uses httpResource() or resource() for at least one API call",
+      "passed": true,
+      "evidence": "DashboardComponent declares `protected readonly users = httpResource<User[]>('/api/users')`, `protected readonly orders = httpResource<Order[]>('/api/orders')`, and `protected readonly analytics = httpResource<AnalyticsSummary>('/api/analytics')` — three httpResource calls."
+    },
+    {
+      "text": "Error states in the component template use resource status/error properties or catchError patterns",
+      "passed": true,
+      "evidence": "DashboardComponent.watchResourceError() sets up an `effect()` that reads `resource.error()` (the resource's error signal) and pushes errors into ErrorService. The template consumes error state indirectly via `<app-error-banner />` which reads ErrorService signals. The template also uses `users.isLoading()` and `users.hasValue()` (resource status properties). The .error() signal is the documented resource error property."
+    },
+    {
+      "text": "Uses provideHttpClient with withInterceptors() in the app config",
+      "passed": true,
+      "evidence": "app.config.ts contains `provideHttpClient(withInterceptors([errorHandlingInterceptor]))` in the providers array."
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": null,
+  "timing": null,
+  "claims": [
+    {
+      "claim": "httpResource errors do NOT reach ErrorHandler — they surface via .error() signals and must be handled at the callsite",
+      "type": "factual",
+      "verified": true,
+      "evidence": "This is correct Angular behavior as of Angular 19+. The response explicitly documents this in section 4 and section 5, and correctly wires effect() in watchResourceError() to compensate."
+    },
+    {
+      "claim": "Retry uses exponential backoff: 500ms, 1s, 2s",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Interceptor uses `timer(500 * Math.pow(2, attempt - 1))`: attempt=1 -> 500ms, attempt=2 -> 1000ms, attempt=3 -> 2000ms."
+    },
+    {
+      "claim": "All components use ChangeDetectionStrategy.OnPush",
+      "type": "quality",
+      "verified": true,
+      "evidence": "DashboardComponent and ErrorBannerComponent both have `changeDetection: ChangeDetectionStrategy.OnPush`."
+    },
+    {
+      "claim": "provideBrowserGlobalErrorListeners() is included as a safety net for window.error and unhandledrejection",
+      "type": "process",
+      "verified": true,
+      "evidence": "app.config.ts providers array includes `provideBrowserGlobalErrorListeners()` from `@angular/core`."
+    }
+  ],
+  "user_notes_summary": null,
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "Error states in the component template use resource status/error properties or catchError patterns",
+        "reason": "The assertion is satisfied by indirect error state display (ErrorBannerComponent driven by ErrorService) rather than direct template bindings on resource.error(). A response that only checked isLoading()/hasValue() without ever reading .error() could still pass this assertion if it shows an error banner through a different mechanism. Consider tightening to: 'Template or component class reads resource.error() signal and surfaces it to the user'."
+      },
+      {
+        "reason": "No assertion checks that the retry interceptor correctly aborts on non-transient errors (i.e., that 404 and 500 do NOT trigger retries). The current response handles this correctly via `return throwError(() => error)` in the delay function, but a buggy implementation that retried all errors would still pass all eight assertions."
+      },
+      {
+        "reason": "No assertion checks that the GlobalErrorHandler is actually registered in the app config. The handler can be well-implemented but never wired in, and all eight assertions would still pass. Consider adding: 'app config provides GlobalErrorHandler via { provide: ErrorHandler, useClass: GlobalErrorHandler }'."
+      }
+    ],
+    "overall": "All eight assertions are genuinely satisfied with substantive evidence. The weakest assertion is #7 (error states in template) — it passes due to .error() being read in the component class rather than directly in the template, which is valid but makes the assertion easy to satisfy in multiple ways. The missing-registration gap (ErrorHandler not registered) is the most exploitable blind spot."
+  }
+}

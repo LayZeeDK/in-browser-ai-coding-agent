@@ -1,0 +1,13 @@
+{
+  "eval_id": 1,
+  "eval_name": "typed-registration-form",
+  "prompt": "I'm working on an Angular 19 app and need to create a user registration form component using typed Reactive Forms. The form should have: email (required, email format), username (required, min 3 chars, with a custom async validator that checks availability via a UserService.checkUsername(name) method returning Observable<boolean>), password (required, min 8 chars), and confirmPassword. Use the nonNullable FormBuilder so we don't deal with null types everywhere. The form should show inline validation errors and disable submit when invalid. Please create the component with inline template.",
+  "assertions": [
+    "Uses fb.nonNullable.group() or NonNullableFormBuilder (not plain FormBuilder.group with nullable controls)",
+    "FormControls are typed -- no 'any' types, no UntypedFormControl/UntypedFormGroup",
+    "Includes a custom async validator for username that returns Observable<ValidationErrors | null>",
+    "Async validator passes the third argument position or uses asyncValidators option on the FormControl",
+    "Template uses @if (not *ngIf) for conditional error display",
+    "Submit button is disabled when form is invalid"
+  ]
+}

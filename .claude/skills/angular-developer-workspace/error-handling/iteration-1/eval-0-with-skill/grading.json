@@ -1,0 +1,52 @@
+{
+  "eval_id": 0,
+  "eval_name": "global-error-handler-analytics",
+  "expectations": [
+    {
+      "text": "error-handler-implements-interface",
+      "passed": true,
+      "evidence": "global-error-handler.ts: 'export class GlobalErrorHandler implements ErrorHandler' with 'handleError(error: unknown): void'"
+    },
+    {
+      "text": "inject-router-for-url",
+      "passed": true,
+      "evidence": "global-error-handler.ts: 'private readonly router = inject(Router);' \u00e2\u20ac\u201d no constructor injection anywhere"
+    },
+    {
+      "text": "provide-browser-global-listeners",
+      "passed": true,
+      "evidence": "app.config.ts: 'provideBrowserGlobalErrorListeners()' listed in providers array"
+    },
+    {
+      "text": "rethrow-application-errors-false",
+      "passed": true,
+      "evidence": "global-error-handler.spec.ts: 'TestBed.configureTestingModule({ rethrowApplicationErrors: false, ... })' in beforeEach"
+    },
+    {
+      "text": "error-handler-provider",
+      "passed": true,
+      "evidence": "app.config.ts: '{ provide: ErrorHandler, useClass: GlobalErrorHandler }' in providers"
+    },
+    {
+      "text": "catch-no-catch-documentation",
+      "passed": true,
+      "evidence": "global-error-handler.ts comments list caught items: 'Component constructors and lifecycle hooks', 'Template event handlers', 'AsyncPipe errors', 'PendingTasks.run() failures'; not-caught: 'Service methods called directly', 'resource() API errors'. All required items present."
+    },
+    {
+      "text": "analytics-service-injectable",
+      "passed": true,
+      "evidence": "analytics.service.ts: '@Injectable({ providedIn: 'root' })' on AnalyticsService class"
+    },
+    {
+      "text": "inject-function-usage",
+      "passed": true,
+      "evidence": "global-error-handler.ts uses 'inject(AnalyticsService)' and 'inject(Router)'; analytics.service.ts has no constructor injection"
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "pass_rate": 1.0
+  }
+}

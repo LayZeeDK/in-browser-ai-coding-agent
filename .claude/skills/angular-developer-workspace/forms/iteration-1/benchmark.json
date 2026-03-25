@@ -1,0 +1,181 @@
+{
+  "metadata": {
+    "skill_name": "angular-developer",
+    "skill_path": "D:\\projects\\github\\LayZeeDK\\in-browser-ai-coding-agent\\.claude\\skills\\angular-developer",
+    "executor_model": "claude-sonnet-4-6",
+    "analyzer_model": "claude-opus-4-6",
+    "timestamp": "2026-03-24T09:45:00Z",
+    "evals_run": [1, 2, 3],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_id": 1,
+      "eval_name": "typed-registration-form",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 50.8,
+        "tokens": 18297,
+        "tool_calls": 5,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Uses fb.nonNullable.group() or NonNullableFormBuilder", "passed": true, "evidence": "inject(FormBuilder).nonNullable then fb.group()"},
+        {"text": "FormControls are typed -- no any/Untyped", "passed": true, "evidence": "No Untyped imports, nonNullable produces FormControl<string>"},
+        {"text": "Custom async validator returns Observable<ValidationErrors | null>", "passed": true, "evidence": "username-validator.ts returns Observable<ValidationErrors | null>"},
+        {"text": "Async validator in third argument position", "passed": true, "evidence": "Third array element in fb.group shorthand"},
+        {"text": "Template uses @if (not *ngIf)", "passed": true, "evidence": "All conditionals use @if syntax"},
+        {"text": "Submit button disabled when invalid", "passed": true, "evidence": "[disabled]=\"form.invalid || form.pending\""}
+      ]
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "typed-registration-form",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 33.4,
+        "tokens": 11634,
+        "tool_calls": 3,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Uses fb.nonNullable.group() or NonNullableFormBuilder", "passed": true, "evidence": "inject(NonNullableFormBuilder) directly"},
+        {"text": "FormControls are typed -- no any/Untyped", "passed": true, "evidence": "NonNullableFormBuilder with fb.control() produces typed controls"},
+        {"text": "Custom async validator returns Observable<ValidationErrors | null>", "passed": true, "evidence": "username-validator.ts returns Observable<ValidationErrors | null>"},
+        {"text": "Async validator in third argument position", "passed": true, "evidence": "Third array element in fb.group shorthand"},
+        {"text": "Template uses @if (not *ngIf)", "passed": true, "evidence": "All conditionals use @if syntax"},
+        {"text": "Submit button disabled when invalid", "passed": true, "evidence": "[disabled]=\"form.invalid || form.pending\""}
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "cross-field-password-validation",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.83,
+        "passed": 5,
+        "failed": 1,
+        "total": 6,
+        "time_seconds": 64.6,
+        "tokens": 22275,
+        "tool_calls": 8,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Cross-field validator is a ValidatorFn", "passed": true, "evidence": "Factory returns ValidatorFn"},
+        {"text": "Validator attached to FormGroup via validators option", "passed": true, "evidence": "{ validators: passwordMatchValidator(...) }"},
+        {"text": "Validator uses control.get() to compare", "passed": true, "evidence": "group.get(passwordKey) and group.get(confirmKey)"},
+        {"text": "Returns { passwordMismatch: true } or null", "passed": true, "evidence": "Returns { passwordMismatch: true } on mismatch, null otherwise"},
+        {"text": "Template checks formGroup.hasError('passwordMismatch')", "passed": false, "evidence": "Checks confirmPassword.hasError('passwordMismatch') on control, not form group"},
+        {"text": "Uses typed forms (nonNullable, not UntypedFormGroup)", "passed": true, "evidence": "Uses FormControl<string> type and fb.nonNullable.control()"}
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "cross-field-password-validation",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.67,
+        "passed": 4,
+        "failed": 2,
+        "total": 6,
+        "time_seconds": 30.3,
+        "tokens": 11096,
+        "tool_calls": 3,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Cross-field validator is a ValidatorFn", "passed": true, "evidence": "Factory returns ValidatorFn"},
+        {"text": "Validator attached to FormGroup via validators option", "passed": true, "evidence": "{ validators: passwordMatchValidator() }"},
+        {"text": "Validator uses control.get() to compare", "passed": true, "evidence": "group.get('newPassword') and group.get('confirmPassword')"},
+        {"text": "Returns { passwordMismatch: true } or null", "passed": true, "evidence": "Returns { passwordMismatch: true } on mismatch"},
+        {"text": "Template checks formGroup.hasError('passwordMismatch')", "passed": false, "evidence": "Checks confirmPassword.errors?.['passwordMismatch'] on control, not form group"},
+        {"text": "Uses typed forms (nonNullable, not UntypedFormGroup)", "passed": false, "evidence": "Plain FormBuilder with ['', ...] shorthand produces FormControl<string | null>. Getters return AbstractControl."}
+      ]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "requiredif-validator-directive",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.83,
+        "passed": 5,
+        "failed": 1,
+        "total": 6,
+        "time_seconds": 58.8,
+        "tokens": 21790,
+        "tool_calls": 7,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Directive implements Validator interface", "passed": true, "evidence": "implements Validator, OnChanges"},
+        {"text": "Registered with NG_VALIDATORS using useExisting + forwardRef + multi", "passed": false, "evidence": "Uses useExisting: RequiredIfDirective directly without forwardRef. TS diagnostic: 'Class used before declaration' [2449]"},
+        {"text": "Has boolean condition input", "passed": true, "evidence": "@Input('appRequiredIf') condition = false"},
+        {"text": "validate() returns error when condition true and value empty", "passed": true, "evidence": "Returns { requiredIf: true } when isEmpty"},
+        {"text": "validate() returns null when condition false", "passed": true, "evidence": "Returns null when !this.condition"},
+        {"text": "Template shows usage with ngModel, name, and error display", "passed": true, "evidence": "Contact form with [(ngModel)], name='phone', [appRequiredIf], @if error display"}
+      ]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "requiredif-validator-directive",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 36.9,
+        "tokens": 11300,
+        "tool_calls": 3,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Directive implements Validator interface", "passed": true, "evidence": "implements Validator"},
+        {"text": "Registered with NG_VALIDATORS using useExisting + forwardRef + multi", "passed": true, "evidence": "forwardRef(() => RequiredIfDirective), multi: true"},
+        {"text": "Has boolean condition input", "passed": true, "evidence": "input.required<boolean>() -- signal input"},
+        {"text": "validate() returns error when condition true and value empty", "passed": true, "evidence": "Returns { requiredIf: true } when isEmpty"},
+        {"text": "validate() returns null when condition false", "passed": true, "evidence": "Returns null when !this.appRequiredIf()"},
+        {"text": "Template shows usage with ngModel, name, and error display", "passed": true, "evidence": "Contact form with [(ngModel)], name='phone', [appRequiredIf], @if error display"}
+      ]
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {"mean": 0.89, "stddev": 0.08, "min": 0.83, "max": 1.0},
+      "time_seconds": {"mean": 58.1, "stddev": 5.7, "min": 50.8, "max": 64.6},
+      "tokens": {"mean": 20787, "stddev": 1669, "min": 18297, "max": 22275}
+    },
+    "without_skill": {
+      "pass_rate": {"mean": 0.89, "stddev": 0.16, "min": 0.67, "max": 1.0},
+      "time_seconds": {"mean": 33.5, "stddev": 2.7, "min": 30.3, "max": 36.9},
+      "tokens": {"mean": 11343, "stddev": 220, "min": 11096, "max": 11634}
+    },
+    "delta": {
+      "pass_rate": "+0.00",
+      "time_seconds": "+24.6",
+      "tokens": "+9444"
+    }
+  },
+  "notes": [
+    "Eval 1 (typed-registration-form) passes 100% in BOTH configurations -- Sonnet already knows NonNullableFormBuilder well. This assertion does not discriminate skill value.",
+    "Eval 2 (cross-field-password-validation) shows the only typed-forms differentiation: with-skill uses fb.nonNullable.control() and FormControl<string>, without-skill uses plain FormBuilder producing nullable types. The current reactive-forms.md doesn't mention typed forms at all, so the skill may have picked this up from project AGENTS.md conventions rather than the forms reference.",
+    "Eval 3 (requiredif-validator-directive) -- the with-skill version MISSED forwardRef while the without-skill version got it right. The current template-driven-forms.md has no guidance on custom validator directives or forwardRef, so the skill reading added no value and cost extra tokens.",
+    "With-skill runs cost ~1.8x more tokens and ~1.7x more time due to reading SKILL.md + reference files, with zero net pass rate improvement.",
+    "BASELINE CONCLUSION: The current forms references provide NO measurable lift for these forms tasks. This confirms the improvement gap -- typed forms, custom validators, and cross-field validation are completely absent from the reference files."
+  ]
+}

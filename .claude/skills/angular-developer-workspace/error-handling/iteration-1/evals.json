@@ -1,0 +1,23 @@
+{
+  "skill_name": "angular-developer",
+  "evals": [
+    {
+      "id": 0,
+      "name": "global-error-handler-analytics",
+      "prompt": "Create an Angular 21 application error handling setup with:\n1. A custom `GlobalErrorHandler` that implements `ErrorHandler` and sends error events to an `AnalyticsService` (include screen URL from Router)\n2. An `AnalyticsService` (injectable, root-provided) with a `trackError(event: ErrorEvent)` method\n3. Wire the ErrorHandler in the app config alongside `provideBrowserGlobalErrorListeners()`\n4. Write tests for the GlobalErrorHandler that:\n   - Verify it calls AnalyticsService.trackError with the correct error details\n   - Verify it includes the current route URL in the error event\n   - Use `rethrowApplicationErrors: false` in TestBed to prevent the test from failing on the error\n5. Explain in comments when Angular catches errors automatically (component lifecycle, template events, AsyncPipe) vs when it does NOT (service methods, resource() API)\n\nUse inject() for DI, Angular 21 standalone patterns.",
+      "expected_output": "Custom ErrorHandler with analytics, provideBrowserGlobalErrorListeners, rethrowApplicationErrors in tests, correct catch/no-catch documentation"
+    },
+    {
+      "id": 1,
+      "name": "resource-error-handling-patterns",
+      "prompt": "Create an Angular 21 component called `DataDashboardComponent` that demonstrates comprehensive error handling across different Angular APIs:\n1. Use `resource()` to fetch dashboard stats from an async function that can fail. Show how resource() errors surface via `.status()` and `.error()` signals (NOT through ErrorHandler)\n2. Use `httpResource()` to fetch a list of recent items. Show how httpResource errors surface via `.error()` signal and how to display error state using `.hasValue()` guard\n3. Include an RxJS-based service method that uses `catchError` to handle HTTP errors at the callsite, distinguishing network errors (status 0) from backend errors\n4. Add a button that triggers a method call that could throw -- show that service method errors are NOT caught by Angular and need try/catch\n5. Write tests covering: resource() error state, httpResource error state with HttpTestingController, and the RxJS catchError path\n\nUse OnPush, signals, standalone. Follow Angular 21 best practices.",
+      "expected_output": "Component demonstrating resource() vs httpResource() vs RxJS error paths, with correct understanding of which errors reach ErrorHandler and which don't"
+    },
+    {
+      "id": 2,
+      "name": "error-boundary-retry-ux",
+      "prompt": "Create an Angular 21 error handling UX system with:\n1. An `ErrorBoundaryComponent` that wraps content and catches errors from child components. It should display a fallback error UI with a retry button\n2. Use a custom `ErrorHandler` that tracks errors per-component (using Router URL) and sends them to an analytics service\n3. A `DataPanelComponent` that uses `httpResource()` to fetch data. When the httpResource errors:\n   - Display the error via `.error()` signal (NOT relying on ErrorHandler since httpResource errors don't reach it)\n   - Show a retry button that calls `.reload()` on the resource\n4. A retry interceptor that automatically retries 503 errors with exponential backoff, using an `HttpContextToken` to let specific requests opt out\n5. Tests that verify: ErrorHandler receives component errors but NOT httpResource errors, retry interceptor behavior, and the reload() UX flow\n\nUse OnPush, signals, standalone, inject(). Angular 21 patterns.",
+      "expected_output": "Error boundary UX with correct understanding that httpResource errors bypass ErrorHandler, retry interceptor with context token, and reload() pattern"
+    }
+  ]
+}

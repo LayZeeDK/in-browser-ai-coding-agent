@@ -1,0 +1,47 @@
+{
+  "eval_id": 2,
+  "eval_name": "error-logging-setup-from-scratch",
+  "summary": {"passed": 5, "failed": 3, "total": 8, "pass_rate": 0.625},
+  "expectations": [
+    {
+      "text": "error-handler-injectable",
+      "passed": true,
+      "evidence": "global-error-handler.ts: @Injectable() decorator present, class implements ErrorHandler"
+    },
+    {
+      "text": "provide-browser-global-listeners",
+      "passed": false,
+      "evidence": "app.config.ts does NOT include provideBrowserGlobalErrorListeners(). Providers are provideZoneChangeDetection, provideRouter, provideHttpClient, and { provide: ErrorHandler, useClass: GlobalErrorHandler } only."
+    },
+    {
+      "text": "resource-errors-not-global",
+      "passed": true,
+      "evidence": "todos.component.ts JSDoc: 'resource errors are LOCAL — they surface as resource.error() signal values... They do NOT bubble up to GlobalErrorHandler automatically'. todos-with-http-resource.component.ts: 'errors are local to the resource and do NOT reach GlobalErrorHandler'. Tests in todos.component.spec.ts and todos-with-http-resource.component.spec.ts include 'does NOT propagate the HTTP error to GlobalErrorHandler' test cases."
+    },
+    {
+      "text": "rethrow-application-errors",
+      "passed": false,
+      "evidence": "Neither todos.component.spec.ts nor todos-with-http-resource.component.spec.ts uses rethrowApplicationErrors: false. The error isolation tests in these files use fakeAsync/tick pattern instead of rethrowApplicationErrors, which means TestBed may rethrow resource errors and fail the tests in practice."
+    },
+    {
+      "text": "sentry-like-integration",
+      "passed": true,
+      "evidence": "ErrorReportingService is a Sentry-like stub with captureException() and captureMessage() methods and inline comment showing Sentry.captureException() replacement. GlobalErrorHandler delegates to it."
+    },
+    {
+      "text": "error-handler-provider-wiring",
+      "passed": true,
+      "evidence": "app.config.ts: { provide: ErrorHandler, useClass: GlobalErrorHandler } is present"
+    },
+    {
+      "text": "inject-function",
+      "passed": true,
+      "evidence": "GlobalErrorHandler uses inject(ErrorReportingService) via private field syntax (#errorReporting = inject(...)). TodosComponent uses inject(HttpClient). All DI via inject() function."
+    },
+    {
+      "text": "component-level-error-handling",
+      "passed": false,
+      "evidence": "todos.component.ts uses rxResource (NOT httpResource/resource directly) and accesses todos.value() inside @else branch WITHOUT a .hasValue() guard — the template goes straight to @else { <ul>@for todo of todos.value()... } after checking isLoading and error. This is missing the hasValue() guard and misses the explicit resource()/httpResource() demonstration. todos-with-http-resource.component.ts is the httpResource variant but also lacks .hasValue() guard — uses @else branch instead."
+    }
+  ]
+}

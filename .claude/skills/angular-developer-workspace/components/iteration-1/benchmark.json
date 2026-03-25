@@ -1,0 +1,161 @@
+{
+  "metadata": {
+    "skill_name": "angular-developer",
+    "skill_path": ".claude/skills/angular-developer",
+    "executor_model": "claude-opus-4-6",
+    "timestamp": "2026-03-23T22:00:00Z",
+    "evals_run": [1, 2, 3],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_id": 1,
+      "eval_name": "stock-dashboard-resource",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Uses resource() with params", "passed": true, "evidence": "Correct params-based reactive tracking"},
+        {"text": "Passes abortSignal", "passed": true, "evidence": "Forwarded to fetch()"},
+        {"text": "Uses status signals in template", "passed": true, "evidence": "isLoading, hasValue, error all used"},
+        {"text": "Provides reload()", "passed": true, "evidence": "stockResource.reload() exposed"},
+        {"text": "Preserves previous value", "passed": true, "evidence": "hasValue() + stale class pattern"},
+        {"text": "OnPush", "passed": true, "evidence": "ChangeDetectionStrategy.OnPush set"},
+        {"text": "No effect() misuse", "passed": true, "evidence": "No effect() calls"}
+      ]
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "stock-dashboard-resource",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.71,
+        "passed": 5,
+        "failed": 2,
+        "total": 7,
+        "errors": 1
+      },
+      "expectations": [
+        {"text": "Uses resource() with params", "passed": false, "evidence": "Used rxResource with old 'request' property — TS error"},
+        {"text": "Passes abortSignal", "passed": false, "evidence": "Used RxJS-based rxResource, no abortSignal"},
+        {"text": "Uses status signals in template", "passed": true, "evidence": "Status signals exposed from rxResource"},
+        {"text": "Provides reload()", "passed": true, "evidence": "reload() exposed"},
+        {"text": "Preserves previous value", "passed": true, "evidence": "rxResource default behavior"},
+        {"text": "OnPush", "passed": true, "evidence": "OnPush set"},
+        {"text": "No effect() misuse", "passed": true, "evidence": "No effect() calls"}
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "streaming-ai-chat",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Uses resource.stream", "passed": true, "evidence": "resource({ stream: async () => {...} })"},
+        {"text": "Uses ResourceStreamItem", "passed": true, "evidence": "Imported and used correctly"},
+        {"text": "Separates input from submission", "passed": true, "evidence": "promptInput vs submittedPrompt signals"},
+        {"text": "Uses linkedSignal for history", "passed": true, "evidence": "linkedSignal with source/computation"},
+        {"text": "Loading state in template", "passed": true, "evidence": "chatResponse.isLoading() shown"},
+        {"text": "Error state with retry", "passed": true, "evidence": "Error display + Retry button"},
+        {"text": "OnPush", "passed": true, "evidence": "OnPush set"}
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "streaming-ai-chat",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.29,
+        "passed": 2,
+        "failed": 5,
+        "total": 7,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Uses resource.stream", "passed": false, "evidence": "Imperative fetch, no resource()"},
+        {"text": "Uses ResourceStreamItem", "passed": false, "evidence": "Not imported or used"},
+        {"text": "Separates input from submission", "passed": true, "evidence": "userInput signal, fetch on send()"},
+        {"text": "Uses linkedSignal for history", "passed": false, "evidence": "Manual messages.update()"},
+        {"text": "Loading state in template", "passed": false, "evidence": "No visual loading indicator"},
+        {"text": "Error state with retry", "passed": false, "evidence": "Error appended as text, no retry button"},
+        {"text": "OnPush", "passed": true, "evidence": "OnPush set"}
+      ]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "smart-dropdown-selection",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Uses resource() with params", "passed": true, "evidence": "resource({ params: ... }) correct"},
+        {"text": "Uses linkedSignal with source+computation+previous", "passed": true, "evidence": "Object syntax with previous.value"},
+        {"text": "Uses computed() for display", "passed": true, "evidence": "computed() for displayText"},
+        {"text": "Custom equality function", "passed": true, "evidence": "Deep equality by option IDs on computed"},
+        {"text": "No effect() misuse", "passed": true, "evidence": "No effect() calls"},
+        {"text": "OnPush", "passed": true, "evidence": "OnPush set"}
+      ]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "smart-dropdown-selection",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.33,
+        "passed": 2,
+        "failed": 4,
+        "total": 6,
+        "errors": 1
+      },
+      "expectations": [
+        {"text": "Uses resource() with params", "passed": false, "evidence": "rxResource with old 'request' — TS error"},
+        {"text": "Uses linkedSignal with source+computation+previous", "passed": false, "evidence": "Used effect() instead — anti-pattern"},
+        {"text": "Uses computed() for display", "passed": true, "evidence": "computed() for displayString"},
+        {"text": "Custom equality function", "passed": false, "evidence": "Trivial string equality identical to default"},
+        {"text": "No effect() misuse", "passed": false, "evidence": "effect() used for state propagation"},
+        {"text": "OnPush", "passed": true, "evidence": "OnPush set"}
+      ]
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0}
+    },
+    "without_skill": {
+      "pass_rate": {"mean": 0.44, "stddev": 0.23, "min": 0.29, "max": 0.71}
+    },
+    "delta": {
+      "pass_rate": "+0.56"
+    }
+  },
+  "notes": [
+    "OnPush assertion passes 100% in both configurations — non-discriminating (Claude knows OnPush regardless of skill)",
+    "Baseline consistently uses old 'request' property instead of 'params' for rxResource — produces TypeScript compilation errors",
+    "Baseline never uses resource.stream for streaming — falls back to imperative fetch() pattern",
+    "Baseline uses effect() for state sync in eval 3 — the exact anti-pattern the skill warns against",
+    "With-skill runs show perfect alignment with Angular v21 API surface (resource, linkedSignal, ResourceStreamItem)",
+    "Biggest skill impact is on eval 2 (streaming AI chat): 100% vs 29% — resource.stream and linkedSignal are not in model's training data"
+  ]
+}

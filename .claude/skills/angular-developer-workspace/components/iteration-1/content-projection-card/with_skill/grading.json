@@ -1,0 +1,12 @@
+{
+  "expectations": [
+    {"text": "Uses <ng-content> with select attribute for multi-slot projection", "passed": true, "evidence": "card.component.ts uses ng-content select='app-card-header', select='[cardBody]', select='[cardActions]'"},
+    {"text": "Has at least 3 distinct ng-content slots (header, body, actions)", "passed": true, "evidence": "Three ng-content elements with different selectors plus one unselectored"},
+    {"text": "Includes fallback content inside at least one <ng-content> element", "passed": true, "evidence": "ng-content select='[cardActions]' contains fallback Close button"},
+    {"text": "Creates a separate CardHeader component with its own selector", "passed": true, "evidence": "card-header.component.ts exists with selector 'app-card-header'"},
+    {"text": "Uses ChangeDetectionStrategy.OnPush", "passed": true, "evidence": "changeDetection: ChangeDetectionStrategy.OnPush on line 7"},
+    {"text": "Does NOT use @ContentChild or @ContentChildren decorators", "passed": true, "evidence": "No decorator-based query imports found"},
+    {"text": "Components are standalone (no explicit standalone: true)", "passed": true, "evidence": "No standalone property in @Component decorator"}
+  ],
+  "summary": {"passed": 7, "failed": 0, "total": 7, "pass_rate": 1.0}
+}

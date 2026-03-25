@@ -1,0 +1,46 @@
+{
+  "eval_id": 1,
+  "eval_name": "httpresource-zod-validation",
+  "expectations": [
+    {
+      "text": "httpresource-with-parse",
+      "passed": true,
+      "evidence": "user-profile.component.ts line 30: 'httpResource<User>(() => ..., { parse: UserSchema.parse })'"
+    },
+    {
+      "text": "has-value-guard",
+      "passed": true,
+      "evidence": "Template: '@else if (userResource.hasValue())' gates all '.value()' accesses; .value() is never called outside this branch"
+    },
+    {
+      "text": "error-signal-usage",
+      "passed": true,
+      "evidence": "Template line 18: '@else if (userResource.error())'; errorMessage() reads 'this.userResource.error()' without try/catch"
+    },
+    {
+      "text": "signal-input-reactive",
+      "passed": true,
+      "evidence": "user-profile.component.ts line 26: 'readonly userId = input.required<string>()'; used in resource URL '() => /api/users/${this.userId()}'"
+    },
+    {
+      "text": "testbed-tick-pattern",
+      "passed": true,
+      "evidence": "user-profile.component.spec.ts lines 41, 81, 96: 'TestBed.tick()' called to trigger httpResource effect"
+    },
+    {
+      "text": "when-stable-pattern",
+      "passed": true,
+      "evidence": "user-profile.component.spec.ts lines 45, 83, 97: 'await appRef.whenStable()' where appRef = TestBed.inject(ApplicationRef)"
+    },
+    {
+      "text": "onpush-change-detection",
+      "passed": true,
+      "evidence": "user-profile.component.ts line 7: 'changeDetection: ChangeDetectionStrategy.OnPush'"
+    },
+    {
+      "text": "zod-schema-definition",
+      "passed": true,
+      "evidence": "user-profile.schema.ts: 'z.object({ name: z.string(), email: z.string().email(), role: z.enum([...]), lastLogin: z.string().datetime() })'"
+    }
+  ]
+}

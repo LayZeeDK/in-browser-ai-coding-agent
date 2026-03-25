@@ -1,0 +1,15 @@
+{
+  "eval_id": 1,
+  "eval_name": "axe-a11y-testing",
+  "prompt": "I have an Angular 21 app with a notification banner component that shows success/error/warning messages. I want to add accessibility testing to my existing unit test suite. Set up axe-core integration with Angular's TestBed so I can run automated accessibility audits on the component in different states (success, error, warning). Also configure angular-eslint with template accessibility rules so we catch a11y issues at lint time. Show me the test file, the eslint config changes, and explain what axe checks vs what the linter catches.",
+  "assertions": [
+    "Test file imports and uses axe-core or jest-axe for accessibility audits",
+    "Tests render the component via TestBed and run axe against the DOM",
+    "Tests cover multiple component states (at least success and error)",
+    "Each axe test asserts that violations array is empty or uses toHaveNoViolations",
+    "ESLint config includes @angular-eslint template accessibility rules",
+    "Explanation distinguishes runtime axe checks from static lint rules",
+    "Uses ChangeDetectionStrategy.OnPush on the component",
+    "Uses signal-based input() for the notification state/type"
+  ]
+}

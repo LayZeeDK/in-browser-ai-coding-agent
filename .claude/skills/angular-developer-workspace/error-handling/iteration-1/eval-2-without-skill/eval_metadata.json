@@ -1,0 +1,39 @@
+{
+  "eval_id": 2,
+  "eval_name": "error-boundary-retry-ux",
+  "prompt": "Error boundary UX with httpResource .error()/.reload(), retry interceptor, ErrorHandler bypass understanding",
+  "assertions": [
+    {
+      "name": "httpresource-error-not-errorhandler",
+      "description": "Code or comments explicitly state httpResource errors surface via .error() signal and do NOT reach ErrorHandler"
+    },
+    {
+      "name": "httpresource-reload-pattern",
+      "description": "Retry button calls .reload() on the httpResource to re-fetch"
+    },
+    {
+      "name": "error-signal-display",
+      "description": "Template displays httpResource error state via .error() signal, not via ErrorHandler/error boundary"
+    },
+    {
+      "name": "retry-interceptor-exponential",
+      "description": "Retry interceptor uses exponential backoff for 503 errors"
+    },
+    {
+      "name": "http-context-token-opt-out",
+      "description": "Uses HttpContextToken to let specific requests opt out of retry"
+    },
+    {
+      "name": "errorhandler-for-component-errors",
+      "description": "Custom ErrorHandler receives component/lifecycle errors (not httpResource errors)"
+    },
+    {
+      "name": "test-errorhandler-bypass",
+      "description": "Tests verify that ErrorHandler is NOT called for httpResource errors but IS called for component errors"
+    },
+    {
+      "name": "onpush-and-signals",
+      "description": "Components use OnPush and signal-based state"
+    }
+  ]
+}

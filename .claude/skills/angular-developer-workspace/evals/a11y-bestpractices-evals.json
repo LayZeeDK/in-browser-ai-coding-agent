@@ -1,0 +1,53 @@
+{
+  "skill_name": "angular-developer",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have an Angular 21 app with a notification banner component that shows success/error/warning messages. I want to add accessibility testing to my existing unit test suite. Set up axe-core integration with Angular's TestBed so I can run automated accessibility audits on the component in different states (success, error, warning). Also configure angular-eslint with template accessibility rules so we catch a11y issues at lint time. Show me the test file, the eslint config changes, and explain what axe checks vs what the linter catches.",
+      "expected_output": "A test file using axe-core (or jest-axe) with TestBed to audit the notification banner component in multiple states, eslint config with @angular-eslint template accessibility rules, and an explanation of the complementary roles of runtime axe checks vs static lint rules.",
+      "files": [],
+      "expectations": [
+        "Test file imports and uses axe-core or jest-axe for accessibility audits",
+        "Tests render the component via TestBed and run axe against the DOM",
+        "Tests cover multiple component states (at least success and error)",
+        "Each axe test asserts that violations array is empty or uses toHaveNoViolations",
+        "ESLint config includes @angular-eslint template accessibility rules (e.g., accessibility-elements-content, accessibility-alt-text, or accessibility-label-for)",
+        "Explanation distinguishes runtime axe checks (color contrast, ARIA validity, focus order) from static lint rules (missing alt text, empty interactive elements)",
+        "Uses ChangeDetectionStrategy.OnPush on the component",
+        "Uses signal-based input() for the notification state/type"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Build a confirmation dialog component for my Angular 21 app. Requirements: (1) When the dialog opens, focus must move to the dialog container or the first focusable element inside it, (2) Tab/Shift+Tab must cycle focus only within the dialog (focus trap), (3) Escape key closes the dialog, (4) When the dialog closes, focus must return to the element that triggered it, (5) Background content behind the dialog must be inert. Use Angular CDK where appropriate. Include the component, a service or directive to open it, and a usage example. Make sure it passes screen reader testing.",
+      "expected_output": "A dialog component with CDK focus trap, inert background, keyboard handling (Escape, Tab cycling), and focus restoration on close. Includes a trigger mechanism and usage example.",
+      "files": [],
+      "expectations": [
+        "Uses cdkTrapFocus or CdkTrapFocus directive from @angular/cdk/a11y for focus trapping",
+        "Dialog has role='dialog' and aria-modal='true' or uses the native <dialog> element",
+        "Focus moves to the dialog on open (autoFocus or programmatic focus)",
+        "Escape key closes the dialog via keyboard event handler",
+        "Focus returns to the trigger element after dialog closes",
+        "Background content uses the inert attribute or aria-hidden='true'",
+        "Uses ChangeDetectionStrategy.OnPush",
+        "Has aria-labelledby or aria-label for the dialog title"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I'm building an Angular 21 dashboard that fetches data from three different REST APIs (users, orders, analytics). I need a robust error handling strategy. For HTTP errors, I want: typed error responses from the backend (the API returns { code: string, message: string, details?: Record<string, string> }), retry logic for transient failures (503, 429), user-facing error messages that distinguish between 'try again' errors and 'contact support' errors, and a global error handler that sends errors to our analytics service. Show me the interceptor, the error handling service, and how a component consumes it. Use httpResource where it makes sense.",
+      "expected_output": "An HTTP interceptor with retry logic for transient errors, a typed error response interface, an error handling service that categorizes errors, a global ErrorHandler, and a component using httpResource with proper error state handling.",
+      "files": [],
+      "expectations": [
+        "Defines a typed interface for the backend error response (code, message, details)",
+        "Uses HttpInterceptorFn or functional interceptor (not class-based HttpInterceptor)",
+        "Implements retry logic for specific HTTP status codes (503, 429) using RxJS retry/retryWhen",
+        "Distinguishes transient (retryable) errors from permanent errors in the error service",
+        "Custom ErrorHandler class extends or implements ErrorHandler and reports to analytics",
+        "Component uses httpResource() or resource() for at least one API call",
+        "Error states in the component template use resource status/error properties or catchError patterns",
+        "Uses provideHttpClient with withInterceptors() in the app config"
+      ]
+    }
+  ]
+}

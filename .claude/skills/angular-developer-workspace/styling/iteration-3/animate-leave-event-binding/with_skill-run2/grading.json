@@ -1,0 +1,32 @@
+{
+  "eval_id": 0,
+  "eval_name": "animate-leave-event-binding",
+  "configuration": "with_skill",
+  "expectations": [
+    {
+      "text": "uses_animate_leave_event",
+      "passed": true,
+      "evidence": "Uses `(animate.leave)=\"onDialogLeave($event)\"` event binding on backdrop div"
+    },
+    {
+      "text": "imports_animation_callback_event",
+      "passed": true,
+      "evidence": "Imports `AnimationCallbackEvent` from `@angular/core`"
+    },
+    {
+      "text": "calls_animation_complete",
+      "passed": true,
+      "evidence": "Calls `event.animationComplete()` inside `animation.finished.then()` and in guard clause"
+    },
+    {
+      "text": "no_legacy_dsl",
+      "passed": true,
+      "evidence": "No imports from `@angular/animations`; only `@angular/core` imports used"
+    },
+    {
+      "text": "js_animation_in_handler",
+      "passed": true,
+      "evidence": "Uses Web Animations API `panel.animate()` and `backdrop.animate()` with GSAP variant also shown"
+    }
+  ]
+}

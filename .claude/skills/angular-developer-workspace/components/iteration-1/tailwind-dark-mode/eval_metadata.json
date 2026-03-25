@@ -1,0 +1,32 @@
+{
+  "eval_id": 1,
+  "eval_name": "tailwind-dark-mode",
+  "prompt": "I'm building an Angular 21 project with Tailwind CSS v4. I need to add dark mode support. The app should respect the user's OS preference by default but also allow manual toggling via a button. Show me how to set this up with Tailwind v4's CSS-first configuration (no tailwind.config.js), including the toggle component and how to apply dark styles in templates.",
+  "assertions": [
+    {
+      "name": "no_tailwind_config_js",
+      "description": "Does not create tailwind.config.js (v3 pattern)",
+      "check": "Output does not instruct creating tailwind.config.js"
+    },
+    {
+      "name": "uses_v4_dark_mode",
+      "description": "Uses Tailwind v4 dark mode approach",
+      "check": "Output uses dark: variant classes in templates or @custom-variant in CSS"
+    },
+    {
+      "name": "os_preference_detection",
+      "description": "Respects OS color scheme preference",
+      "check": "Output references prefers-color-scheme media query or equivalent"
+    },
+    {
+      "name": "manual_toggle",
+      "description": "Includes manual toggle mechanism",
+      "check": "Output includes a component or mechanism to manually switch between light and dark mode"
+    },
+    {
+      "name": "uses_signals",
+      "description": "Uses Angular signals for state management",
+      "check": "Toggle state uses signal() or similar reactive primitive"
+    }
+  ]
+}

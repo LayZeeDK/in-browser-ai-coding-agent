@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "Explains that pathMatch 'prefix' (default) matches any URL starting with empty string, causing the redirect-everything bug",
+      "passed": true,
+      "evidence": "Lines 5-6: 'Angular's default pathMatch is prefix. An empty string prefix matches the beginning of every URL'"
+    },
+    {
+      "text": "Fixes the redirect by adding pathMatch: 'full' to the empty-path route",
+      "passed": true,
+      "evidence": "Line 10: { path: '', pathMatch: 'full', redirectTo: 'home' }"
+    },
+    {
+      "text": "Configures provideRouter with withComponentInputBinding() feature",
+      "passed": true,
+      "evidence": "Line 30: withComponentInputBinding() in provideRouter"
+    },
+    {
+      "text": "Shows a component using input() or input.required() to receive a route parameter",
+      "passed": true,
+      "evidence": "Line 104: readonly id = input.required<string>(); with comment about route param :id"
+    },
+    {
+      "text": "Shows a component using input() or input.required() to receive resolved data",
+      "passed": true,
+      "evidence": "Line 107: readonly user = input.required<User>(); with comment about resolver key"
+    },
+    {
+      "text": "The resolver is a functional ResolveFn, not class-based",
+      "passed": true,
+      "evidence": "Line 69: export const userResolver: ResolveFn<User> = (route) => { ... }"
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  }
+}

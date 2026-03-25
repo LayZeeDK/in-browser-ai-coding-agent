@@ -1,0 +1,32 @@
+{
+  "eval_id": 2,
+  "eval_name": "staggered-list-animations",
+  "configuration": "without_skill",
+  "expectations": [
+    {
+      "text": "uses_animate_enter",
+      "passed": false,
+      "evidence": "Does NOT use animate.enter HTML attribute. Uses @starting-style and .ng-leave CSS class selectors instead. Mentions animate.enter in text but the actual code uses @starting-style for enter and .ng-leave for leave -- not the animate.enter attribute"
+    },
+    {
+      "text": "uses_animate_leave",
+      "passed": false,
+      "evidence": "Does NOT use animate.leave HTML attribute. Uses .item.ng-leave CSS class selector instead, which is a fabricated Angular class name, not the animate.leave attribute"
+    },
+    {
+      "text": "css_keyframes",
+      "passed": true,
+      "evidence": "@keyframes slide-in (enter) and @keyframes slide-out (leave) defined in CSS"
+    },
+    {
+      "text": "stagger_effect",
+      "passed": true,
+      "evidence": "animation-delay: calc(var(--stagger-index, 0) * 60ms) with [style.--stagger-index]=\"i\" binding"
+    },
+    {
+      "text": "uses_for_control_flow",
+      "passed": true,
+      "evidence": "@for (item of items(); track item.id; let i = $index) used for list rendering"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "Uses viewChild() function (not @ViewChild decorator)",
+      "passed": true,
+      "evidence": "Line 47-48: viewChild.required<ElementRef<HTMLTextAreaElement>>('textareaEl')"
+    },
+    {
+      "text": "Implements OnInit, AfterViewInit, and OnDestroy interfaces",
+      "passed": true,
+      "evidence": "Line 46: export class AutoResizeTextarea implements OnInit, AfterViewInit, OnDestroy"
+    },
+    {
+      "text": "Uses ngAfterViewInit to read initial element dimensions",
+      "passed": true,
+      "evidence": "Lines 67-74: ngAfterViewInit calls getBoundingClientRect().height, sets initialHeight and height signals"
+    },
+    {
+      "text": "Cleans up ResizeObserver in ngOnDestroy or via DestroyRef.onDestroy()",
+      "passed": true,
+      "evidence": "Line 56: inject(DestroyRef).onDestroy(() => this.cleanup()) AND line 77: ngOnDestroy calls cleanup(). cleanup() disconnects on line 94"
+    },
+    {
+      "text": "Uses ChangeDetectionStrategy.OnPush",
+      "passed": true,
+      "evidence": "Line 15: changeDetection: ChangeDetectionStrategy.OnPush"
+    },
+    {
+      "text": "viewChild uses a template reference variable string or ElementRef read option",
+      "passed": true,
+      "evidence": "Line 48: viewChild.required<ElementRef<HTMLTextAreaElement>>('textareaEl') — string ref var with ElementRef generic"
+    },
+    {
+      "text": "Does NOT use @ViewChild decorator",
+      "passed": true,
+      "evidence": "Imports lines 1-12: viewChild (lowercase function), no ViewChild decorator anywhere"
+    }
+  ],
+  "summary": {"passed": 7, "failed": 0, "total": 7, "pass_rate": 1.0}
+}

@@ -1,0 +1,111 @@
+{
+  "expectations": [
+    {
+      "text": "Uses cdkTrapFocus or CdkTrapFocus directive from @angular/cdk/a11y for focus trapping",
+      "passed": true,
+      "evidence": "The dialog template uses `cdkTrapFocus` and `cdkTrapFocusAutoCapture` directives on the inner dialog div. `A11yModule` is imported from `@angular/cdk/a11y` in the component's `imports` array."
+    },
+    {
+      "text": "Dialog has role='dialog' and aria-modal='true' or uses the native <dialog> element",
+      "passed": true,
+      "evidence": "The dialog div has `role=\"dialog\"` and `aria-modal=\"true\"` as static attributes in the template."
+    },
+    {
+      "text": "Focus moves to the dialog on open (autoFocus or programmatic focus)",
+      "passed": true,
+      "evidence": "`cdkTrapFocusAutoCapture` is set on the dialog container. The explanation section confirms: 'Combined with `cdkTrapFocusAutoCapture=\"true\"`, the CDK `FocusTrap` calls `focusInitialElementWhenReady()` immediately after the component is attached to the DOM.'"
+    },
+    {
+      "text": "Escape key closes the dialog via keyboard event handler",
+      "passed": true,
+      "evidence": "`@HostListener('document:keydown.escape') onEscape(): void { this.cancel(); }` is present in `ConfirmationDialogComponent`."
+    },
+    {
+      "text": "Focus returns to the trigger element after dialog closes",
+      "passed": true,
+      "evidence": "In `confirmation-dialog.service.ts`, the `open()` method accepts `trigger: HTMLElement` and calls `trigger.focus()` inside a `finalize` operator that runs on both confirm and cancel paths. `ConfirmButtonDirective` passes `inject(ElementRef).nativeElement` as the trigger automatically."
+    },
+    {
+      "text": "Background content uses the inert attribute or aria-hidden='true'",
+      "passed": true,
+      "evidence": "`setInertOnBackgroundContent(true)` is called in `ngOnInit`, which sets the HTML `inert` attribute on every direct child of `<body>` except the CDK overlay container. It is removed in `ngOnDestroy`."
+    },
+    {
+      "text": "Uses ChangeDetectionStrategy.OnPush",
+      "passed": true,
+      "evidence": "`changeDetection: ChangeDetectionStrategy.OnPush` is present in the `@Component` decorator of `ConfirmationDialogComponent`."
+    },
+    {
+      "text": "Has aria-labelledby or aria-label for the dialog title",
+      "passed": true,
+      "evidence": "The dialog div has `[attr.aria-labelledby]=\"titleId\"` binding, which points to the `<h2>` element rendered with `[id]=\"titleId\"`. The `titleId` is a stable unique string generated at construction time."
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "output_chars": 16840,
+    "transcript_chars": 16840
+  },
+  "timing": {
+    "executor_duration_seconds": 102.9,
+    "grader_duration_seconds": null,
+    "total_duration_seconds": 102.9
+  },
+  "claims": [
+    {
+      "claim": "Focus moves to the Cancel button first because it is first in DOM order and CDK focuses the first focusable element",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Cancel button appears before the Confirm button in the template, and `cdkTrapFocusAutoCapture` focuses the first focusable element. The explanation notes this is intentional to protect against reflexive Enter presses on destructive actions."
+    },
+    {
+      "claim": "Background content is made inert via `setInertOnBackgroundContent` targeting direct children of `<body>`",
+      "type": "process",
+      "verified": true,
+      "evidence": "The helper function is implemented and called in `ngOnInit`/`ngOnDestroy`. It queries `.cdk-overlay-container` and sets/removes `inert` on all other body children."
+    },
+    {
+      "claim": "The CDK overlay host is automatically added to the DOM by `OverlayContainer`",
+      "type": "factual",
+      "verified": true,
+      "evidence": "This is standard CDK behavior and consistent with the implementation shown."
+    },
+    {
+      "claim": "The `@Input`/`@Output` decorators are used in `ConfirmButtonDirective` rather than the `input()`/`output()` signal functions",
+      "type": "quality",
+      "verified": true,
+      "evidence": "The directive uses `@Input('appConfirmButton')` and `@Output() confirmed = new EventEmitter<boolean>()`. The project's code style mandates `input()` and `output()` functions instead of decorators per AGENTS.md. This is a style violation in the generated code, though it does not affect the accessibility expectations being graded."
+    },
+    {
+      "claim": "HostListener is used in `ConfirmButtonDirective` rather than the `host` object",
+      "type": "quality",
+      "verified": true,
+      "evidence": "`@HostListener('click')` is used in `ConfirmButtonDirective`. Project style mandates using the `host` object in `@Component`/`@Directive` decorators instead. Minor style violation, not covered by the graded expectations."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": []
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "Focus moves to the dialog on open (autoFocus or programmatic focus)",
+        "reason": "Using `cdkTrapFocusAutoCapture` satisfies this assertion, but it is CDK doing the work via attribute binding — not a custom `autoFocus` input or explicit `ElementRef.nativeElement.focus()` call. A tighter assertion might require verifying that focus actually lands inside the dialog element (e.g., by checking for an explicit `focusTrap.focusInitialElement()` call or a unit test assertion), since the attribute alone does not prove the browser actually moves focus."
+      },
+      {
+        "reason": "No assertion checks that the implementation does not use the deprecated `@Input`/`@Output` decorators or `@HostListener` in directives. The `ConfirmButtonDirective` violates the project's mandated code style (`input()`/`output()` signal functions, `host` object instead of `@HostListener`). These are observable in the output but not caught by any expectation."
+      },
+      {
+        "reason": "No assertion verifies that `ChangeDetectionStrategy.OnPush` is also set on the `AppComponent` usage example. The component file sets it, but the example `AppComponent` also sets it — worth noting the eval only checks the dialog component, which is the relevant target."
+      }
+    ],
+    "overall": "All 8 expectations are well-targeted and correctly pass. The strongest gap is the absence of a style-compliance assertion: the generated directive code uses deprecated `@Input`/`@Output` decorators and `@HostListener` instead of the project-mandated signal-based `input()`/`output()` and `host` object. This is visible in the output but unchecked by any eval."
+  }
+}

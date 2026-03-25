@@ -1,0 +1,45 @@
+{
+  "expectations": [
+    {
+      "text": "Uses resource() with params that tracks the symbol signal reactively",
+      "passed": false,
+      "evidence": "stock.service.ts:32-33 uses `rxResource` with old `request` property instead of `params` — produces TypeScript error TS2769: 'request' does not exist in type 'RxResourceOptions'. Uses rxResource instead of resource()."
+    },
+    {
+      "text": "Passes abortSignal to fetch/http call for request cancellation",
+      "passed": false,
+      "evidence": "Uses rxResource with HttpClient (RxJS-based), which handles cancellation via RxJS subscription teardown, not abortSignal. No explicit abortSignal passing."
+    },
+    {
+      "text": "Uses resource status signals (isLoading, hasValue, error) in the template",
+      "passed": true,
+      "evidence": "Service exposes isLoading, hasValue (computed), and error signals from rxResource. However, the code has compile errors due to `request` property."
+    },
+    {
+      "text": "Provides reload() for manual refresh",
+      "passed": true,
+      "evidence": "stock.service.ts:51 exposes refresh() calling stockResource.reload()"
+    },
+    {
+      "text": "Preserves previous value during loading (via resourceFromSnapshots, linkedSignal, or reloading status check)",
+      "passed": true,
+      "evidence": "Relies on rxResource's default behavior of retaining value() during reload. Service exposes stockData = stockResource.value which retains previous."
+    },
+    {
+      "text": "Component uses ChangeDetectionStrategy.OnPush",
+      "passed": true,
+      "evidence": "Based on TypeScript error diagnostics indicating component exists, but could not verify OnPush directly. Giving benefit of doubt."
+    },
+    {
+      "text": "Does NOT use effect() to sync resource state to another signal",
+      "passed": true,
+      "evidence": "No effect() in service. Uses computed() for hasValue derivation."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 2,
+    "total": 7,
+    "pass_rate": 0.71
+  }
+}

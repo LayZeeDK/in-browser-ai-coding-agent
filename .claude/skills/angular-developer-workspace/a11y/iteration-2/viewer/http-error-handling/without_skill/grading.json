@@ -1,0 +1,101 @@
+{
+  "expectations": [
+    {
+      "text": "Defines a typed interface for the backend error response (code, message, details)",
+      "passed": true,
+      "evidence": "response.md defines 'export interface ApiErrorBody { code: string; message: string; details?: Record<string, string>; }' in api-error.model.ts — all three required fields are present with correct types."
+    },
+    {
+      "text": "Uses HttpInterceptorFn or functional interceptor (not class-based HttpInterceptor)",
+      "passed": true,
+      "evidence": "response.md exports 'export const httpErrorInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn) => { ... }' — a functional interceptor using the HttpInterceptorFn type, no class-based HttpInterceptor."
+    },
+    {
+      "text": "Implements retry logic for specific HTTP status codes (503, 429) using RxJS retry/retryWhen",
+      "passed": true,
+      "evidence": "response.md uses 'retry({ count: MAX_RETRIES, delay: (error, attemptIndex) => { if (error instanceof HttpErrorResponse && RETRYABLE_STATUS_CODES.has(error.status)) { ... return timer(delayMs); } return throwError(() => error); } })' where RETRYABLE_STATUS_CODES = new Set([429, 503]). Uses the RxJS 'retry' operator with exponential back-off, only for 429 and 503."
+    },
+    {
+      "text": "Distinguishes transient (retryable) errors from permanent errors in the error service",
+      "passed": true,
+      "evidence": "response.md defines TRANSIENT_STATUS_CODES = new Set([429, 503]) and a 'categorise()' method that returns 'transient' for those codes versus 'client', 'server', 'network', or 'unknown' for others. The 'canRetry' flag on AppError is set to true only for transient/network errors."
+    },
+    {
+      "text": "Custom ErrorHandler class extends or implements ErrorHandler and reports to analytics",
+      "passed": true,
+      "evidence": "response.md defines 'export class GlobalErrorHandler implements ErrorHandler' with a 'handleError(error: unknown)' method that calls 'this.getAnalytics().trackUnhandledError({ message, stack })' via a lazily-injected AnalyticsService."
+    },
+    {
+      "text": "Component uses httpResource() or resource() for at least one API call",
+      "passed": true,
+      "evidence": "response.md shows DashboardComponent with three httpResource calls: 'readonly users = httpResource<User[]>(...)', 'readonly orders = httpResource<Order[]>(...)', and 'readonly analytics = httpResource<AnalyticsSummary>(...)'."
+    },
+    {
+      "text": "Error states in the component template use resource status/error properties or catchError patterns",
+      "passed": true,
+      "evidence": "response.md template uses '@if (users.isLoading())' and '@else if (usersError())' where usersError is a computed() signal derived from 'this.users.error()'. Same pattern applied to orders and analytics resources."
+    },
+    {
+      "text": "Uses provideHttpClient with withInterceptors() in the app config",
+      "passed": true,
+      "evidence": "response.md app.config.ts contains 'provideHttpClient(withInterceptors([httpErrorInterceptor]))' inside the providers array of appConfig."
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "output_chars": 17276,
+    "transcript_chars": 17276
+  },
+  "timing": null,
+  "claims": [
+    {
+      "claim": "httpResource re-fetches when the reload counter signal changes",
+      "type": "factual",
+      "verified": true,
+      "evidence": "The component embeds a signal counter in the request params object ('params: { _reload: this.usersReloadCounter() }'), making the httpResource factory reactive to counter changes."
+    },
+    {
+      "claim": "Interceptor rethrows AppError (not HttpErrorResponse) so consumers receive a consistent typed error",
+      "type": "design",
+      "verified": true,
+      "evidence": "catchError rethrows 'throwError(() => appError)' where appError is an AppError, as described in both code and the Architecture Summary section."
+    },
+    {
+      "claim": "GlobalErrorHandler avoids circular DI by injecting services lazily inside handleError",
+      "type": "process",
+      "verified": true,
+      "evidence": "GlobalErrorHandler uses private getZone() and getAnalytics() helper methods that call inject() on first access inside handleError, not in a constructor."
+    },
+    {
+      "claim": "Retry uses exponential back-off (1s, 2s, 4s)",
+      "type": "factual",
+      "verified": true,
+      "evidence": "'const delayMs = BASE_DELAY_MS * Math.pow(2, attemptIndex - 1)' with BASE_DELAY_MS = 1000."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": []
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "Implements retry logic for specific HTTP status codes (503, 429) using RxJS retry/retryWhen",
+        "reason": "The assertion accepts 'retry/retryWhen' as alternatives, but retryWhen was deprecated in RxJS 7 and removed in RxJS 8. An output using the deprecated retryWhen would still pass the assertion. Consider tightening to 'retry() with a delay factory' to ensure modern idiomatic RxJS is checked."
+      },
+      {
+        "reason": "No assertion checks that the interceptor stops retrying non-retryable status codes (e.g., 400, 500). The current implementation correctly throws immediately for non-retryable codes, but a naive implementation that retried all errors would still pass all assertions."
+      },
+      {
+        "reason": "No assertion verifies that GlobalErrorHandler is wired into the app config via '{ provide: ErrorHandler, useClass: GlobalErrorHandler }'. The handler is well-implemented but could be dead code if never registered. A 'wired in app config' check would close this gap."
+      }
+    ],
+    "overall": "All eight assertions are genuinely satisfied with substantive implementations. The main gap is that retryWhen is permitted by the assertion wording, no assertion checks the interceptor ignores non-retryable status codes, and GlobalErrorHandler registration is not asserted."
+  }
+}

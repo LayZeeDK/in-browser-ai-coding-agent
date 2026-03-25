@@ -1,0 +1,32 @@
+{
+  "eval_id": 2,
+  "eval_name": "accordion-grid-animate-leave",
+  "configuration": "with_skill",
+  "expectations": [
+    {
+      "text": "css_grid_auto_height",
+      "passed": true,
+      "evidence": "Uses `grid-template-rows: 0fr` / `1fr` with `transition: grid-template-rows 0.35s ease` on `.accordion-item__panel-wrapper`"
+    },
+    {
+      "text": "overflow_hidden_on_child",
+      "passed": true,
+      "evidence": "`.accordion-item__panel` (the content element inside the grid container) has `overflow: hidden`"
+    },
+    {
+      "text": "uses_animate_leave",
+      "passed": true,
+      "evidence": "Uses `animate.leave=\"faq-item-leave\"` HTML attribute on `<app-accordion-item>` in parent template"
+    },
+    {
+      "text": "toggle_via_class_binding",
+      "passed": true,
+      "evidence": "Uses `[class.accordion-item__panel-wrapper--open]=\"isOpen()\"` to toggle grid state"
+    },
+    {
+      "text": "no_legacy_dsl",
+      "passed": true,
+      "evidence": "No imports from `@angular/animations`; only `@angular/core` imports used"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "Uses takeUntilDestroyed() from @angular/core/rxjs-interop",
+      "passed": true,
+      "evidence": "Found takeUntilDestroyed usage"
+    },
+    {
+      "text": "Does NOT implement OnDestroy interface",
+      "passed": false,
+      "evidence": "No OnDestroy"
+    },
+    {
+      "text": "Imports takeUntilDestroyed from @angular/core/rxjs-interop",
+      "passed": true,
+      "evidence": "Correct import path"
+    },
+    {
+      "text": "If takeUntilDestroyed used outside injection context, passes DestroyRef explicitly",
+      "passed": true,
+      "evidence": "Explicit DestroyRef passed"
+    },
+    {
+      "text": "Component uses ChangeDetectionStrategy.OnPush",
+      "passed": true,
+      "evidence": "Found OnPush"
+    },
+    {
+      "text": "Does not use explicit DestroyRef.onDestroy() when takeUntilDestroyed() alone suffices",
+      "passed": false,
+      "evidence": "Uses redundant onDestroy alongside takeUntilDestroyed"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 2,
+    "total": 6,
+    "pass_rate": 0.67
+  }
+}

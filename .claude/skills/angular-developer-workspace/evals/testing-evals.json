@@ -1,0 +1,53 @@
+{
+  "skill_name": "angular-developer",
+  "evals": [
+    {
+      "id": 4,
+      "prompt": "Write unit tests for an Angular 21 component called `UserProfileComponent` that uses `resource()` to fetch user data from `/api/users/:id` based on a signal input. The component has: an `id` input signal, a `userResource` created with `resource()`, and displays loading/error/success states in the template. I need tests that cover: initial loading state, successful data display, error handling, and that changing the input triggers a refetch. Use Vitest and TestBed.",
+      "expected_output": "Tests using TestBed with componentRef.setInput() to set signal inputs, proper async Act/Wait/Assert pattern with fixture.whenStable(), provider override for the fetch/http dependency, tests for loading/error/success states by controlling the mock, and a test showing input change triggers resource refetch.",
+      "files": [],
+      "expectations": [
+        "Uses TestBed.configureTestingModule with imports: [UserProfileComponent]",
+        "Uses componentRef.setInput() or fixture.componentRef.setInput() to set the id input signal",
+        "Uses await fixture.whenStable() for async change detection (not just detectChanges)",
+        "Provides a mock or spy for the HTTP/fetch dependency (vi.fn, vi.spyOn, or provider override)",
+        "Tests loading state (checks for loading indicator in DOM)",
+        "Tests successful data display (checks rendered user data)",
+        "Tests error state (simulates fetch failure and checks error display)",
+        "Tests that changing the input signal value triggers a new fetch"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Create a custom Angular CDK `ComponentHarness` for a `DateRangePickerComponent` that has two date input fields (start and end), a clear button, and validation that shows an error when the end date is before the start date. The harness should expose methods to get/set start and end dates, click clear, check if validation error is shown, and check if the component is disabled. Include both the harness class and example unit tests using it.",
+      "expected_output": "A custom harness class extending ComponentHarness with static hostSelector, locator methods using this.locatorFor/this.locatorForOptional with CSS selectors, TestElement usage for interactions, a static with() method returning HarnessPredicate, and tests using TestbedHarnessEnvironment.loader to load and use the harness.",
+      "files": [],
+      "expectations": [
+        "Harness class extends ComponentHarness from @angular/cdk/testing",
+        "Declares static hostSelector matching the component selector",
+        "Uses this.locatorFor() or this.locatorForOptional() to find child elements",
+        "Returns TestElement instances and uses their API (sendKeys, clear, click, text, getProperty, getAttribute)",
+        "Includes a static with() method that returns a HarnessPredicate for filtering",
+        "Tests use TestbedHarnessEnvironment.loader(fixture) to create a HarnessLoader",
+        "Tests use loader.getHarness(DateRangePickerHarness) to get the harness instance",
+        "Tests verify validation error display through the harness API"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Write unit tests for an Angular 21 service called `TodoService` that uses `httpResource()` to manage a todo list. The service has: a `todos` httpResource that fetches from `/api/todos`, an `addTodo(title: string)` method that POSTs to the API and calls reload(), and a `completedCount` computed signal derived from the todos resource value. I need comprehensive tests covering: the httpResource request, the addTodo method with HTTP verification, the computed signal derivation, and error scenarios. Use Vitest with provideHttpClient and HttpTestingController.",
+      "expected_output": "Tests using TestBed with provideHttpClient(withInterceptorsFromDi()) and provideHttpClientTesting(), injecting HttpTestingController for request verification, testing httpResource by flushing mock responses and checking resource.value(), testing addTodo triggers POST and reload, and testing computed signal updates after resource changes.",
+      "files": [],
+      "expectations": [
+        "Configures TestBed with provideHttpClient() and provideHttpClientTesting()",
+        "Injects HttpTestingController from TestBed",
+        "Injects the TodoService from TestBed using TestBed.inject()",
+        "Tests httpResource by expecting a request with HttpTestingController and flushing a response",
+        "Tests the addTodo method triggers an HTTP POST request",
+        "Tests the completedCount computed signal returns the correct derived value",
+        "Includes afterEach or cleanup that calls httpTesting.verify() to ensure no unexpected requests",
+        "Tests an error scenario (e.g., flush with error status, verify resource error state)"
+      ]
+    }
+  ]
+}

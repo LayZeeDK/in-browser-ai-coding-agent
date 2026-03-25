@@ -1,0 +1,32 @@
+{
+  "eval_id": 0,
+  "eval_name": "css-theming-with-custom-properties",
+  "configuration": "with_skill",
+  "expectations": [
+    {
+      "text": "uses_css_custom_properties",
+      "passed": true,
+      "evidence": "Defines --color-primary, --color-surface etc. in theme.css; all components use var(--color-*)"
+    },
+    {
+      "text": "no_ng_deep",
+      "passed": true,
+      "evidence": "States 'No ::ng-deep' multiple times; none in code"
+    },
+    {
+      "text": "runtime_theme_switching",
+      "passed": true,
+      "evidence": "ThemeService with signal and toggle(); AppShell has toggle button and host class bindings for .theme-light/.theme-dark"
+    },
+    {
+      "text": "works_with_emulated_encapsulation",
+      "passed": true,
+      "evidence": "Default ViewEncapsulation.Emulated used; includes explanation of why var() works across encapsulation"
+    },
+    {
+      "text": "child_component_consumption",
+      "passed": true,
+      "evidence": "Card component uses var(--color-surface), var(--color-primary), var(--color-on-surface); AppButton uses var(--color-primary), var(--color-secondary)"
+    }
+  ]
+}

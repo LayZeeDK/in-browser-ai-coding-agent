@@ -1,0 +1,13 @@
+{
+  "eval_id": 1,
+  "eval_name": "destroyref-takeuntildestroyed",
+  "prompt": "I have an Angular 21 service that subscribes to a WebSocket observable to receive live notifications. The service is providedIn root but I need it to properly clean up the subscription when the component that uses it gets destroyed. I've heard about DestroyRef and takeUntilDestroyed but I'm not sure how to use them. Can you show me the service and a component that uses it, making sure the subscription is cleaned up without implementing OnDestroy?",
+  "assertions": [
+    "Uses DestroyRef from @angular/core for cleanup registration",
+    "Uses takeUntilDestroyed() from @angular/core/rxjs-interop to auto-complete the observable",
+    "Does NOT implement OnDestroy interface or ngOnDestroy method",
+    "Imports takeUntilDestroyed from @angular/core/rxjs-interop (correct import path)",
+    "If takeUntilDestroyed is used outside injection context, passes DestroyRef explicitly",
+    "Component uses ChangeDetectionStrategy.OnPush"
+  ]
+}

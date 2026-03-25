@@ -1,0 +1,45 @@
+{
+  "expectations": [
+    {
+      "text": "Harness class extends ComponentHarness from @angular/cdk/testing",
+      "passed": true,
+      "evidence": "harness.ts lines 1-5: `import { ComponentHarness, HarnessPredicate, parallel } from '@angular/cdk/testing';` and line 23: `export class DateRangePickerHarness extends ComponentHarness`"
+    },
+    {
+      "text": "Declares static hostSelector matching the component selector",
+      "passed": true,
+      "evidence": "harness.ts line 24: `static readonly hostSelector = 'app-date-range-picker';`"
+    },
+    {
+      "text": "Uses this.locatorFor() or this.locatorForOptional() to find child elements",
+      "passed": true,
+      "evidence": "harness.ts lines 28-37: `this.locatorFor('[data-testid=\"start-date\"]')`, `this.locatorFor('[data-testid=\"end-date\"]')`, `this.locatorFor('[data-testid=\"clear-btn\"]')`, `this.locatorForOptional('[data-testid=\"date-range-error\"]')`"
+    },
+    {
+      "text": "Returns TestElement instances and uses their API (sendKeys, clear, click, text, getProperty, getAttribute)",
+      "passed": true,
+      "evidence": "harness.ts line 65: `getProperty<string>('value')`, line 84: `input.clear()`, line 85: `input.sendKeys(isoDate)`, line 107: `click()`, line 127: `el.text()`, line 140: `getProperty<boolean>('disabled')`"
+    },
+    {
+      "text": "Includes a static with() method that returns a HarnessPredicate for filtering",
+      "passed": true,
+      "evidence": "harness.ts lines 51-59: `static with(options): HarnessPredicate<DateRangePickerHarness>` using `new HarnessPredicate(DateRangePickerHarness, options).addOption(...)`"
+    },
+    {
+      "text": "Tests use TestbedHarnessEnvironment.loader(fixture) to create a HarnessLoader",
+      "passed": true,
+      "evidence": "spec.ts line 111: `loader = TestbedHarnessEnvironment.loader(fixture);`"
+    },
+    {
+      "text": "Tests use loader.getHarness(DateRangePickerHarness) to get the harness instance",
+      "passed": true,
+      "evidence": "spec.ts line 122: `const harness = await loader.getHarness(DateRangePickerHarness);` and throughout"
+    },
+    {
+      "text": "Tests verify validation error display through the harness API",
+      "passed": true,
+      "evidence": "spec.ts lines 213-231: sets start=2024-12-31, end=2024-01-01, asserts `harness.hasValidationError()` is true and `harness.getValidationErrorText()` contains expected message"
+    }
+  ],
+  "summary": { "passed": 8, "failed": 0, "total": 8, "pass_rate": 1.0 }
+}

@@ -1,0 +1,14 @@
+{
+  "eval_id": 3,
+  "eval_name": "lifecycle-resize-observer",
+  "prompt": "Create an AutoResizeTextarea component that uses ngAfterViewInit to measure its initial rendered height via viewChild() and ngOnDestroy (or DestroyRef) to clean up a ResizeObserver. The component should implement the OnInit, AfterViewInit, and OnDestroy interfaces. Use the modern signal-based viewChild() to get a reference to the textarea element.",
+  "assertions": [
+    {"text": "Uses viewChild() function (not @ViewChild decorator) to reference the textarea", "type": "code_pattern"},
+    {"text": "Implements OnInit, AfterViewInit, and OnDestroy interfaces", "type": "code_pattern"},
+    {"text": "Uses ngAfterViewInit to read initial element dimensions", "type": "code_pattern"},
+    {"text": "Cleans up ResizeObserver in ngOnDestroy or via DestroyRef.onDestroy()", "type": "code_pattern"},
+    {"text": "Uses ChangeDetectionStrategy.OnPush", "type": "code_pattern"},
+    {"text": "viewChild uses a template reference variable string or ElementRef read option", "type": "code_pattern"},
+    {"text": "Does NOT use @ViewChild decorator", "type": "negative_pattern"}
+  ]
+}

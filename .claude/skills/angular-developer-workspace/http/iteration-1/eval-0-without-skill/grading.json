@@ -1,0 +1,46 @@
+{
+  "eval_id": 0,
+  "eval_name": "http-error-retry-interceptor",
+  "expectations": [
+    {
+      "text": "functional-interceptor-signature",
+      "passed": false,
+      "evidence": "retry.interceptor.ts: interceptor is 'export function retryInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn)' — a plain function, not 'const retryInterceptor: HttpInterceptorFn'. The return type is a complex cast, not the HttpInterceptorFn type alias."
+    },
+    {
+      "text": "http-context-token-usage",
+      "passed": true,
+      "evidence": "retry.interceptor.ts line 10: 'export const RETRY_COUNT = new HttpContextToken<number>(() => 3)' and line 22: 'req.context.get(RETRY_COUNT)'"
+    },
+    {
+      "text": "exponential-backoff-pattern",
+      "passed": true,
+      "evidence": "retry.interceptor.ts line 15: 'function exponentialDelay(retryIndex: number) { return Math.pow(2, retryIndex) * 1000 }' used in retryWhen"
+    },
+    {
+      "text": "status-code-filtering",
+      "passed": true,
+      "evidence": "retry.interceptor.ts: 'RETRYABLE_STATUS_CODES = new Set([429, 503])' checked via .has(); other errors fall through to 'throwError(() => error)'"
+    },
+    {
+      "text": "http-error-response-distinction",
+      "passed": true,
+      "evidence": "api.service.ts lines 40-56: 'if (error.status === 0)' -> NetworkError; else -> BackendError with status property"
+    },
+    {
+      "text": "provider-ordering",
+      "passed": true,
+      "evidence": "api.service.spec.ts lines 18-19: provideHttpClient(...) before provideHttpClientTesting(); same in retry.interceptor.spec.ts lines 22-23"
+    },
+    {
+      "text": "with-interceptors-in-test",
+      "passed": true,
+      "evidence": "api.service.spec.ts line 18: 'provideHttpClient(withFetch(), withInterceptors([retryInterceptor]))'; same pattern in retry.interceptor.spec.ts"
+    },
+    {
+      "text": "inject-function",
+      "passed": true,
+      "evidence": "api.service.ts line 31: 'private readonly http = inject(HttpClient)'"
+    }
+  ]
+}

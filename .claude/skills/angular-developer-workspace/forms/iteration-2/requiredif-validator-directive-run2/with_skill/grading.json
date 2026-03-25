@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "Directive implements Validator interface",
+      "passed": true,
+      "evidence": "Pattern matched in output"
+    },
+    {
+      "text": "Registered with NG_VALIDATORS using useExisting + forwardRef + multi",
+      "passed": true,
+      "evidence": "Pattern matched in output"
+    },
+    {
+      "text": "Has boolean condition input",
+      "passed": true,
+      "evidence": "Pattern matched in output"
+    },
+    {
+      "text": "validate() returns error when condition true and value empty",
+      "passed": true,
+      "evidence": "Pattern matched in output"
+    },
+    {
+      "text": "validate() returns null when condition false",
+      "passed": true,
+      "evidence": "Pattern matched in output"
+    },
+    {
+      "text": "Template shows usage with ngModel, name, and error display",
+      "passed": true,
+      "evidence": "Pattern matched in output"
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1
+  }
+}

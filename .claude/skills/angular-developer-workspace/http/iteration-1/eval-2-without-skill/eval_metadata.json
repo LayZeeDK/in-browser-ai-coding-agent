@@ -1,0 +1,39 @@
+{
+  "eval_id": 2,
+  "eval_name": "auth-interceptor-context-testing",
+  "prompt": "Create Angular 21 auth interceptor system with HttpContextToken SKIP_AUTH and comprehensive tests",
+  "assertions": [
+    {
+      "name": "functional-auth-interceptor",
+      "description": "Auth interceptor is a function with HttpInterceptorFn signature, not a class"
+    },
+    {
+      "name": "skip-auth-context-token",
+      "description": "Defines SKIP_AUTH as HttpContextToken<boolean> with () => false default"
+    },
+    {
+      "name": "context-token-check",
+      "description": "Auth interceptor checks req.context.get(SKIP_AUTH) before adding header"
+    },
+    {
+      "name": "bearer-token-pattern",
+      "description": "Uses req.clone() with headers.set('Authorization', 'Bearer ...') pattern"
+    },
+    {
+      "name": "inject-in-interceptor",
+      "description": "Uses inject(AuthService) inside the interceptor function body"
+    },
+    {
+      "name": "http-context-in-request",
+      "description": "Service creates new HttpContext().set(SKIP_AUTH, true) for public endpoint"
+    },
+    {
+      "name": "provider-ordering-correct",
+      "description": "Tests have provideHttpClient() before provideHttpClientTesting() in providers array"
+    },
+    {
+      "name": "with-interceptors-test-setup",
+      "description": "Tests register interceptors via withInterceptors() in provideHttpClient()"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "eval_id": 0,
+  "eval_name": "css-theming-with-custom-properties",
+  "prompt": "I have an Angular 21 app with multiple components that need to share a consistent color theme. I want to create a theme system using CSS custom properties that works across components with ViewEncapsulation.Emulated (the default). The theme should define primary, secondary, and surface colors, support switching between light and dark themes at runtime, and work without ::ng-deep. Show me the theme definition, how a parent component provides the theme, and how child components consume it.",
+  "assertions": [
+    {
+      "name": "uses_css_custom_properties",
+      "description": "Uses CSS custom properties (--var-name) for theming",
+      "check": "Output contains CSS custom property definitions using -- prefix and var() consumption"
+    },
+    {
+      "name": "no_ng_deep",
+      "description": "Does not use ::ng-deep",
+      "check": "Output does not contain ::ng-deep"
+    },
+    {
+      "name": "runtime_theme_switching",
+      "description": "Shows runtime theme switching mechanism",
+      "check": "Output includes a mechanism to toggle between light and dark themes at runtime (class toggle, attribute, or signal)"
+    },
+    {
+      "name": "works_with_emulated_encapsulation",
+      "description": "Explicitly works with ViewEncapsulation.Emulated or default encapsulation",
+      "check": "Does not require ViewEncapsulation.None or ShadowDom for the theming to work"
+    },
+    {
+      "name": "child_component_consumption",
+      "description": "Shows child components consuming theme variables",
+      "check": "At least one child component uses var(--custom-prop) in its styles"
+    }
+  ]
+}

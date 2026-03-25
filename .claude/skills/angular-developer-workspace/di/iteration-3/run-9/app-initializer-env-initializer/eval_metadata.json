@@ -1,0 +1,13 @@
+{
+  "eval_id": 3,
+  "eval_name": "app-initializer-env-initializer",
+  "prompt": "I need to create an Angular 21 app initializer that loads remote feature flags from /api/config before the app starts rendering. The config should be available as an InjectionToken throughout the app. Also show me how to add an environment initializer that sets up a logging service when a lazy-loaded route module bootstraps. Use the modern Angular APIs, not the deprecated APP_INITIALIZER token.",
+  "assertions": [
+    "Uses provideAppInitializer() function from @angular/core (not the APP_INITIALIZER multi token)",
+    "Creates an InjectionToken for the feature flags config",
+    "The app initializer returns a Promise or Observable (async initialization)",
+    "Uses inject() inside the initializer to access HttpClient or other services",
+    "Uses provideEnvironmentInitializer() for the lazy-loaded route setup",
+    "The config token is injectable throughout the app after initialization"
+  ]
+}

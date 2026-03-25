@@ -1,0 +1,94 @@
+{
+  "expectations": [
+    {
+      "text": "Uses cdkTrapFocus or CdkTrapFocus directive from @angular/cdk/a11y for focus trapping",
+      "passed": true,
+      "evidence": "The template applies `cdkTrapFocus cdkTrapFocusAutoCapture=\"true\"` to the panel div, and the component imports `A11yModule` from `@angular/cdk/a11y`."
+    },
+    {
+      "text": "Dialog has role='dialog' and aria-modal='true' or uses the native <dialog> element",
+      "passed": true,
+      "evidence": "The component's `host` object sets `role: 'dialog'` and `'aria-modal': 'true'` directly on the host element."
+    },
+    {
+      "text": "Focus moves to the dialog on open (autoFocus or programmatic focus)",
+      "passed": true,
+      "evidence": "`cdkTrapFocusAutoCapture=\"true\"` on the panel div moves focus into the trap as soon as it is attached to the DOM. `cdkFocusInitial` on the Cancel button designates the exact element that receives focus."
+    },
+    {
+      "text": "Escape key closes the dialog via keyboard event handler",
+      "passed": true,
+      "evidence": "The host binding `'(keydown.escape)': 'close.emit(\"cancelled\")'` emits the close output when Escape is pressed, triggering the service cleanup that destroys the component."
+    },
+    {
+      "text": "Focus returns to the trigger element after dialog closes",
+      "passed": true,
+      "evidence": "The service captures `document.activeElement` as `triggerElement` before calling `createComponent`, then calls `triggerElement?.focus()` in the `cleanup` function after destroying the component."
+    },
+    {
+      "text": "Background content uses the inert attribute or aria-hidden='true'",
+      "passed": true,
+      "evidence": "`setBodyChildrenInert()` iterates over all direct `<body>` children except the dialog host and sets `child.setAttribute('inert', '')` on each. The attributes are removed in `cleanup`."
+    },
+    {
+      "text": "Uses ChangeDetectionStrategy.OnPush",
+      "passed": true,
+      "evidence": "`changeDetection: ChangeDetectionStrategy.OnPush` is present in the `@Component` decorator of `ConfirmationDialogComponent`. The usage example component (`DeleteItemComponent`) also sets `OnPush`."
+    },
+    {
+      "text": "Has aria-labelledby or aria-label for the dialog title",
+      "passed": true,
+      "evidence": "The host sets `'[attr.aria-labelledby]': '\"confirmation-dialog-title\"'`, and the `<h2>` in the template carries `id=\"confirmation-dialog-title\"`, forming a complete labelling relationship."
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": null,
+  "timing": null,
+  "claims": [
+    {
+      "claim": "Focus moves to the first focusable element (Cancel) when the dialog opens via cdkTrapFocusAutoCapture + cdkFocusInitial",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Both directives are present in the template: `cdkTrapFocusAutoCapture=\"true\"` on the panel and `cdkFocusInitial` on the Cancel button."
+    },
+    {
+      "claim": "Background content is inert — the service sets the `inert` attribute on all `<body>` children outside the dialog host",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`setBodyChildrenInert()` loops over `document.body.children`, skips the host element, and calls `child.setAttribute('inert', '')` on the rest."
+    },
+    {
+      "claim": "Stacking multiple dialogs works correctly — each invocation independently marks and restores inert targets",
+      "type": "quality",
+      "verified": false,
+      "evidence": "The design note describes the intended behaviour, but no code test or proof is present in the output. The logic appears structurally sound (each `confirm()` call has its own `inertTargets` closure), but runtime correctness cannot be confirmed from the static output alone."
+    },
+    {
+      "claim": "LiveAnnouncer is used as a reliable fallback for screen readers that do not announce dynamically injected dialogs",
+      "type": "process",
+      "verified": true,
+      "evidence": "`LiveAnnouncer` is injected in the service and called with `announce('Dialog opened: ...')` before the component is rendered, and `announce('Dialog closed')` in `cleanup`."
+    }
+  ],
+  "user_notes_summary": null,
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "Focus moves to the dialog on open (autoFocus or programmatic focus)",
+        "reason": "The assertion passes on the presence of `cdkTrapFocusAutoCapture`, but does not verify that focus lands on a specific, meaningful element. WAI-ARIA APG recommends initial focus on the least-destructive action (Cancel) for confirmation dialogs. A stronger assertion would check that `cdkFocusInitial` is placed on Cancel (not Confirm), making the assertion sensitive to accidentally dangerous focus placement."
+      },
+      {
+        "reason": "No assertion checks that the `inert` attribute is cleaned up after the dialog closes. Leaking `inert` on body children after close would break the app silently, and none of the current assertions would catch it."
+      },
+      {
+        "reason": "No assertion verifies that `aria-describedby` is present for the dialog body text. The WAI-ARIA dialog pattern recommends both `aria-labelledby` (title) and `aria-describedby` (message). The output provides both, but only the labelledby relationship is asserted."
+      }
+    ],
+    "overall": "All assertions are meaningful and would fail for a naive implementation. The three suggestions above cover gaps around focus-target correctness, cleanup correctness, and the aria-describedby relationship — outcomes the eval author would likely want to catch."
+  }
+}

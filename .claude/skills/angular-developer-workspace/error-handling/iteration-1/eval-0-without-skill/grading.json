@@ -1,0 +1,52 @@
+{
+  "eval_id": 0,
+  "eval_name": "global-error-handler-analytics",
+  "expectations": [
+    {
+      "text": "error-handler-implements-interface",
+      "passed": true,
+      "evidence": "global-error-handler.ts: 'export class GlobalErrorHandler implements ErrorHandler' with 'handleError(error: unknown): void'"
+    },
+    {
+      "text": "inject-router-for-url",
+      "passed": true,
+      "evidence": "global-error-handler.ts: 'private readonly router = inject(Router);' \u00e2\u20ac\u201d no constructor injection"
+    },
+    {
+      "text": "provide-browser-global-listeners",
+      "passed": true,
+      "evidence": "app.config.ts: 'provideBrowserGlobalErrorListeners()' present in providers array"
+    },
+    {
+      "text": "rethrow-application-errors-false",
+      "passed": true,
+      "evidence": "global-error-handler.spec.ts: 'rethrowApplicationErrors: false' in TestBed.configureTestingModule"
+    },
+    {
+      "text": "error-handler-provider",
+      "passed": true,
+      "evidence": "app.config.ts: '{ provide: ErrorHandler, useClass: GlobalErrorHandler }' in providers"
+    },
+    {
+      "text": "catch-no-catch-documentation",
+      "passed": false,
+      "evidence": "global-error-handler.ts comments cover: lifecycle hooks, template event bindings, AsyncPipe, service methods, resource(). Missing: 'PendingTasks.run' is not mentioned among the caught items."
+    },
+    {
+      "text": "analytics-service-injectable",
+      "passed": true,
+      "evidence": "analytics.service.ts: '@Injectable({ providedIn: 'root' })' on AnalyticsService"
+    },
+    {
+      "text": "inject-function-usage",
+      "passed": true,
+      "evidence": "global-error-handler.ts: 'private readonly analytics = inject(AnalyticsService)' and 'inject(Router)' \u00e2\u20ac\u201d no constructor injection"
+    }
+  ],
+  "summary": {
+    "passed": 7,
+    "failed": 1,
+    "total": 8,
+    "pass_rate": 0.875
+  }
+}

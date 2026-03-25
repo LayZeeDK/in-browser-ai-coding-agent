@@ -1,0 +1,46 @@
+{
+  "eval_id": 2,
+  "eval_name": "auth-interceptor-context-testing",
+  "expectations": [
+    {
+      "text": "functional-auth-interceptor",
+      "passed": true,
+      "evidence": "auth.interceptor.ts line 11: 'export const authInterceptor: HttpInterceptorFn = (req, next) =>' — typed as HttpInterceptorFn, not a class"
+    },
+    {
+      "text": "skip-auth-context-token",
+      "passed": true,
+      "evidence": "auth.interceptor.ts line 5: 'export const SKIP_AUTH = new HttpContextToken<boolean>(() => false)'"
+    },
+    {
+      "text": "context-token-check",
+      "passed": true,
+      "evidence": "auth.interceptor.ts line 12: 'if (req.context.get(SKIP_AUTH)) { return next(req); }' — checked before adding header"
+    },
+    {
+      "text": "bearer-token-pattern",
+      "passed": true,
+      "evidence": "auth.interceptor.ts lines 22-24: 'req.clone({ headers: req.headers.set(\"Authorization\", `Bearer ${token}`) })'"
+    },
+    {
+      "text": "inject-in-interceptor",
+      "passed": true,
+      "evidence": "auth.interceptor.ts line 16: 'const token = inject(AuthService).getAuthToken()' inside the interceptor function body"
+    },
+    {
+      "text": "http-context-in-request",
+      "passed": true,
+      "evidence": "protected-api.service.ts line 28: 'context: new HttpContext().set(SKIP_AUTH, true)' for getPublicHealth()"
+    },
+    {
+      "text": "provider-ordering-correct",
+      "passed": true,
+      "evidence": "auth.interceptor.spec.ts lines 26-28: provideHttpClient(withInterceptors([authInterceptor])) before provideHttpClientTesting()"
+    },
+    {
+      "text": "with-interceptors-test-setup",
+      "passed": true,
+      "evidence": "auth.interceptor.spec.ts line 26: 'provideHttpClient(withInterceptors([authInterceptor]))'"
+    }
+  ]
+}

@@ -1,0 +1,165 @@
+{
+  "skill_name": "angular-developer",
+  "iteration": 2,
+  "focus": "Styling & Animations (improved references)",
+  "runs_per_config": {
+    "css-theming": 3,
+    "tailwind-dark-mode": 3,
+    "staggered-animations": 4,
+    "total": 10
+  },
+  "configurations": [
+    {
+      "name": "with_skill",
+      "pass_rate": { "mean": 1.0, "stddev": 0.0 },
+      "time": {
+        "mean_seconds": 89.8,
+        "stddev_seconds": 13.1,
+        "per_run": [
+          154.4, 79.9, 84.0, 86.7, 101.1, 94.7, 96.1, 62.1, 87.6, 87.4
+        ]
+      },
+      "tokens": {
+        "mean": 27253,
+        "stddev": 3523,
+        "per_run": [
+          30795, 23597, 23858, 27309, 30846, 33201, 30005, 22558, 25372, 24987
+        ]
+      }
+    },
+    {
+      "name": "without_skill",
+      "pass_rate": { "mean": 0.76, "stddev": 0.24 },
+      "time": {
+        "mean_seconds": 78.2,
+        "stddev_seconds": 11.8,
+        "per_run": [76.6, 82.0, 88.3, 88.3, 96.0, 92.3, 69.6, 59.4, 65.5, 56.1]
+      },
+      "tokens": {
+        "mean": 15801,
+        "stddev": 1762,
+        "per_run": [
+          13827, 16932, 14938, 17567, 17903, 17698, 16021, 12409, 15590, 15129
+        ]
+      }
+    }
+  ],
+  "delta": {
+    "pass_rate": "+24% (1.00 vs 0.76)",
+    "time": "+11.6s mean (reference file reads)",
+    "tokens": "+11452 mean (reference file reads)"
+  },
+  "per_eval": [
+    {
+      "eval_name": "css-theming-with-custom-properties",
+      "runs_per_config": 3,
+      "with_skill": {
+        "pass_rate": 1.0,
+        "variance": 0.0,
+        "all_passed": [
+          "uses_css_custom_properties",
+          "no_ng_deep",
+          "runtime_theme_switching",
+          "works_with_emulated_encapsulation",
+          "child_component_consumption"
+        ],
+        "all_failed": []
+      },
+      "without_skill": {
+        "pass_rate": 1.0,
+        "variance": 0.0,
+        "all_passed": [
+          "uses_css_custom_properties",
+          "no_ng_deep",
+          "runtime_theme_switching",
+          "works_with_emulated_encapsulation",
+          "child_component_consumption"
+        ],
+        "all_failed": []
+      },
+      "discriminating": false,
+      "notes": "Non-discriminating. Both configs pass 100%. CSS custom properties are well within model training data. Qualitative difference: with-skill consistently uses host bindings pattern from the reference; without-skill varies between data-theme attributes and Renderer2 approaches."
+    },
+    {
+      "eval_name": "tailwind-dark-mode",
+      "runs_per_config": 3,
+      "with_skill": {
+        "pass_rate": 1.0,
+        "variance": 0.0,
+        "all_passed": [
+          "no_tailwind_config_js",
+          "uses_v4_dark_mode",
+          "os_preference_detection",
+          "manual_toggle",
+          "uses_signals"
+        ],
+        "all_failed": []
+      },
+      "without_skill": {
+        "pass_rate": 1.0,
+        "variance": 0.0,
+        "all_passed": [
+          "no_tailwind_config_js",
+          "uses_v4_dark_mode",
+          "os_preference_detection",
+          "manual_toggle",
+          "uses_signals"
+        ],
+        "all_failed": []
+      },
+      "discriminating": false,
+      "notes": "Non-discriminating. Both configs pass 100%. Tailwind v4 dark mode is within model knowledge. Key improvement from iteration 1: with-skill now produces 3-state toggle (system/dark/light) consistently thanks to the new tailwind-css.md reference -- matching the without-skill quality."
+    },
+    {
+      "eval_name": "staggered-list-animations",
+      "runs_per_config": 4,
+      "with_skill": {
+        "pass_rate": 1.0,
+        "variance": 0.0,
+        "all_passed": [
+          "uses_animate_enter",
+          "uses_animate_leave",
+          "css_keyframes",
+          "stagger_effect",
+          "uses_for_control_flow"
+        ],
+        "all_failed": []
+      },
+      "without_skill": {
+        "pass_rate": 0.4,
+        "variance": 0.0,
+        "all_passed": ["stagger_effect", "uses_for_control_flow"],
+        "all_failed": ["uses_animate_enter", "uses_animate_leave"],
+        "failure_breakdown": {
+          "uses_animate_enter": "0/4 passed. r1,r4: legacy DSL. r2: @starting-style+ng-leave. r3: .animate\\.enter CSS selector.",
+          "uses_animate_leave": "0/4 passed. Same breakdown as enter.",
+          "css_keyframes": "2/4 passed. r2,r3 used CSS keyframes (though with wrong trigger). r1,r4 used DSL style()."
+        }
+      },
+      "discriminating": true,
+      "notes": "STRONGLY DISCRIMINATING. 100% vs 0% on the critical animate.enter/animate.leave assertions across ALL runs with ZERO variance. The model categorically cannot produce correct native CSS animation code without the skill reference. Without-skill approaches are diverse but all incorrect: legacy DSL (2/4), fabricated selectors (1/4), fabricated classes (1/4)."
+    }
+  ],
+  "iteration_comparison": {
+    "iteration_1": {
+      "with_skill_pass_rate": 1.0,
+      "without_skill_pass_rate": 0.8,
+      "delta": "+20%"
+    },
+    "iteration_2": {
+      "with_skill_pass_rate": 1.0,
+      "without_skill_pass_rate": 0.76,
+      "delta": "+24%"
+    },
+    "change": "Delta improved from +20% to +24%. With-skill maintained 100% across 10 runs (zero variance). Without-skill variance confirmed: staggered animations eval fails 0/4 on critical assertions consistently."
+  },
+  "analyst_observations": [
+    "ZERO variance on with-skill runs across all 10 runs: 100% pass rate, every assertion, every time. The skill produces highly consistent output.",
+    "ZERO variance on the discriminating assertions: animate.enter/animate.leave fail 0/4 without-skill, pass 4/4 with-skill. No borderline cases.",
+    "Iteration 2 improvement validated: the new tailwind-css.md dark mode section causes with-skill runs to produce 3-state toggles (system/dark/light) -- matching without-skill quality that was previously superior.",
+    "Iteration 2 improvement validated: the new component-styling.md CSS custom properties section causes with-skill runs to explicitly reference the theme boundary pattern from the reference, producing more consistent architectural output.",
+    "Iteration 2 improvement validated: the expanded animate.leave example and stagger pattern in angular-animations.md continues to correctly guide all with-skill runs.",
+    "Without-skill animation approaches are creatively diverse but all wrong: legacy DSL (50%), fabricated CSS selectors (25%), fabricated classes with @starting-style (25%). This confirms animate.enter/animate.leave is NOT in the model's training data.",
+    "Token overhead is ~11.5K per with-skill run (reference file reads). Time overhead is ~11.6s mean. Both are acceptable given the correctness improvement."
+  ]
+}

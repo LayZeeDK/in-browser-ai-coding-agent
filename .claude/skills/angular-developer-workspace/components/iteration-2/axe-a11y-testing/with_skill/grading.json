@@ -1,0 +1,109 @@
+{
+  "expectations": [
+    {
+      "text": "Test file imports and uses axe-core or jest-axe for accessibility audits",
+      "passed": true,
+      "evidence": "Transcript line 138: `import axe, { type AxeResults } from 'axe-core';` and the `runAxe()` helper calls `axe.run(element, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'best-practice'] } })`."
+    },
+    {
+      "text": "Tests render the component via TestBed and run axe against the DOM",
+      "passed": true,
+      "evidence": "TestBed.configureTestingModule with imports: [NotificationBannerComponent] is in beforeEach; createFixture() calls TestBed.createComponent(NotificationBannerComponent); axe tests call runAxe(fixture.nativeElement as HTMLElement)."
+    },
+    {
+      "text": "Tests cover multiple component states (at least success and error)",
+      "passed": true,
+      "evidence": "Three separate axe audit tests cover 'success' (Profile saved successfully), 'error' (Unable to save profile), and 'warning' (Your session will expire). A regression test also transitions from success to error state."
+    },
+    {
+      "text": "Each axe test asserts that violations array is empty or uses toHaveNoViolations",
+      "passed": true,
+      "evidence": "assertNoViolations() checks `results.violations.length === 0` and throws with a formatted error message if violations exist. All five axe audit tests call assertNoViolations(results)."
+    },
+    {
+      "text": "ESLint config includes @angular-eslint template accessibility rules (e.g., accessibility-elements-content, accessibility-alt-text, or accessibility-label-for)",
+      "passed": true,
+      "evidence": "The updated eslint.config.mjs adds 8 rules to the **/*.html block including @angular-eslint/template/accessibility-alt-text, @angular-eslint/template/accessibility-label-for, @angular-eslint/template/accessibility-elements-content, @angular-eslint/template/accessibility-valid-aria, @angular-eslint/template/accessibility-interactive-supports-focus, @angular-eslint/template/accessibility-role-has-required-aria, @angular-eslint/template/no-positive-tabindex, and @angular-eslint/template/accessibility-table-scope."
+    },
+    {
+      "text": "Explanation distinguishes runtime axe checks (color contrast, ARIA validity, focus order) from static lint rules (missing alt text, empty interactive elements)",
+      "passed": true,
+      "evidence": "Step 5 provides an explicit two-section comparison: lint rules are described as catching structural issues at author time (missing alt, missing label, invalid role contracts) while axe-core is described as evaluating dynamic/signal-driven values, color contrast against computed CSS, and accessibility tree state at runtime. A three-layer strategy table summarises the distinction."
+    },
+    {
+      "text": "Uses ChangeDetectionStrategy.OnPush on the component",
+      "passed": true,
+      "evidence": "`changeDetection: ChangeDetectionStrategy.OnPush` appears in the @Component decorator of NotificationBannerComponent."
+    },
+    {
+      "text": "Uses signal-based input() for the notification state/type",
+      "passed": true,
+      "evidence": "`readonly type = input.required<NotificationType>()` and `readonly message = input.required<string>()` use the signal-based input() API. computed() is also used for messageId and hostLabel derived signals."
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "tool_calls": {},
+    "total_tool_calls": null,
+    "total_steps": null,
+    "errors_encountered": 0,
+    "output_chars": null,
+    "transcript_chars": 22971
+  },
+  "timing": {
+    "executor_duration_seconds": 167.5,
+    "grader_duration_seconds": null,
+    "total_duration_seconds": 167.5
+  },
+  "claims": [
+    {
+      "claim": "axe-core runs directly in the browser test environment without a special adapter",
+      "type": "factual",
+      "verified": true,
+      "evidence": "The transcript explains that Vitest runs in a real browser (Chrome Beta or Edge Dev), so axe-core inspects an actual DOM. No jest-axe or @axe-core/angular adapter is needed. This is architecturally sound given the project's browser-mode Vitest setup."
+    },
+    {
+      "claim": "Color contrast meets WCAG AA for all three palette variants",
+      "type": "quality",
+      "verified": false,
+      "evidence": "The transcript says contrast was 'verified manually; axe will confirm at test time' but no actual test execution output is shown. The claim cannot be verified from the transcript alone."
+    },
+    {
+      "claim": "angular-eslint 21.3.1 is already installed in the project",
+      "type": "factual",
+      "verified": false,
+      "evidence": "Stated as fact in the overview section but no package.json read or npm ls output is shown in the transcript to confirm the installed version."
+    },
+    {
+      "claim": "The ESLint config already spreads nx.configs['flat/angular-template'] which includes the angular-eslint template parser",
+      "type": "factual",
+      "verified": false,
+      "evidence": "Stated in Step 4 but the transcript does not show reading the existing eslint.config.mjs before producing the updated version. The output is plausible given the project structure but unconfirmed."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": []
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "ESLint config includes @angular-eslint template accessibility rules (e.g., accessibility-elements-content, accessibility-alt-text, or accessibility-label-for)",
+        "reason": "The assertion passes by checking that named rules appear in the config text, but does not verify that the ESLint config is syntactically valid or that nx lint actually runs without error. A model could produce a config with the right rule names but broken syntax that would silently fail in CI."
+      },
+      {
+        "reason": "No assertion checks that the component's template is semantically correct — e.g., that role='alert' is used for error/warning and role='status' for success. These ARIA decisions are central to the task and are tested functionally in the spec, but the grading evals do not verify correctness of the ARIA design itself."
+      },
+      {
+        "reason": "No assertion verifies that the generated files are placed in the correct directory structure (e.g., notification-banner/ under src/app/) or that the import paths are valid. The transcript shows correct paths but an eval checking actual file placement would be more discriminating."
+      }
+    ],
+    "overall": "All 8 expectations are clearly satisfied with substantial evidence. The evals cover the key technical requirements well. The main gap is that they test presence and pattern-match but not end-to-end validity (lint runs, tests pass, correct ARIA semantics)."
+  }
+}

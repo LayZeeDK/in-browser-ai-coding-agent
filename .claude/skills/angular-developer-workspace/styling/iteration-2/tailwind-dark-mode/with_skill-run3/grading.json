@@ -1,0 +1,32 @@
+{
+  "eval_id": 1,
+  "eval_name": "tailwind-dark-mode",
+  "configuration": "with_skill",
+  "expectations": [
+    {
+      "text": "no_tailwind_config_js",
+      "passed": true,
+      "evidence": "Explicitly states 'Do NOT create a tailwind.config.js file. Tailwind v4 configuration is CSS-only.'"
+    },
+    {
+      "text": "uses_v4_dark_mode",
+      "passed": true,
+      "evidence": "Uses @variant dark in styles.css; templates use dark: variant classes like dark:bg-neutral-950, dark:text-neutral-100"
+    },
+    {
+      "text": "os_preference_detection",
+      "passed": true,
+      "evidence": "@variant dark includes @media (prefers-color-scheme: dark) arm; isDark computed references window.matchMedia('(prefers-color-scheme: dark)')"
+    },
+    {
+      "text": "manual_toggle",
+      "passed": true,
+      "evidence": "ThemeToggleComponent with SVG icons; ThemeService.toggle() cycles system->dark->light->system"
+    },
+    {
+      "text": "uses_signals",
+      "passed": true,
+      "evidence": "signal<ThemePreference>('system') with .asReadonly() and computed() for isDark"
+    }
+  ]
+}

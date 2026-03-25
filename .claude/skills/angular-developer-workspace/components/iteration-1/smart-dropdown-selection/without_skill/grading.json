@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "Uses resource() to fetch dropdown options based on category signal",
+      "passed": false,
+      "evidence": "smart-dropdown.component.ts:94 uses `rxResource` with old `request` property instead of `params` — TypeScript error TS2769. Uses rxResource instead of resource()."
+    },
+    {
+      "text": "Uses linkedSignal with object syntax (source + computation + previous) to preserve valid selection",
+      "passed": false,
+      "evidence": "No linkedSignal imported or used. Selection preservation is done via effect() in constructor (lines 132-149) — the exact anti-pattern warned against in Angular docs."
+    },
+    {
+      "text": "Uses computed() for derived display string",
+      "passed": true,
+      "evidence": "smart-dropdown.component.ts:110-120 uses `computed()` for displayString"
+    },
+    {
+      "text": "Uses custom equality function ({equal: fn}) on at least one signal",
+      "passed": false,
+      "evidence": "smart-dropdown.component.ts:88 has `signal<string>('', { equal: (a, b) => a === b })` but this is trivially identical to the default string equality (Object.is). Not a meaningful custom equality."
+    },
+    {
+      "text": "Does NOT use effect() to sync selection state",
+      "passed": false,
+      "evidence": "smart-dropdown.component.ts:132-149 uses effect() to watch options changes and set selectedId — this is the state propagation anti-pattern."
+    },
+    {
+      "text": "Component uses ChangeDetectionStrategy.OnPush",
+      "passed": true,
+      "evidence": "smart-dropdown.component.ts:19 has `changeDetection: ChangeDetectionStrategy.OnPush`"
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 4,
+    "total": 6,
+    "pass_rate": 0.33
+  }
+}

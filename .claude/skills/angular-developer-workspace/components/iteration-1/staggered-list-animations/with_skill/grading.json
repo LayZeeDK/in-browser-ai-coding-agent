@@ -1,0 +1,32 @@
+{
+  "eval_id": 2,
+  "eval_name": "staggered-list-animations",
+  "configuration": "with_skill",
+  "expectations": [
+    {
+      "text": "uses_animate_enter",
+      "passed": true,
+      "evidence": "Uses animate.enter=\"item-enter\" on <li> element in StaggeredListItemComponent template."
+    },
+    {
+      "text": "uses_animate_leave",
+      "passed": true,
+      "evidence": "Uses animate.leave=\"item-leave\" on <li> element in StaggeredListItemComponent template."
+    },
+    {
+      "text": "css_keyframes",
+      "passed": true,
+      "evidence": "Defines @keyframes item-fade-slide-in (enter: opacity 0->1, translateY 16px->0) and @keyframes item-fade-slide-out (leave: opacity 1->0, translateY 0->16px)."
+    },
+    {
+      "text": "stagger_effect",
+      "passed": true,
+      "evidence": "Uses [style.animation-delay]=\"staggerDelay()\" with index * 60ms, capped at index 9 (540ms max)."
+    },
+    {
+      "text": "uses_for_control_flow",
+      "passed": true,
+      "evidence": "Uses @for (item of items(); track item.id; let i = $index) in parent template."
+    }
+  ]
+}

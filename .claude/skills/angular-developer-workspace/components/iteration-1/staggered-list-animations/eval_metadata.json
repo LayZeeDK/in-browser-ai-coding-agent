@@ -1,0 +1,32 @@
+{
+  "eval_id": 2,
+  "eval_name": "staggered-list-animations",
+  "prompt": "I have an Angular 21 app with a list of items that can be added and removed. I want to animate items entering and leaving the list with staggered transitions using the native CSS animation system (animate.enter and animate.leave). Each item should fade in and slide up when added, and fade out and slide down when removed. Items should stagger so they don't all animate at once. Show me the complete component with template, styles, and TypeScript.",
+  "assertions": [
+    {
+      "name": "uses_animate_enter",
+      "description": "Uses animate.enter for entering items",
+      "check": "Output contains animate.enter attribute on list item elements"
+    },
+    {
+      "name": "uses_animate_leave",
+      "description": "Uses animate.leave for leaving items",
+      "check": "Output contains animate.leave attribute on list item elements"
+    },
+    {
+      "name": "css_keyframes",
+      "description": "Defines CSS keyframe animations",
+      "check": "Output contains @keyframes definitions for enter and leave animations"
+    },
+    {
+      "name": "stagger_effect",
+      "description": "Implements staggered animation timing",
+      "check": "Output includes animation-delay varying per item index or a stagger mechanism"
+    },
+    {
+      "name": "uses_for_control_flow",
+      "description": "Uses @for native control flow",
+      "check": "Output uses @for (not *ngFor) for list rendering"
+    }
+  ]
+}

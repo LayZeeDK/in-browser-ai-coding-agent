@@ -1,0 +1,32 @@
+{
+  "eval_id": 0,
+  "eval_name": "css-theming-with-custom-properties",
+  "configuration": "with_skill",
+  "expectations": [
+    {
+      "text": "uses_css_custom_properties",
+      "passed": true,
+      "evidence": "Defines --color-primary, --color-surface etc. in theme.css with var() usage in CardComponent and ActionButtonComponent"
+    },
+    {
+      "text": "no_ng_deep",
+      "passed": true,
+      "evidence": "Explicitly states 'No ::ng-deep required'; none present in any code"
+    },
+    {
+      "text": "runtime_theme_switching",
+      "passed": true,
+      "evidence": "ThemeService.toggle() cycles light/dark; AppShellComponent has button calling theme.toggle(); host class bindings switch .theme-light/.theme-dark"
+    },
+    {
+      "text": "works_with_emulated_encapsulation",
+      "passed": true,
+      "evidence": "Uses default ViewEncapsulation.Emulated; explains why var() resolves across encapsulation boundaries"
+    },
+    {
+      "text": "child_component_consumption",
+      "passed": true,
+      "evidence": "CardComponent uses var(--color-surface), var(--color-primary), var(--color-on-surface); ActionButtonComponent uses var(--color-primary), var(--color-secondary)"
+    }
+  ]
+}

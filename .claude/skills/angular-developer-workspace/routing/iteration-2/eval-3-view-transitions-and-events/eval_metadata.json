@@ -1,0 +1,13 @@
+{
+  "eval_id": 3,
+  "eval_name": "view-transitions-and-events",
+  "prompt": "I need to add shared element transitions between a product list page and product detail page in my Angular 21 app. When clicking a product card, the product image should smoothly animate from the list position to the detail hero position using the View Transitions API. Also show me how to track navigation events so I can display a loading spinner during resolver data fetching — I need to know which specific router events to listen for and how to subscribe to them. Include NavigationSkipped in the event handling.",
+  "assertions": [
+    "Configures withViewTransitions() in provideRouter",
+    "Assigns view-transition-name CSS property to the product image element in both list and detail components",
+    "Subscribes to Router.events and filters for NavigationStart to show spinner",
+    "Handles NavigationEnd, NavigationCancel, and NavigationError to hide spinner",
+    "Mentions or handles NavigationSkipped event",
+    "Uses onViewTransitionCreated callback OR demonstrates CSS pseudo-elements for transition customization"
+  ]
+}

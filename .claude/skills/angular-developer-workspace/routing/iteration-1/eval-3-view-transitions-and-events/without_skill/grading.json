@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "Configures withViewTransitions() in provideRouter",
+      "passed": true,
+      "evidence": "Line 19: withViewTransitions() in provideRouter"
+    },
+    {
+      "text": "Assigns view-transition-name CSS property to the product image element in both list and detail components",
+      "passed": true,
+      "evidence": "Line 90 (list): [style.view-transition-name]=\"'product-image-' + product.id\"; Line 147 (detail): [style.view-transition-name]=\"'product-image-' + product.id\""
+    },
+    {
+      "text": "Subscribes to Router.events and filters for NavigationStart to show spinner",
+      "passed": true,
+      "evidence": "Lines 342-353: router.events subscription filtered for NavigationStart, calls loadingService.show()"
+    },
+    {
+      "text": "Handles NavigationEnd, NavigationCancel, and NavigationError to hide spinner",
+      "passed": true,
+      "evidence": "Lines 346-349: NavigationEnd, NavigationCancel, NavigationError all in the filter; line 362: loadingService.hide()"
+    },
+    {
+      "text": "Mentions or handles NavigationSkipped event",
+      "passed": true,
+      "evidence": "Line 350: NavigationSkipped in filter; Lines 370-375: dedicated section explaining what triggers NavigationSkipped"
+    },
+    {
+      "text": "Uses onViewTransitionCreated callback OR demonstrates CSS pseudo-elements for transition customization",
+      "passed": true,
+      "evidence": "Both: Lines 190-218 show CSS pseudo-elements; Lines 222-245 show onViewTransitionCreated with skipTransition()"
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  }
+}

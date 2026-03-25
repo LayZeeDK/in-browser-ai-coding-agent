@@ -1,0 +1,101 @@
+{
+  "expectations": [
+    {
+      "text": "Defines a typed interface for the backend error response (code, message, details)",
+      "passed": true,
+      "evidence": "api-error.model.ts defines `export interface ApiErrorBody { code: string; message: string; details?: Record<string, string>; }` — all three required fields are present with correct types."
+    },
+    {
+      "text": "Uses HttpInterceptorFn or functional interceptor (not class-based HttpInterceptor)",
+      "passed": true,
+      "evidence": "error-handling.interceptor.ts: `export const errorHandlingInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> => { ... }` — explicitly typed as HttpInterceptorFn, no class involved."
+    },
+    {
+      "text": "Implements retry logic for specific HTTP status codes (503, 429) using RxJS retry/retryWhen",
+      "passed": true,
+      "evidence": "The interceptor calls `retry({ count: MAX_RETRIES, delay: (error, attempt) => { if (error instanceof HttpErrorResponse && isTransientStatus(error.status)) { return retryDelay(attempt); } return throwError(() => error); } })` where `isTransientStatus` returns true only for 503 and 429."
+    },
+    {
+      "text": "Distinguishes transient (retryable) errors from permanent errors in the error service",
+      "passed": true,
+      "evidence": "ErrorHandlingService.classify() checks `!error.isTransient && (FATAL_STATUSES.has(error.status) || FATAL_CODES.has(error.body.code))` to determine severity, returning `ErrorSeverity` of `'retryable'` or `'fatal'`. The `isTransient` flag on `ApiError` is set by the interceptor based on status code."
+    },
+    {
+      "text": "Custom ErrorHandler class extends or implements ErrorHandler and reports to analytics",
+      "passed": true,
+      "evidence": "`export class GlobalErrorHandler implements ErrorHandler` in global-error-handler.ts; `handleError()` calls `this.analytics.trackEvent(...)` for both `ApiError` instances and generic unhandled errors."
+    },
+    {
+      "text": "Component uses httpResource() or resource() for at least one API call",
+      "passed": true,
+      "evidence": "DashboardComponent declares three httpResource calls: `protected readonly users = httpResource<User[]>('/api/users')`, `protected readonly orders = httpResource<Order[]>('/api/orders')`, and `protected readonly analytics = httpResource<AnalyticsSummary>('/api/analytics/summary')`."
+    },
+    {
+      "text": "Error states in the component template use resource status/error properties or catchError patterns",
+      "passed": true,
+      "evidence": "Three `effect()` blocks in the constructor each read `.error()` from the corresponding resource and push to ErrorHandlingService if `error instanceof ApiError`. The template renders toasts from `errorService.toasts()`. Template also uses `.isLoading()` and `.hasValue()` resource state signals."
+    },
+    {
+      "text": "Uses provideHttpClient with withInterceptors() in the app config",
+      "passed": true,
+      "evidence": "app.config.ts shows `provideHttpClient(withInterceptors([errorHandlingInterceptor]))` inside `appConfig.providers`, registering the functional interceptor correctly."
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "output_chars": 14100,
+    "transcript_chars": 14100
+  },
+  "timing": {
+    "executor_duration_seconds": 130.8,
+    "grader_duration_seconds": null,
+    "total_duration_seconds": 130.8
+  },
+  "claims": [
+    {
+      "claim": "httpResource automatically routes through all registered interceptors",
+      "type": "factual",
+      "verified": true,
+      "evidence": "This is accurate per Angular's httpResource design — it wraps HttpClient and inherits the interceptor pipeline. The transcript's explanation is consistent with the API."
+    },
+    {
+      "claim": "resource() errors do NOT surface to ErrorHandler",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Consistent with Angular's resource/httpResource design: errors are exposed via the .error() signal, not thrown, so they never reach Angular's global ErrorHandler. The transcript cites this correctly and designs around it."
+    },
+    {
+      "claim": "Exponential back-off delays: 500ms, 1000ms, 2000ms",
+      "type": "factual",
+      "verified": true,
+      "evidence": "retryDelay uses `timer(BASE_DELAY_MS * Math.pow(2, attempt))` with BASE_DELAY_MS=500, attempt starting at 0. Attempt 0: 500ms, attempt 1: 1000ms, attempt 2: 2000ms — matches the stated table."
+    },
+    {
+      "claim": "Angular template interpolation automatically sanitizes error messages against XSS",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Correct — Angular's template interpolation ({ { } }) HTML-encodes output by default, preventing XSS from server-controlled strings."
+    }
+  ],
+  "user_notes_summary": null,
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "reason": "All code is illustrative — no files are created on disk. The transcript explicitly states 'All code is illustrative -- no files are created on disk.' All 8 expectations pass because the output is a well-written markdown document describing the solution, not working Angular code. A sufficiently detailed written explanation would satisfy every assertion even if the code had subtle bugs (e.g., retry count off-by-one, wrong import paths, missing imports in the template). Consider adding an assertion that verifies actual file creation or compilation, or test the code by running it."
+      },
+      {
+        "assertion": "Error states in the component template use resource status/error properties or catchError patterns",
+        "reason": "The template renders toasts from the service but does NOT directly render error state inline (no `@if (users.error())` block in the template). Error state is handled via effect() + service, which is a valid pattern, but the assertion wording ('use resource status/error properties') could be read as requiring inline template error display. The current assertion passes either way, so this is a wording ambiguity worth tightening."
+      },
+      {
+        "reason": "No assertion checks that the interceptor is actually registered before the GlobalErrorHandler (provider order matters when both handle errors). The transcript gets this right, but an eval that checks registration order would catch incorrect configurations."
+      }
+    ],
+    "overall": "The solution is thorough and architecturally correct, covering all 8 expectations with genuine substance. The main caveat is that no code runs — all outputs are illustrative markdown. The evals are well-targeted but would benefit from a discriminating assertion that distinguishes 'described the solution' from 'produced working code'."
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "Cross-field validator is a ValidatorFn (not applied to individual controls)",
+      "passed": true,
+      "evidence": "password-match.validator.ts exports a factory returning ValidatorFn, applied at the FormGroup level."
+    },
+    {
+      "text": "Validator is attached to the FormGroup via the second argument or validators option",
+      "passed": true,
+      "evidence": "Line 81: `{ validators: passwordMatchValidator() }`"
+    },
+    {
+      "text": "Validator uses control.get('newPassword') and control.get('confirmPassword') to compare",
+      "passed": true,
+      "evidence": "Validator lines 5-6: `group.get('newPassword')` and `group.get('confirmPassword')`."
+    },
+    {
+      "text": "Returns a ValidationErrors object (like { passwordMismatch: true }) or null",
+      "passed": true,
+      "evidence": "Line 19: `return { passwordMismatch: true }` and line 24: `return null`."
+    },
+    {
+      "text": "Template checks formGroup.hasError('passwordMismatch') for displaying the error message",
+      "passed": false,
+      "evidence": "Line 62 checks `confirmPassword.errors?.['passwordMismatch']` on the control, not `form.hasError('passwordMismatch')` on the group. Same setErrors pattern as the with-skill version."
+    },
+    {
+      "text": "Uses typed forms (FormControl<string> or nonNullable, not UntypedFormGroup)",
+      "passed": false,
+      "evidence": "Uses plain `FormBuilder` with `['', ...]` shorthand (lines 77-79) producing `FormControl<string | null>`. Getters return `AbstractControl` (lines 84-93) instead of `FormControl<string>`. The PasswordChangeForm interface (line 5) is declared but never used as a generic parameter."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 2,
+    "total": 6,
+    "pass_rate": 0.67
+  }
+}

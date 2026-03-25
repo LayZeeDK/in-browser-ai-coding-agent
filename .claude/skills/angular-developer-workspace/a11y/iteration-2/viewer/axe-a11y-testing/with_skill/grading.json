@@ -1,0 +1,94 @@
+{
+  "expectations": [
+    {
+      "text": "Test file imports and uses axe-core or jest-axe for accessibility audits",
+      "passed": true,
+      "evidence": "The spec uses `import type { AxeResults } from 'axe-core'` and dynamically imports axe via `axe = await import('axe-core')` in the `loadAxe()` helper, then calls `engine.run(...)` to perform audits."
+    },
+    {
+      "text": "Tests render the component via TestBed and run axe against the DOM",
+      "passed": true,
+      "evidence": "`TestBed.configureTestingModule({ imports: [NotificationBanner] })` sets up the test module; `TestBed.createComponent(NotificationBanner)` renders the component; `auditFixture` calls `engine.run({ include: [fixture.nativeElement] })` to audit the rendered DOM."
+    },
+    {
+      "text": "Tests cover multiple component states (at least success and error)",
+      "passed": true,
+      "evidence": "Three axe tests are present: 'has no violations in success state', 'has no violations in error state', and 'has no violations in warning state'. Both required states (success, error) are covered, plus a third (warning)."
+    },
+    {
+      "text": "Each axe test asserts that violations array is empty or uses toHaveNoViolations",
+      "passed": true,
+      "evidence": "A custom Vitest matcher `toHaveNoA11yViolations` is defined, which checks `results.violations.length === 0`. Every axe test calls `await expect(fixture).toHaveNoA11yViolations()`."
+    },
+    {
+      "text": "ESLint config includes @angular-eslint template accessibility rules",
+      "passed": true,
+      "evidence": "Section 2 provides an `eslint.config.mjs` block targeting `**/*.html` files with 9 explicit `@angular-eslint/template` accessibility rules: `accessibility-interactive-supports-focus`, `accessibility-click-events-have-key-events`, `accessibility-alt-text`, `accessibility-label-for`, `accessibility-valid-aria`, `accessibility-role-has-required-aria`, `accessibility-elements-content`, `accessibility-table-scope`, and `no-positive-tabindex`."
+    },
+    {
+      "text": "Explanation distinguishes runtime axe checks from static lint rules",
+      "passed": true,
+      "evidence": "Section 3 ('What axe Checks vs What the Linter Catches') contains a detailed comparison table listing 11 concerns and whether each is caught by angular-eslint (static) vs axe-core (runtime). The 'Rule of thumb' paragraph explicitly states: 'The linter protects against authoring mistakes ... It runs without a browser' vs 'axe-core protects against rendering mistakes: computed values that violate WCAG, contrast failures, dynamic state that looks correct in source but breaks in the DOM. It only runs when tests execute in a real browser.'"
+    },
+    {
+      "text": "Uses ChangeDetectionStrategy.OnPush on the component",
+      "passed": true,
+      "evidence": "`changeDetection: ChangeDetectionStrategy.OnPush` is set in the `@Component` decorator of `NotificationBanner`, and `ChangeDetectionStrategy` is imported from `@angular/core`."
+    },
+    {
+      "text": "Uses signal-based input() for the notification state/type",
+      "passed": true,
+      "evidence": "The component declares `readonly type = input.required<NotificationType>()` and `readonly message = input.required<string>()`, both using the `input` function imported from `@angular/core`. The `type` signal drives the ARIA live policy and icon selection."
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": null,
+  "timing": null,
+  "claims": [
+    {
+      "claim": "axe is configured to run only WCAG 2.0 Level A and AA rules",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`axe.configure({ runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa'] } })` is present in `loadAxe()`."
+    },
+    {
+      "claim": "The audit is scoped to fixture.nativeElement so the test harness does not pollute results",
+      "type": "quality",
+      "verified": true,
+      "evidence": "`engine.run({ include: [fixture.nativeElement] })` restricts the audit to the component's DOM subtree."
+    },
+    {
+      "claim": "Signal inputs are set via componentRef.setInput(), not direct property assignment",
+      "type": "process",
+      "verified": true,
+      "evidence": "All tests use `fixture.componentRef.setInput('type', ...)` and `fixture.componentRef.setInput('message', ...)`, which is the correct API for signal inputs in TestBed."
+    },
+    {
+      "claim": "The inline component definition can be replaced with a real import",
+      "type": "quality",
+      "verified": false,
+      "evidence": "The response notes this with a comment '// replace with your real import', but no actual import path or module is provided — this is a documentation claim that cannot be verified from the output alone."
+    }
+  ],
+  "user_notes_summary": null,
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "reason": "No assertion checks that the ESLint config is actually integrated into the existing project config (i.e., correctly merged, not just shown as a standalone snippet). The output provides additions-only code that must be manually merged. An assertion like 'ESLint config is valid and parseable' or 'lint runs without errors on the example template' would catch integration failures."
+      },
+      {
+        "assertion": "Tests cover multiple component states (at least success and error)",
+        "reason": "This assertion is trivially satisfied — adding a third dummy state (warning) already exceeds 'at least success and error'. Consider specifying that each state must produce meaningfully different ARIA attributes that are also verified, not just pass the axe audit."
+      },
+      {
+        "reason": "No assertion checks that the custom matcher produces a useful failure message (the diagnostic output on violation). This is claimed as a key design decision in the response but is untested by any expectation."
+      }
+    ],
+    "overall": "All 8 expectations are met with genuine substance. The output is high-quality: correct Angular 21 signal inputs, OnPush change detection, scoped axe audit, custom Vitest matcher with actionable failure output, and a clear two-layer explanation. The main gap in the eval set is that it does not check integration (whether the ESLint config actually runs) or the quality of failure diagnostics."
+  }
+}

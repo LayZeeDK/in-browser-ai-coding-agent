@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "Uses provideAppInitializer() (not APP_INITIALIZER multi token)",
+      "passed": true,
+      "evidence": "Uses modern provideAppInitializer"
+    },
+    {
+      "text": "Creates an InjectionToken for config",
+      "passed": true,
+      "evidence": "Found InjectionToken"
+    },
+    {
+      "text": "Uses inject(HttpClient) inside initializer (not raw fetch())",
+      "passed": true,
+      "evidence": "Uses HttpClient"
+    },
+    {
+      "text": "Uses provideEnvironmentInitializer() (not deprecated ENVIRONMENT_INITIALIZER token)",
+      "passed": true,
+      "evidence": "Uses modern provideEnvironmentInitializer"
+    },
+    {
+      "text": "Uses makeEnvironmentProviders() for provider wrapping",
+      "passed": false,
+      "evidence": "Not found"
+    },
+    {
+      "text": "Config token is injectable after initialization",
+      "passed": true,
+      "evidence": "Token creation and provision pattern present"
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 1,
+    "total": 6,
+    "pass_rate": 0.83
+  }
+}

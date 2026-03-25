@@ -1,0 +1,45 @@
+{
+  "expectations": [
+    {
+      "text": "Uses TestBed.configureTestingModule with imports: [UserProfileComponent]",
+      "passed": true,
+      "evidence": "Line 78-80: `await TestBed.configureTestingModule({ imports: [UserProfileComponent], providers: [...] }).compileComponents();`"
+    },
+    {
+      "text": "Uses componentRef.setInput() or fixture.componentRef.setInput() to set the id input signal",
+      "passed": true,
+      "evidence": "Line 91: `fixture.componentRef.setInput('id', 1);` and throughout"
+    },
+    {
+      "text": "Uses await fixture.whenStable() for async change detection (not just detectChanges)",
+      "passed": true,
+      "evidence": "Line 92: `await fixture.whenStable();` used consistently"
+    },
+    {
+      "text": "Provides a mock or spy for the HTTP/fetch dependency (vi.fn, vi.spyOn, or provider override)",
+      "passed": true,
+      "evidence": "Line 71: `const fetchStub = { getUser: vi.fn<(id: number) => Promise<User>>() };` with provider override at line 80"
+    },
+    {
+      "text": "Tests loading state (checks for loading indicator in DOM)",
+      "passed": true,
+      "evidence": "Lines 87-96: checks `.loading` is truthy and textContent contains 'Loading...'"
+    },
+    {
+      "text": "Tests successful data display (checks rendered user data)",
+      "passed": true,
+      "evidence": "Lines 110-164: checks `.user-name` contains 'Alice' and `.user-email` contains 'alice@example.com'"
+    },
+    {
+      "text": "Tests error state (simulates fetch failure and checks error display)",
+      "passed": true,
+      "evidence": "Lines 166-198: `fetchStub.getUser.mockRejectedValue(new Error('Not found'))`, checks `.error` truthy"
+    },
+    {
+      "text": "Tests that changing the input signal value triggers a new fetch",
+      "passed": true,
+      "evidence": "Lines 200-270: sets id=1 then id=2, asserts getUser called twice with correct args, DOM shows 'Bob'"
+    }
+  ],
+  "summary": { "passed": 8, "failed": 0, "total": 8, "pass_rate": 1.0 }
+}

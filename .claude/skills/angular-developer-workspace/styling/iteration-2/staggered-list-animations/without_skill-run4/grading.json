@@ -1,0 +1,32 @@
+{
+  "eval_id": 2,
+  "eval_name": "staggered-list-animations",
+  "configuration": "without_skill",
+  "expectations": [
+    {
+      "text": "uses_animate_enter",
+      "passed": false,
+      "evidence": "Uses @angular/animations DSL with trigger(), query(':enter'), stagger() instead of animate.enter HTML attribute"
+    },
+    {
+      "text": "uses_animate_leave",
+      "passed": false,
+      "evidence": "Uses @angular/animations DSL with query(':leave'), stagger() instead of animate.leave HTML attribute"
+    },
+    {
+      "text": "css_keyframes",
+      "passed": false,
+      "evidence": "No @keyframes definitions; animations are defined entirely via @angular/animations style() and animate() functions"
+    },
+    {
+      "text": "stagger_effect",
+      "passed": true,
+      "evidence": "Uses stagger(80, [...]) for enter and stagger(60, [...]) for leave in the @angular/animations DSL"
+    },
+    {
+      "text": "uses_for_control_flow",
+      "passed": true,
+      "evidence": "@for (item of items(); track item.id) used for list rendering"
+    }
+  ]
+}

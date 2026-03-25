@@ -1,0 +1,47 @@
+{
+  "skill_name": "angular-developer",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have an Angular 21 service that subscribes to a WebSocket observable to receive live notifications. The service is providedIn root but I need it to properly clean up the subscription when the component that uses it gets destroyed. I've heard about DestroyRef and takeUntilDestroyed but I'm not sure how to use them. Can you show me the service and a component that uses it, making sure the subscription is cleaned up without implementing OnDestroy?",
+      "expected_output": "A service using takeUntilDestroyed() from @angular/core/rxjs-interop for automatic subscription cleanup. Component should not implement OnDestroy lifecycle hook.",
+      "files": [],
+      "expectations": [
+        "Uses takeUntilDestroyed() from @angular/core/rxjs-interop to auto-complete the observable",
+        "Does NOT implement OnDestroy interface or ngOnDestroy method",
+        "Imports takeUntilDestroyed from @angular/core/rxjs-interop (correct import path)",
+        "If takeUntilDestroyed is used outside injection context (e.g., in a service method), passes DestroyRef explicitly as argument",
+        "Component uses ChangeDetectionStrategy.OnPush",
+        "Does not use explicit DestroyRef.onDestroy() when takeUntilDestroyed() alone suffices for RxJS cleanup"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm building a reusable form wrapper component in Angular 21 that uses content projection. The wrapper provides a FormStateService via viewProviders so that its own template can access form state. But I need projected content (child components passed via ng-content) to NOT see this service — they should get their own instance or the parent's instance instead. Show me the form wrapper component with viewProviders, the FormStateService, and a child component that demonstrates the isolation behavior.",
+      "expected_output": "A component using viewProviders (not providers) to provide FormStateService, with ng-content for projection. A child component injected via content projection should NOT receive the viewProviders instance.",
+      "files": [],
+      "expectations": [
+        "Uses viewProviders array (not providers) in the form wrapper component",
+        "Uses ng-content for content projection in the form wrapper template",
+        "FormStateService is injectable and demonstrates isolated state",
+        "Projected content component uses inject() with { optional: true } to demonstrate it gets null",
+        "Code or comments explain the #VIEW boundary and why viewProviders isolates from projected content",
+        "Components use ChangeDetectionStrategy.OnPush"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I need to create an Angular 21 app initializer that loads remote feature flags from /api/config before the app starts rendering. The config should be available as an InjectionToken throughout the app. Also show me how to add an environment initializer that sets up a logging service when a lazy-loaded route module bootstraps. Use the modern Angular APIs, not the deprecated APP_INITIALIZER token.",
+      "expected_output": "Uses provideAppInitializer() function (not APP_INITIALIZER token) and provideEnvironmentInitializer() function (not ENVIRONMENT_INITIALIZER token). Uses makeEnvironmentProviders() for library-style provider functions. Uses HttpClient (not fetch) inside provideAppInitializer.",
+      "files": [],
+      "expectations": [
+        "Uses provideAppInitializer() function from @angular/core (not the APP_INITIALIZER multi token)",
+        "Creates an InjectionToken for the feature flags config",
+        "Uses inject(HttpClient) inside the initializer (not raw fetch())",
+        "Uses provideEnvironmentInitializer() function (not deprecated ENVIRONMENT_INITIALIZER token)",
+        "Uses makeEnvironmentProviders() to wrap provider arrays in provide* functions",
+        "The config token is injectable throughout the app after initialization"
+      ]
+    }
+  ]
+}

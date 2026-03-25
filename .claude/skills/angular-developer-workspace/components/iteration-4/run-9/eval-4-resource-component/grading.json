@@ -1,0 +1,45 @@
+{
+  "expectations": [
+    {
+      "text": "Uses TestBed.configureTestingModule with imports: [UserProfileComponent]",
+      "passed": true,
+      "evidence": "Line 76-79: `await TestBed.configureTestingModule({ imports: [UserProfileComponent], providers: [{ provide: UserApiService, useValue: apiStub }] }).compileComponents();`"
+    },
+    {
+      "text": "Uses componentRef.setInput() or fixture.componentRef.setInput() to set the id input signal",
+      "passed": true,
+      "evidence": "Line 94: `fixture.componentRef.setInput('id', 1);` and throughout"
+    },
+    {
+      "text": "Uses await fixture.whenStable() for async change detection (not just detectChanges)",
+      "passed": true,
+      "evidence": "Line 96: `await fixture.whenStable();` used consistently"
+    },
+    {
+      "text": "Provides a mock or spy for the HTTP/fetch dependency (vi.fn, vi.spyOn, or provider override)",
+      "passed": true,
+      "evidence": "Line 71: `const apiStub = { getUser: vi.fn<[number], Promise<User>>() };` with provider override"
+    },
+    {
+      "text": "Tests loading state (checks for loading indicator in DOM)",
+      "passed": true,
+      "evidence": "Lines 90-101: checks `.loading` truthy, `.user-name` null, `.error` null"
+    },
+    {
+      "text": "Tests successful data display (checks rendered user data)",
+      "passed": true,
+      "evidence": "Lines 121-133: checks `.user-name` contains 'Alice Smith' and `.user-email` contains 'alice@example.com'"
+    },
+    {
+      "text": "Tests error state (simulates fetch failure and checks error display)",
+      "passed": true,
+      "evidence": "Lines 159-195: `apiStub.getUser.mockRejectedValue(new Error('Not found'))`, checks `.error` truthy"
+    },
+    {
+      "text": "Tests that changing the input signal value triggers a new fetch",
+      "passed": true,
+      "evidence": "Lines 211-263: sets id=1 then id=2, asserts apiStub.getUser called twice with correct args, DOM shows 'Bob Jones'"
+    }
+  ],
+  "summary": { "passed": 8, "failed": 0, "total": 8, "pass_rate": 1.0 }
+}

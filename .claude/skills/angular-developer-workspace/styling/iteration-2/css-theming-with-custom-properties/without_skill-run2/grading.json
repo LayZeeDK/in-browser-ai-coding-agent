@@ -1,0 +1,32 @@
+{
+  "eval_id": 0,
+  "eval_name": "css-theming-with-custom-properties",
+  "configuration": "without_skill",
+  "expectations": [
+    {
+      "text": "uses_css_custom_properties",
+      "passed": true,
+      "evidence": "Defines --color-primary, --color-surface etc. with [data-theme] selectors; all components use var(--color-*)"
+    },
+    {
+      "text": "no_ng_deep",
+      "passed": true,
+      "evidence": "No ::ng-deep anywhere in code or text"
+    },
+    {
+      "text": "runtime_theme_switching",
+      "passed": true,
+      "evidence": "ThemeService with toggle() and effect() setting data-theme on documentElement; ThemeToggleComponent provides the UI toggle"
+    },
+    {
+      "text": "works_with_emulated_encapsulation",
+      "passed": true,
+      "evidence": "No ViewEncapsulation.None/ShadowDom used; explains why emulated encapsulation works with CSS custom properties"
+    },
+    {
+      "text": "child_component_consumption",
+      "passed": true,
+      "evidence": "CardComponent uses var(--color-surface), var(--color-outline), var(--color-on-surface); ButtonComponent uses var(--color-primary), var(--color-secondary)"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "eval_id": 2,
+  "eval_name": "pathmatch-and-input-binding",
+  "prompt": "I'm setting up an Angular 21 app and I have a route { path: '', redirectTo: 'home' } but it's matching every URL and redirecting everything to /home, even /about and /settings. I think it's a pathMatch issue. Also, I want route params and resolved data to bind directly to my component's inputs instead of injecting ActivatedRoute — how do I configure that? Show me the full provideRouter setup and a component that receives both a route param 'id' and resolved 'user' data as signal inputs.",
+  "assertions": [
+    "Explains that pathMatch 'prefix' (default) matches any URL starting with empty string, causing the redirect-everything bug",
+    "Fixes the redirect by adding pathMatch: 'full' to the empty-path route",
+    "Configures provideRouter with withComponentInputBinding() feature",
+    "Shows a component using input() or input.required() to receive a route parameter",
+    "Shows a component using input() or input.required() to receive resolved data",
+    "The resolver is a functional ResolveFn, not class-based"
+  ]
+}

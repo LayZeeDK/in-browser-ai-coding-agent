@@ -1,0 +1,47 @@
+{
+  "eval_id": 2,
+  "eval_name": "error-logging-setup-from-scratch",
+  "summary": {"passed": 8, "failed": 0, "total": 8, "pass_rate": 1.0},
+  "expectations": [
+    {
+      "text": "error-handler-injectable",
+      "passed": true,
+      "evidence": "global-error-handler.ts: @Injectable() decorator present (no providedIn), class implements ErrorHandler"
+    },
+    {
+      "text": "provide-browser-global-listeners",
+      "passed": true,
+      "evidence": "app.config.ts: provideBrowserGlobalErrorListeners() is included in the providers array"
+    },
+    {
+      "text": "resource-errors-not-global",
+      "passed": true,
+      "evidence": "user-profile.component.ts JSDoc: 'resource() errors surface via .error() and .status() signals. They do NOT reach ErrorHandler.' products.component.ts: 'httpResource() errors surface via .error() signal. They do NOT reach ErrorHandler.' user-profile.component.spec.ts test title: 'shows an error message when the resource rejects -- error does NOT reach ErrorHandler'. products.component.spec.ts comment: 'httpResource() errors surface via .error() signal, not ErrorHandler.'"
+    },
+    {
+      "text": "rethrow-application-errors",
+      "passed": true,
+      "evidence": "global-error-handler.spec.ts uses rethrowApplicationErrors: false in the Angular integration suite. user-profile.component.spec.ts uses rethrowApplicationErrors: false in error-path tests. products.component.spec.ts uses rethrowApplicationErrors: false in error-path tests."
+    },
+    {
+      "text": "sentry-like-integration",
+      "passed": true,
+      "evidence": "global-error-handler.ts injects ERROR_REPORTER_TOKEN (ErrorReporter interface with captureException). app.config.ts provides a sentryReporter stub with comment 'replace with Sentry.captureException'. Sentry integration pattern is explicit throughout."
+    },
+    {
+      "text": "error-handler-provider-wiring",
+      "passed": true,
+      "evidence": "app.config.ts: { provide: ErrorHandler, useClass: GlobalErrorHandler } in providers array"
+    },
+    {
+      "text": "inject-function",
+      "passed": true,
+      "evidence": "GlobalErrorHandler uses inject(ERROR_REPORTER_TOKEN) and inject(Router). UserService uses inject(HttpClient). UserProfileComponent uses inject(UserService). All DI via inject() function."
+    },
+    {
+      "text": "component-level-error-handling",
+      "passed": true,
+      "evidence": "user-profile.component.ts shows resource() error handling with .hasValue() guard, .error() display, and reload() retry button. products.component.ts shows httpResource() error handling with same pattern. Both comment that errors do not reach ErrorHandler."
+    }
+  ]
+}

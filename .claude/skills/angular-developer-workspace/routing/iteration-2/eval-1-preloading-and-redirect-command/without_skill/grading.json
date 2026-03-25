@@ -1,0 +1,11 @@
+{
+  "expectations": [
+    {"text": "Uses withPreloading() router feature function with PreloadAllModules strategy", "passed": true, "evidence": "withPreloading(PreloadAllModules) in provideRouter"},
+    {"text": "Uses provideRouter() with at least withPreloading as a feature", "passed": true, "evidence": "provideRouter(routes, withPreloading(PreloadAllModules))"},
+    {"text": "Creates a functional canActivate guard (not class-based)", "passed": true, "evidence": "CanActivateFn functional guard"},
+    {"text": "Uses RedirectCommand for the auth redirect instead of router.parseUrl or router.navigate", "passed": true, "evidence": "new RedirectCommand(router.parseUrl('/login'), { replaceUrl: true })"},
+    {"text": "Shows route config with canActivate guard applied to admin route", "passed": true, "evidence": "canActivate: [authGuard] on admin route"},
+    {"text": "Lazy-loads the admin route with loadComponent or loadChildren", "passed": true, "evidence": "loadComponent for admin route"}
+  ],
+  "summary": {"passed": 6, "failed": 0, "total": 6, "pass_rate": 1.0}
+}

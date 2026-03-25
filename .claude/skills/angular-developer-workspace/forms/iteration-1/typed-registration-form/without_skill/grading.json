@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "Uses fb.nonNullable.group() or NonNullableFormBuilder (not plain FormBuilder.group with nullable controls)",
+      "passed": true,
+      "evidence": "Line 118: `inject(NonNullableFormBuilder)` -- directly injects the NonNullableFormBuilder class."
+    },
+    {
+      "text": "FormControls are typed -- no 'any' types, no UntypedFormControl/UntypedFormGroup",
+      "passed": true,
+      "evidence": "No Untyped* imports. Uses NonNullableFormBuilder with fb.control() producing typed controls."
+    },
+    {
+      "text": "Includes a custom async validator for username that returns Observable<ValidationErrors | null>",
+      "passed": true,
+      "evidence": "username-validator.ts line 7: returns `Observable<ValidationErrors | null>`."
+    },
+    {
+      "text": "Async validator passes the third argument position or uses asyncValidators option on the FormControl",
+      "passed": true,
+      "evidence": "Line 127: `[usernameAvailableValidator(this.userService)]` as the third array element."
+    },
+    {
+      "text": "Template uses @if (not *ngIf) for conditional error display",
+      "passed": true,
+      "evidence": "Lines 32, 54, 57, 82, 104 all use @if syntax."
+    },
+    {
+      "text": "Submit button is disabled when form is invalid",
+      "passed": true,
+      "evidence": "Line 111: `[disabled]=\"form.invalid || form.pending\"`"
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  }
+}

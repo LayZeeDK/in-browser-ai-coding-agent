@@ -1,0 +1,47 @@
+{
+  "eval_id": 0,
+  "eval_name": "api-error-toast-service",
+  "summary": {"passed": 6, "failed": 2, "total": 8, "pass_rate": 0.75},
+  "expectations": [
+    {
+      "text": "http-error-response-distinction",
+      "passed": true,
+      "evidence": "api-http.service.ts handleError() checks error.status === 0 (network) vs 401 vs other, typed as HttpErrorResponse"
+    },
+    {
+      "text": "401-redirect-to-login",
+      "passed": true,
+      "evidence": "handleError() calls this.router.navigate(['/login']) on status 401"
+    },
+    {
+      "text": "retry-on-503",
+      "passed": true,
+      "evidence": "withRetryAndErrorHandling() uses retry({ count: 2, delay }) that returns timer on status 503 and rethrows otherwise"
+    },
+    {
+      "text": "global-error-handler-injectable",
+      "passed": true,
+      "evidence": "global-error-handler.ts: @Injectable() present, implements ErrorHandler"
+    },
+    {
+      "text": "provide-browser-global-listeners",
+      "passed": true,
+      "evidence": "app.config.ts: provideBrowserGlobalErrorListeners() is the first provider"
+    },
+    {
+      "text": "functional-interceptor",
+      "passed": false,
+      "evidence": "No interceptor file exists. Retry logic is embedded directly in ApiHttpService.withRetryAndErrorHandling() rather than a functional HttpInterceptorFn"
+    },
+    {
+      "text": "inject-function",
+      "passed": true,
+      "evidence": "ApiHttpService, GlobalErrorHandler all use inject() — no constructor injection"
+    },
+    {
+      "text": "tests-with-http-testing-controller",
+      "passed": false,
+      "evidence": "api-http.service.spec.ts uses vi.spyOn on the real ToastService instead of providing a mock, and some tests use done() callback pattern with Jasmine-style async — not a clean Vitest pattern. global-error-handler.spec.ts uses vi without importing it (relies on global), and tests call vi.spyOn without prior import. However provideHttpClient() + provideHttpClientTesting() ordering is correct. The bigger failure: api-http.service.spec.ts references `vi` without any import at the top of the file (line 62: `const toastSpy = vi.spyOn`), which is a runtime error."
+    }
+  ]
+}

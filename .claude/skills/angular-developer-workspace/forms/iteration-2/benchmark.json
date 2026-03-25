@@ -1,0 +1,1029 @@
+{
+  "metadata": {
+    "skill_name": "angular-developer",
+    "skill_path": "D:\\projects\\github\\LayZeeDK\\in-browser-ai-coding-agent\\.claude\\skills\\angular-developer",
+    "executor_model": "claude-sonnet-4-6",
+    "analyzer_model": "claude-opus-4-6",
+    "timestamp": "2026-03-24T09:56:01.881Z",
+    "evals_run": [
+      "typed-registration-form",
+      "cross-field-password-validation",
+      "requiredif-validator-directive"
+    ],
+    "runs_per_configuration": 10
+  },
+  "runs": [
+    {
+      "eval_id": 1,
+      "eval_name": "typed-registration-form",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 100.1,
+        "tokens": 23229,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Uses fb.nonNullable.group() or NonNullableFormBuilder",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "FormControls are typed -- no any/Untyped",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Custom async validator returns Observable<ValidationErrors | null>",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Async validator in third argument or asyncValidators option",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Template uses @if (not *ngIf)",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Submit button disabled when invalid",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        }
+      ]
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "typed-registration-form",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 41.8,
+        "tokens": 11552,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Uses fb.nonNullable.group() or NonNullableFormBuilder",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "FormControls are typed -- no any/Untyped",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Custom async validator returns Observable<ValidationErrors | null>",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Async validator in third argument or asyncValidators option",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Template uses @if (not *ngIf)",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Submit button disabled when invalid",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        }
+      ]
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "typed-registration-form",
+      "configuration": "with_skill",
+      "run_number": 2,
+      "result": {
+        "pass_rate": 1,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 86.8,
+        "tokens": 22546,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Uses fb.nonNullable.group() or NonNullableFormBuilder",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "FormControls are typed -- no any/Untyped",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Custom async validator returns Observable<ValidationErrors | null>",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Async validator in third argument or asyncValidators option",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Template uses @if (not *ngIf)",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Submit button disabled when invalid",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        }
+      ]
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "typed-registration-form",
+      "configuration": "without_skill",
+      "run_number": 2,
+      "result": {
+        "pass_rate": 1,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 40.4,
+        "tokens": 11613,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Uses fb.nonNullable.group() or NonNullableFormBuilder",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "FormControls are typed -- no any/Untyped",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Custom async validator returns Observable<ValidationErrors | null>",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Async validator in third argument or asyncValidators option",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Template uses @if (not *ngIf)",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Submit button disabled when invalid",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        }
+      ]
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "typed-registration-form",
+      "configuration": "with_skill",
+      "run_number": 3,
+      "result": {
+        "pass_rate": 1,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 86.1,
+        "tokens": 22425,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Uses fb.nonNullable.group() or NonNullableFormBuilder",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "FormControls are typed -- no any/Untyped",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Custom async validator returns Observable<ValidationErrors | null>",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Async validator in third argument or asyncValidators option",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Template uses @if (not *ngIf)",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Submit button disabled when invalid",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        }
+      ]
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "typed-registration-form",
+      "configuration": "without_skill",
+      "run_number": 3,
+      "result": {
+        "pass_rate": 1,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 41.6,
+        "tokens": 11876,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Uses fb.nonNullable.group() or NonNullableFormBuilder",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "FormControls are typed -- no any/Untyped",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Custom async validator returns Observable<ValidationErrors | null>",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Async validator in third argument or asyncValidators option",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Template uses @if (not *ngIf)",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Submit button disabled when invalid",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        }
+      ]
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "typed-registration-form",
+      "configuration": "with_skill",
+      "run_number": 4,
+      "result": {
+        "pass_rate": 1,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 84.7,
+        "tokens": 22333,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Uses fb.nonNullable.group() or NonNullableFormBuilder",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "FormControls are typed -- no any/Untyped",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Custom async validator returns Observable<ValidationErrors | null>",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Async validator in third argument or asyncValidators option",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Template uses @if (not *ngIf)",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Submit button disabled when invalid",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        }
+      ]
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "typed-registration-form",
+      "configuration": "without_skill",
+      "run_number": 4,
+      "result": {
+        "pass_rate": 1,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 35.2,
+        "tokens": 11684,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Uses fb.nonNullable.group() or NonNullableFormBuilder",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "FormControls are typed -- no any/Untyped",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Custom async validator returns Observable<ValidationErrors | null>",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Async validator in third argument or asyncValidators option",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Template uses @if (not *ngIf)",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Submit button disabled when invalid",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        }
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "cross-field-password-validation",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 37.8,
+        "tokens": 18444,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Cross-field validator is a ValidatorFn",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Validator attached to FormGroup via validators option",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Validator uses control.get() to compare sibling controls",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Returns { passwordMismatch: true } or null",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Template checks group-level hasError or form.errors for passwordMismatch",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Uses typed forms (nonNullable, not UntypedFormGroup)",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        }
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "cross-field-password-validation",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 27.3,
+        "tokens": 10842,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Cross-field validator is a ValidatorFn",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Validator attached to FormGroup via validators option",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Validator uses control.get() to compare sibling controls",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Returns { passwordMismatch: true } or null",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Template checks group-level hasError or form.errors for passwordMismatch",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Uses typed forms (nonNullable, not UntypedFormGroup)",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        }
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "cross-field-password-validation",
+      "configuration": "with_skill",
+      "run_number": 2,
+      "result": {
+        "pass_rate": 1,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 75.7,
+        "tokens": 21799,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Cross-field validator is a ValidatorFn",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Validator attached to FormGroup via validators option",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Validator uses control.get() to compare sibling controls",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Returns { passwordMismatch: true } or null",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Template checks group-level hasError or form.errors for passwordMismatch",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Uses typed forms (nonNullable, not UntypedFormGroup)",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        }
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "cross-field-password-validation",
+      "configuration": "without_skill",
+      "run_number": 2,
+      "result": {
+        "pass_rate": 0.67,
+        "passed": 4,
+        "failed": 2,
+        "total": 6,
+        "time_seconds": 30.6,
+        "tokens": 10997,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Cross-field validator is a ValidatorFn",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Validator attached to FormGroup via validators option",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Validator uses control.get() to compare sibling controls",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Returns { passwordMismatch: true } or null",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Template checks group-level hasError or form.errors for passwordMismatch",
+          "passed": false,
+          "evidence": "Pattern not found in output"
+        },
+        {
+          "text": "Uses typed forms (nonNullable, not UntypedFormGroup)",
+          "passed": false,
+          "evidence": "Pattern not found in output"
+        }
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "cross-field-password-validation",
+      "configuration": "with_skill",
+      "run_number": 3,
+      "result": {
+        "pass_rate": 1,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 86,
+        "tokens": 21998,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Cross-field validator is a ValidatorFn",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Validator attached to FormGroup via validators option",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Validator uses control.get() to compare sibling controls",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Returns { passwordMismatch: true } or null",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Template checks group-level hasError or form.errors for passwordMismatch",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Uses typed forms (nonNullable, not UntypedFormGroup)",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        }
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "cross-field-password-validation",
+      "configuration": "without_skill",
+      "run_number": 3,
+      "result": {
+        "pass_rate": 0.83,
+        "passed": 5,
+        "failed": 1,
+        "total": 6,
+        "time_seconds": 29.5,
+        "tokens": 11035,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Cross-field validator is a ValidatorFn",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Validator attached to FormGroup via validators option",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Validator uses control.get() to compare sibling controls",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Returns { passwordMismatch: true } or null",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Template checks group-level hasError or form.errors for passwordMismatch",
+          "passed": false,
+          "evidence": "Pattern not found in output"
+        },
+        {
+          "text": "Uses typed forms (nonNullable, not UntypedFormGroup)",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        }
+      ]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "requiredif-validator-directive",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 79.7,
+        "tokens": 21916,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Directive implements Validator interface",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Registered with NG_VALIDATORS using useExisting + forwardRef + multi",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Has boolean condition input",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "validate() returns error when condition true and value empty",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "validate() returns null when condition false",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Template shows usage with ngModel, name, and error display",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        }
+      ]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "requiredif-validator-directive",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.67,
+        "passed": 4,
+        "failed": 2,
+        "total": 6,
+        "time_seconds": 34.3,
+        "tokens": 11143,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Directive implements Validator interface",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Registered with NG_VALIDATORS using useExisting + forwardRef + multi",
+          "passed": false,
+          "evidence": "Pattern not found in output"
+        },
+        {
+          "text": "Has boolean condition input",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "validate() returns error when condition true and value empty",
+          "passed": false,
+          "evidence": "Pattern not found in output"
+        },
+        {
+          "text": "validate() returns null when condition false",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Template shows usage with ngModel, name, and error display",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        }
+      ]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "requiredif-validator-directive",
+      "configuration": "with_skill",
+      "run_number": 2,
+      "result": {
+        "pass_rate": 1,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 82.4,
+        "tokens": 21873,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Directive implements Validator interface",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Registered with NG_VALIDATORS using useExisting + forwardRef + multi",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Has boolean condition input",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "validate() returns error when condition true and value empty",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "validate() returns null when condition false",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Template shows usage with ngModel, name, and error display",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        }
+      ]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "requiredif-validator-directive",
+      "configuration": "without_skill",
+      "run_number": 2,
+      "result": {
+        "pass_rate": 0.67,
+        "passed": 4,
+        "failed": 2,
+        "total": 6,
+        "time_seconds": 40.7,
+        "tokens": 11789,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Directive implements Validator interface",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Registered with NG_VALIDATORS using useExisting + forwardRef + multi",
+          "passed": false,
+          "evidence": "Pattern not found in output"
+        },
+        {
+          "text": "Has boolean condition input",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "validate() returns error when condition true and value empty",
+          "passed": false,
+          "evidence": "Pattern not found in output"
+        },
+        {
+          "text": "validate() returns null when condition false",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Template shows usage with ngModel, name, and error display",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        }
+      ]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "requiredif-validator-directive",
+      "configuration": "with_skill",
+      "run_number": 3,
+      "result": {
+        "pass_rate": 1,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 81,
+        "tokens": 21900,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Directive implements Validator interface",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Registered with NG_VALIDATORS using useExisting + forwardRef + multi",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Has boolean condition input",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "validate() returns error when condition true and value empty",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "validate() returns null when condition false",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Template shows usage with ngModel, name, and error display",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        }
+      ]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "requiredif-validator-directive",
+      "configuration": "without_skill",
+      "run_number": 3,
+      "result": {
+        "pass_rate": 0.83,
+        "passed": 5,
+        "failed": 1,
+        "total": 6,
+        "time_seconds": 59.3,
+        "tokens": 14953,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Directive implements Validator interface",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Registered with NG_VALIDATORS using useExisting + forwardRef + multi",
+          "passed": false,
+          "evidence": "Pattern not found in output"
+        },
+        {
+          "text": "Has boolean condition input",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "validate() returns error when condition true and value empty",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "validate() returns null when condition false",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        },
+        {
+          "text": "Template shows usage with ngModel, name, and error display",
+          "passed": true,
+          "evidence": "Pattern matched in output"
+        }
+      ]
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1,
+        "stddev": 0,
+        "min": 1,
+        "max": 1
+      },
+      "time_seconds": {
+        "mean": 80.03,
+        "stddev": 15.34,
+        "min": 37.8,
+        "max": 100.1
+      },
+      "tokens": {
+        "mean": 21846.3,
+        "stddev": 1207.58,
+        "min": 18444,
+        "max": 23229
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.87,
+        "stddev": 0.14,
+        "min": 0.67,
+        "max": 1
+      },
+      "time_seconds": {
+        "mean": 38.07,
+        "stddev": 8.7,
+        "min": 27.3,
+        "max": 59.3
+      },
+      "tokens": {
+        "mean": 11748.4,
+        "stddev": 1122.95,
+        "min": 10842,
+        "max": 14953
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.13",
+      "time_seconds": "+42.0",
+      "tokens": "+10098"
+    }
+  },
+  "notes": [
+    "typed-registration-form: with-skill 1 +/- 0 vs without-skill 1 +/- 0 (delta: 0.00)",
+    "cross-field-password-validation: with-skill 1 +/- 0 vs without-skill 0.83 +/- 0.13 (delta: 0.17)",
+    "requiredif-validator-directive: with-skill 1 +/- 0 vs without-skill 0.72 +/- 0.08 (delta: 0.28)"
+  ]
+}

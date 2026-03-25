@@ -1,0 +1,112 @@
+{
+  "metadata": {
+    "skill_name": "angular-developer",
+    "skill_path": ".claude/skills/angular-developer",
+    "executor_model": "claude-sonnet-4-6",
+    "timestamp": "2026-03-24T12:31:00Z",
+    "evals_run": ["global-error-handler-analytics", "resource-error-handling-patterns", "error-boundary-retry-ux"],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": 0,
+      "eval_name": "global-error-handler-analytics",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 8,
+        "total": 8,
+        "time_seconds": 130.1,
+        "tokens": 32990
+      }
+    },
+    {
+      "eval_id": 0,
+      "eval_name": "global-error-handler-analytics",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.875,
+        "passed": 7,
+        "total": 8,
+        "time_seconds": 63.7,
+        "tokens": 16545
+      }
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "resource-error-handling-patterns",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 8,
+        "total": 8,
+        "time_seconds": 276.0,
+        "tokens": 57414
+      }
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "resource-error-handling-patterns",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 8,
+        "total": 8,
+        "time_seconds": 163.9,
+        "tokens": 34979
+      }
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "error-boundary-retry-ux",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 8,
+        "total": 8,
+        "time_seconds": 216.3,
+        "tokens": 46623
+      }
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "error-boundary-retry-ux",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 8,
+        "total": 8,
+        "time_seconds": 237.2,
+        "tokens": 38103
+      }
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {"mean": 1.0, "stddev": 0.0},
+      "time_seconds": {"mean": 207.5, "stddev": 73.6},
+      "tokens": {"mean": 45676, "stddev": 12263}
+    },
+    "without_skill": {
+      "pass_rate": {"mean": 0.958, "stddev": 0.072},
+      "time_seconds": {"mean": 154.9, "stddev": 86.8},
+      "tokens": {"mean": 29876, "stddev": 11400}
+    },
+    "delta": {
+      "pass_rate": "+4.2%",
+      "time_seconds": "+52.6",
+      "tokens": "+15800"
+    }
+  },
+  "notes": [
+    "Only failure: without-skill eval-0 missed PendingTasks.run from catch/no-catch documentation",
+    "Eval 1 and 2 show no difference -- both configs handle resource/httpResource error patterns correctly",
+    "Skill's main error-handling value-add: precise Angular framework boundary knowledge (what catches what)"
+  ]
+}

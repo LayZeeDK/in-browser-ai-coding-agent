@@ -1,0 +1,20 @@
+{
+  "expectations": [
+    {"text": "Uses TestBed.configureTestingModule with imports: [UserProfileComponent]", "passed": true, "evidence": "Lines 101-103: TestBed.configureTestingModule({ imports: [UserProfileComponent] })"},
+    {"text": "Uses componentRef.setInput() or fixture.componentRef.setInput() to set the id input signal", "passed": true, "evidence": "Lines 120, 137, 162, 206, 227, 304, 315, etc: fixture.componentRef.setInput('id', N) used throughout"},
+    {"text": "Uses await fixture.whenStable() for async change detection (not just detectChanges)", "passed": false, "evidence": "Uses fixture.detectChanges() as primary trigger (lines 122, 138, 163, etc) with whenStable() as secondary. Pattern is detectChanges() + whenStable() + detectChanges() — the triple-call pattern is unnecessary and the first detectChanges() shows old zone-based habits"},
+    {"text": "Provides a mock or spy for the HTTP/fetch dependency (vi.fn, vi.spyOn, or provider override)", "passed": true, "evidence": "Lines 97-99: fetchMock = vi.fn(); vi.stubGlobal('fetch', fetchMock)"},
+    {"text": "Tests loading state (checks for loading indicator in DOM)", "passed": true, "evidence": "Lines 114-131: 'shows a loading indicator immediately after creation' checks data-testid='loading'"},
+    {"text": "Tests successful data display (checks rendered user data)", "passed": true, "evidence": "Lines 152-175: asserts nameEl and emailEl textContent after fetch resolves"},
+    {"text": "Tests error state (simulates fetch failure and checks error display)", "passed": true, "evidence": "Lines 219-255: tests both non-OK response and rejected promise. Checks data-testid='error'"},
+    {"text": "Tests that changing the input signal value triggers a new fetch", "passed": true, "evidence": "Lines 294-325: changes id from 1 to 2, asserts fetchMock called twice with correct URLs"}
+  ],
+  "summary": {"passed": 7, "failed": 1, "total": 8, "pass_rate": 0.875},
+  "eval_feedback": {
+    "suggestions": [
+      {"reason": "The without-skill output uses resource({request: ...}) instead of resource({params: ...}) — this is the wrong API for Angular 21 and produces a TS compile error"},
+      {"reason": "The triple detectChanges()/whenStable()/detectChanges() pattern is unnecessary for zoneless apps and no assertion checks this specifically"}
+    ],
+    "overall": "Pass rate looks high but the resource() API error would prevent compilation. Consider adding an assertion for correct resource() API usage."
+  }
+}

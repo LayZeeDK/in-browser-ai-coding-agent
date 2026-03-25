@@ -1,0 +1,45 @@
+{
+  "expectations": [
+    {
+      "text": "Uses resource() with params that tracks the symbol signal reactively",
+      "passed": true,
+      "evidence": "stock.service.ts:30-31 uses `resource({ params: () => ({ symbol: this._symbol() }), ...})` — correct params-based reactive tracking"
+    },
+    {
+      "text": "Passes abortSignal to fetch/http call for request cancellation",
+      "passed": true,
+      "evidence": "stock.service.ts:33-36 destructures `abortSignal` from loader params and passes it to `fetch(..., { signal: abortSignal })`"
+    },
+    {
+      "text": "Uses resource status signals (isLoading, hasValue, error) in the template",
+      "passed": true,
+      "evidence": "stock-dashboard.component.ts template uses `isLoading()`, `stockResource.hasValue()`, and `error()` computed signal for conditional rendering"
+    },
+    {
+      "text": "Provides reload() for manual refresh",
+      "passed": true,
+      "evidence": "stock.service.ts:55 exposes `refresh()` method calling `this.stockResource.reload()`, used in component's refreshData()"
+    },
+    {
+      "text": "Preserves previous value during loading (via resourceFromSnapshots, linkedSignal, or reloading status check)",
+      "passed": true,
+      "evidence": "stock-dashboard.component.ts template shows old data with `.stale` CSS class while isLoading(), and separately handles initial load vs reload states. Uses hasValue() + isLoading() combination."
+    },
+    {
+      "text": "Component uses ChangeDetectionStrategy.OnPush",
+      "passed": true,
+      "evidence": "stock-dashboard.component.ts:13 has `changeDetection: ChangeDetectionStrategy.OnPush`"
+    },
+    {
+      "text": "Does NOT use effect() to sync resource state to another signal",
+      "passed": true,
+      "evidence": "No effect() calls in either service or component. State is derived via computed() and direct resource signal access."
+    }
+  ],
+  "summary": {
+    "passed": 7,
+    "failed": 0,
+    "total": 7,
+    "pass_rate": 1.0
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "eval_id": 1,
+  "eval_name": "resource-error-handling-patterns",
+  "prompt": "DataDashboardComponent with resource(), httpResource(), RxJS catchError, and try/catch for service errors",
+  "assertions": [
+    {
+      "name": "resource-error-via-signals",
+      "description": "Uses resource() with error handling via .status() and/or .error() signals, not ErrorHandler"
+    },
+    {
+      "name": "httpresource-has-value-guard",
+      "description": "Guards httpResource .value() reads with .hasValue() to prevent runtime throw in error state"
+    },
+    {
+      "name": "httpresource-error-signal",
+      "description": "Displays httpResource errors via .error() signal in template"
+    },
+    {
+      "name": "catcherror-network-vs-backend",
+      "description": "RxJS service method uses catchError with HttpErrorResponse, distinguishing status === 0 (network) from status > 0 (backend)"
+    },
+    {
+      "name": "try-catch-for-service-methods",
+      "description": "Button handler uses try/catch for service method that can throw, with comment explaining Angular doesn't catch these"
+    },
+    {
+      "name": "resource-error-does-not-reach-errorhandler",
+      "description": "Code or comments explicitly state that resource()/httpResource() errors do NOT reach ErrorHandler"
+    },
+    {
+      "name": "onpush-change-detection",
+      "description": "Component uses ChangeDetectionStrategy.OnPush"
+    },
+    {
+      "name": "httpresource-test-with-controller",
+      "description": "Tests use HttpTestingController to test httpResource error state"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "Directive implements the Validator interface",
+      "passed": true,
+      "evidence": "Line 31: `export class RequiredIfDirective implements Validator, OnChanges`"
+    },
+    {
+      "text": "Registered with NG_VALIDATORS provider using useExisting and forwardRef with multi: true",
+      "passed": false,
+      "evidence": "Line 26: `useExisting: RequiredIfDirective` -- uses the class directly without forwardRef(). TypeScript diagnostic confirms: 'Class RequiredIfDirective used before its declaration' [2449]. The canonical Angular pattern uses forwardRef(() => RequiredIfDirective) to avoid the reference-before-declaration issue."
+    },
+    {
+      "text": "Has an input for the boolean condition (signal input or @Input)",
+      "passed": true,
+      "evidence": "Line 33: `@Input('appRequiredIf') condition = false` -- classic @Input decorator with alias."
+    },
+    {
+      "text": "validate() method returns { required: true } when condition is truthy and value is empty/null",
+      "passed": true,
+      "evidence": "Line 48: `return isEmpty ? { requiredIf: true } : null` -- returns an error object when condition is true and value is empty. Uses 'requiredIf' as key (reasonable design choice to distinguish from built-in required)."
+    },
+    {
+      "text": "validate() method returns null when condition is falsy or value is present",
+      "passed": true,
+      "evidence": "Lines 38-40: returns null when `!this.condition`. Line 48: returns null when not isEmpty."
+    },
+    {
+      "text": "Template shows usage with [(ngModel)], name attribute, and conditional error display",
+      "passed": true,
+      "evidence": "contact-form.component.ts line 97: `[(ngModel)]=\"model.phone\"`, line 95: `name=\"phone\"`, line 96: `[appRequiredIf]=\"needsPhone\"`, lines 100-105: conditional error display with @if."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 1,
+    "total": 6,
+    "pass_rate": 0.83
+  }
+}

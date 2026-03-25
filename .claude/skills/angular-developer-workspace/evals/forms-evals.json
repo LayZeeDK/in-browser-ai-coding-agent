@@ -1,0 +1,47 @@
+{
+  "skill_name": "angular-developer",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm working on an Angular 19 app and need to create a user registration form component using typed Reactive Forms. The form should have: email (required, email format), username (required, min 3 chars, with a custom async validator that checks availability via a UserService.checkUsername(name) method returning Observable<boolean>), password (required, min 8 chars), and confirmPassword. Use the nonNullable FormBuilder so we don't deal with null types everywhere. The form should show inline validation errors and disable submit when invalid. Please create the component with inline template.",
+      "expected_output": "A standalone Angular component using NonNullableFormBuilder (fb.nonNullable.group) with properly typed FormControls. Includes a custom async validator function or class for username availability. All controls use nonNullable. Template shows validation errors using @if with control state checks.",
+      "files": [],
+      "expectations": [
+        "Uses fb.nonNullable.group() or NonNullableFormBuilder (not plain FormBuilder.group with nullable controls)",
+        "FormControls are typed -- no 'any' types, no UntypedFormControl/UntypedFormGroup",
+        "Includes a custom async validator for username that returns Observable<ValidationErrors | null>",
+        "Async validator passes the third argument position or uses asyncValidators option on the FormControl",
+        "Template uses @if (not *ngIf) for conditional error display",
+        "Submit button is disabled when form is invalid"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I have an Angular 18 app with a password change form. I need to add cross-field validation so that the newPassword and confirmPassword fields must match. The form already has currentPassword, newPassword, and confirmPassword fields in a FormGroup. Show me how to write the cross-field validator, attach it to the FormGroup, and display the mismatch error in the template. Use typed reactive forms.",
+      "expected_output": "A ValidatorFn that receives the FormGroup's AbstractControl, extracts newPassword and confirmPassword via .get(), compares values, and returns { passwordMismatch: true } or null. The validator is attached to the FormGroup (not individual controls) via the validators option. Template checks for the error on the FormGroup level.",
+      "files": [],
+      "expectations": [
+        "Cross-field validator is a ValidatorFn (not applied to individual controls)",
+        "Validator is attached to the FormGroup via the second argument or validators option",
+        "Validator uses control.get('newPassword') and control.get('confirmPassword') to compare",
+        "Returns a ValidationErrors object (like { passwordMismatch: true }) or null",
+        "Template checks formGroup.hasError('passwordMismatch') for displaying the error message",
+        "Uses typed forms (FormControl<string> or nonNullable, not UntypedFormGroup)"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I need to create a custom 'requiredIf' validator directive for my Angular 19 template-driven form. The directive should accept a boolean condition input -- when the condition is true, the field is required; when false, it's optional. I want to use it like: <input [(ngModel)]=\"phone\" name=\"phone\" [appRequiredIf]=\"needsPhone\">. Show me the full directive implementation and how to use it in a template-driven form with error display.",
+      "expected_output": "A directive implementing the Validator interface, registered with NG_VALIDATORS via multi provider using useExisting + forwardRef. Has a signal input for the condition. The validate method returns { required: true } when the condition is true and control value is empty, null otherwise. Shows usage in a template-driven form with ngModel and error display.",
+      "files": [],
+      "expectations": [
+        "Directive implements the Validator interface",
+        "Registered with NG_VALIDATORS provider using useExisting and forwardRef with multi: true",
+        "Has an input for the boolean condition (signal input or @Input)",
+        "validate() method returns { required: true } when condition is truthy and value is empty/null",
+        "validate() method returns null when condition is falsy or value is present",
+        "Template shows usage with [(ngModel)], name attribute, and conditional error display"
+      ]
+    }
+  ]
+}

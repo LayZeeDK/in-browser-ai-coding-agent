@@ -1,0 +1,32 @@
+{
+  "eval_id": 0,
+  "eval_name": "animate-leave-event-binding",
+  "configuration": "without_skill",
+  "expectations": [
+    {
+      "text": "uses_animate_leave_event",
+      "passed": false,
+      "evidence": "Uses `(@dialogLeave.leave)=\"onLeave($event)\"` host binding, not `(animate.leave)=`"
+    },
+    {
+      "text": "imports_animation_callback_event",
+      "passed": false,
+      "evidence": "Defines custom `AnimationLeaveEvent` interface; does not import `AnimationCallbackEvent` from `@angular/core`"
+    },
+    {
+      "text": "calls_animation_complete",
+      "passed": false,
+      "evidence": "Calls `event.done()` (custom interface method), not `event.animationComplete()`"
+    },
+    {
+      "text": "no_legacy_dsl",
+      "passed": false,
+      "evidence": "Imports `animate, AnimationBuilder, AnimationFactory, AnimationPlayer, style, transition, trigger` from `@angular/animations`"
+    },
+    {
+      "text": "js_animation_in_handler",
+      "passed": true,
+      "evidence": "Uses Web Animations API `panel.animate()` and `backdrop.animate()` in `runLeaveAnimation()`; GSAP variant also shown"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "skill_name": "angular-developer",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have an Angular 21 app with lazy-loaded feature routes for /dashboard and /settings. The app loads fine but navigation feels sluggish because each lazy chunk downloads on demand. I want to preload all feature routes after the initial page loads so navigation is instant. Also, the /admin section should only be accessible to logged-in users — if they're not authenticated, redirect them to /login using the modern RedirectCommand approach instead of router.parseUrl. Show me how to set up provideRouter with PreloadAllModules and write the canActivate guard with RedirectCommand.",
+      "expected_output": "Code showing provideRouter with withPreloading(PreloadAllModules), a functional canActivate guard using RedirectCommand for redirects, and route config applying both",
+      "files": [],
+      "expectations": [
+        "Uses withPreloading() router feature function with PreloadAllModules strategy",
+        "Uses provideRouter() with at least withPreloading as a feature",
+        "Creates a functional canActivate guard (not class-based)",
+        "Uses RedirectCommand for the auth redirect instead of router.parseUrl or router.navigate",
+        "Shows route config with canActivate guard applied to admin route",
+        "Lazy-loads the admin route with loadComponent or loadChildren"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm setting up an Angular 21 app and I have a route { path: '', redirectTo: 'home' } but it's matching every URL and redirecting everything to /home, even /about and /settings. I think it's a pathMatch issue. Also, I want route params and resolved data to bind directly to my component's inputs instead of injecting ActivatedRoute — how do I configure that? Show me the full provideRouter setup and a component that receives both a route param 'id' and resolved 'user' data as signal inputs.",
+      "expected_output": "Explanation of pathMatch 'full' vs 'prefix', corrected redirect with pathMatch: 'full', provideRouter with withComponentInputBinding(), and a component using input() for route params and resolved data",
+      "files": [],
+      "expectations": [
+        "Explains that pathMatch 'prefix' (default) matches any URL starting with empty string, causing the redirect-everything bug",
+        "Fixes the redirect by adding pathMatch: 'full' to the empty-path route",
+        "Configures provideRouter with withComponentInputBinding() feature",
+        "Shows a component using input() or input.required() to receive a route parameter",
+        "Shows a component using input() or input.required() to receive resolved data",
+        "The resolver is a functional ResolveFn, not class-based"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I need to add shared element transitions between a product list page and product detail page in my Angular 21 app. When clicking a product card, the product image should smoothly animate from the list position to the detail hero position using the View Transitions API. Also show me how to track navigation events so I can display a loading spinner during resolver data fetching — I need to know which specific router events to listen for and how to subscribe to them. Include NavigationSkipped in the event handling.",
+      "expected_output": "View Transitions setup with per-element view-transition-name, router event subscription for loading spinner including NavigationSkipped event handling",
+      "files": [],
+      "expectations": [
+        "Configures withViewTransitions() in provideRouter",
+        "Assigns view-transition-name CSS property to the product image element in both list and detail components",
+        "Subscribes to Router.events and filters for NavigationStart to show spinner",
+        "Handles NavigationEnd, NavigationCancel, and NavigationError to hide spinner",
+        "Mentions or handles NavigationSkipped event",
+        "Uses onViewTransitionCreated callback OR demonstrates CSS pseudo-elements for transition customization"
+      ]
+    }
+  ]
+}

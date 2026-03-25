@@ -1,0 +1,39 @@
+{
+  "eval_id": 0,
+  "eval_name": "http-error-retry-interceptor",
+  "prompt": "Create an Angular 21 ApiService with retry interceptor, HttpContextToken, and HttpTestingController tests",
+  "assertions": [
+    {
+      "name": "functional-interceptor-signature",
+      "description": "Retry interceptor uses HttpInterceptorFn signature (req: HttpRequest<unknown>, next: HttpHandlerFn)"
+    },
+    {
+      "name": "http-context-token-usage",
+      "description": "Defines RETRY_COUNT as HttpContextToken with default value and uses req.context.get()"
+    },
+    {
+      "name": "exponential-backoff-pattern",
+      "description": "Uses RxJS retry() with delay function implementing exponential backoff (e.g., Math.pow(2, retryCount) * 1000 or similar)"
+    },
+    {
+      "name": "status-code-filtering",
+      "description": "Only retries on 503 and 429, throws/rethrows for other error statuses"
+    },
+    {
+      "name": "http-error-response-distinction",
+      "description": "Service distinguishes network errors (status === 0) from backend errors (status > 0) using HttpErrorResponse"
+    },
+    {
+      "name": "provider-ordering",
+      "description": "Tests use provideHttpClient() before provideHttpClientTesting() in TestBed providers"
+    },
+    {
+      "name": "with-interceptors-in-test",
+      "description": "Interceptor test registers the interceptor via withInterceptors() in TestBed"
+    },
+    {
+      "name": "inject-function",
+      "description": "Uses inject() function for DI, not constructor injection"
+    }
+  ]
+}

@@ -1,0 +1,195 @@
+{
+  "metadata": {
+    "skill_name": "angular-developer",
+    "skill_path": ".claude/skills/angular-developer",
+    "executor_model": "claude-sonnet-4-6",
+    "analyzer_model": "claude-opus-4-6",
+    "timestamp": "2026-03-24T10:20:00Z",
+    "evals_run": [1, 2, 3],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_id": 1,
+      "eval_name": "Axe A11y Testing",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 8,
+        "failed": 0,
+        "total": 8,
+        "time_seconds": 167.5,
+        "tokens": 41826,
+        "tool_calls": 17,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Test file imports and uses axe-core or jest-axe", "passed": true, "evidence": "import axe from 'axe-core' with axe.run() called"},
+        {"text": "Tests render via TestBed and run axe against DOM", "passed": true, "evidence": "TestBed.configureTestingModule + axe.run(fixture.nativeElement)"},
+        {"text": "Tests cover multiple component states", "passed": true, "evidence": "Separate tests for success, error, warning + state transition test"},
+        {"text": "Asserts violations array empty", "passed": true, "evidence": "assertNoViolations() checks violations.length === 0"},
+        {"text": "ESLint config includes a11y rules", "passed": true, "evidence": "8 @angular-eslint/template/accessibility-* rules"},
+        {"text": "Distinguishes axe vs linter", "passed": true, "evidence": "Clear explanation: axe=runtime (contrast, computed ARIA), lint=static (missing alt, empty elements)"},
+        {"text": "Uses OnPush", "passed": true, "evidence": "changeDetection: ChangeDetectionStrategy.OnPush"},
+        {"text": "Uses signal-based input()", "passed": true, "evidence": "input.required<NotificationType>() and input.required<string>()"}
+      ]
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "Axe A11y Testing",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 8,
+        "failed": 0,
+        "total": 8,
+        "time_seconds": 126.3,
+        "tokens": 19211,
+        "tool_calls": 4,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Test file imports and uses axe-core or jest-axe", "passed": true, "evidence": "import axe from 'axe-core' with axe.run()"},
+        {"text": "Tests render via TestBed and run axe against DOM", "passed": true, "evidence": "TestBed + axe.run(fixture.nativeElement)"},
+        {"text": "Tests cover multiple component states", "passed": true, "evidence": "Separate it() blocks for success, error, warning"},
+        {"text": "Asserts violations array empty", "passed": true, "evidence": "expect(violations).toHaveLength(0)"},
+        {"text": "ESLint config includes a11y rules", "passed": true, "evidence": "accessibility-elements-content, accessibility-img-redundant-alt, etc."},
+        {"text": "Distinguishes axe vs linter", "passed": true, "evidence": "Two-table breakdown of runtime vs static capabilities"},
+        {"text": "Uses OnPush", "passed": true, "evidence": "changeDetection: ChangeDetectionStrategy.OnPush"},
+        {"text": "Uses signal-based input()", "passed": true, "evidence": "input.required<NotificationSeverity>() and input.required<string>()"}
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "Modal Focus Trap",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 8,
+        "failed": 0,
+        "total": 8,
+        "time_seconds": 156.5,
+        "tokens": 40685,
+        "tool_calls": 12,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Uses cdkTrapFocus from @angular/cdk/a11y", "passed": true, "evidence": "cdkTrapFocus + cdkTrapFocusAutoCapture from A11yModule"},
+        {"text": "Dialog has role=dialog and aria-modal=true", "passed": true, "evidence": "role: 'dialog', 'aria-modal': 'true' in host object"},
+        {"text": "Focus moves to dialog on open", "passed": true, "evidence": "cdkTrapFocusAutoCapture + cdkFocusInitial on Cancel button"},
+        {"text": "Escape key closes dialog", "passed": true, "evidence": "'(keydown.escape)': 'handleEscape($event)' host binding"},
+        {"text": "Focus returns to trigger on close", "passed": true, "evidence": "document.activeElement captured before open; restoreFocus() after destroy"},
+        {"text": "Background uses inert", "passed": true, "evidence": "setAttribute('inert', '') on all pre-existing <body> children"},
+        {"text": "Uses OnPush", "passed": true, "evidence": "changeDetection: ChangeDetectionStrategy.OnPush"},
+        {"text": "Has aria-labelledby or aria-label", "passed": true, "evidence": "[attr.aria-labelledby]='confirmation-dialog-title' bound to <h2>"}
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "Modal Focus Trap",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 8,
+        "failed": 0,
+        "total": 8,
+        "time_seconds": 102.9,
+        "tokens": 16077,
+        "tool_calls": 2,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Uses cdkTrapFocus from @angular/cdk/a11y", "passed": true, "evidence": "cdkTrapFocus + cdkTrapFocusAutoCapture"},
+        {"text": "Dialog has role=dialog and aria-modal=true", "passed": true, "evidence": "role='dialog' aria-modal='true' on container"},
+        {"text": "Focus moves to dialog on open", "passed": true, "evidence": "cdkTrapFocusAutoCapture moves focus to first focusable"},
+        {"text": "Escape key closes dialog", "passed": true, "evidence": "@HostListener('document:keydown.escape') calls cancel()"},
+        {"text": "Focus returns to trigger on close", "passed": true, "evidence": "trigger.focus() in finalize operator"},
+        {"text": "Background uses inert", "passed": true, "evidence": "inert attribute set on background body children"},
+        {"text": "Uses OnPush", "passed": true, "evidence": "ChangeDetectionStrategy.OnPush set"},
+        {"text": "Has aria-labelledby or aria-label", "passed": true, "evidence": "aria-labelledby points to dialog's <h2> title"}
+      ],
+      "notes": ["Uses deprecated @Input/@Output decorators and @HostListener instead of signal-based input()/output() and host object"]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "HTTP Error Handling",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 8,
+        "failed": 0,
+        "total": 8,
+        "time_seconds": 130.8,
+        "tokens": 32838,
+        "tool_calls": 10,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Typed interface for backend error response", "passed": true, "evidence": "ApiErrorBody with code, message, details fields"},
+        {"text": "Uses HttpInterceptorFn", "passed": true, "evidence": "errorHandlingInterceptor typed as HttpInterceptorFn"},
+        {"text": "Retry logic for 503, 429", "passed": true, "evidence": "RxJS retry() with delay callback gated on isTransientStatus(503/429)"},
+        {"text": "Distinguishes transient vs permanent errors", "passed": true, "evidence": "ErrorHandlingService.classify() returns 'retryable' vs 'fatal'"},
+        {"text": "Custom ErrorHandler reports to analytics", "passed": true, "evidence": "GlobalErrorHandler implements ErrorHandler, calls analytics.trackEvent()"},
+        {"text": "Uses httpResource()", "passed": true, "evidence": "Three httpResource<T>() calls in DashboardComponent"},
+        {"text": "Template uses resource error properties", "passed": true, "evidence": "effect() reads .error() from each resource; template reads errorService.toasts()"},
+        {"text": "provideHttpClient with withInterceptors()", "passed": true, "evidence": "provideHttpClient(withInterceptors([errorHandlingInterceptor])) in app.config.ts"}
+      ]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "HTTP Error Handling",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 8,
+        "failed": 0,
+        "total": 8,
+        "time_seconds": 105.4,
+        "tokens": 16006,
+        "tool_calls": 2,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Typed interface for backend error response", "passed": true, "evidence": "ApiErrorBody with code, message, details fields"},
+        {"text": "Uses HttpInterceptorFn", "passed": true, "evidence": "retryInterceptor typed as HttpInterceptorFn"},
+        {"text": "Retry logic for 503, 429", "passed": true, "evidence": "retry({ count: 3, delay: ... }) targets 503/429 via RETRYABLE_STATUSES"},
+        {"text": "Distinguishes transient vs permanent errors", "passed": true, "evidence": "ErrorClassificationService returns 'retryable' | 'fatal' | 'client'"},
+        {"text": "Custom ErrorHandler reports to analytics", "passed": true, "evidence": "GlobalErrorHandler implements ErrorHandler, calls analytics.trackError()"},
+        {"text": "Uses httpResource()", "passed": true, "evidence": "Three httpResource<T>() calls in resource services"},
+        {"text": "Template uses resource error properties", "passed": true, "evidence": "Template uses resource.isLoading() and classifiedError()"},
+        {"text": "provideHttpClient with withInterceptors()", "passed": true, "evidence": "provideHttpClient(withInterceptors([retryInterceptor])) in app.config.ts"}
+      ]
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0},
+      "time_seconds": {"mean": 151.6, "stddev": 15.5, "min": 130.8, "max": 167.5},
+      "tokens": {"mean": 38450, "stddev": 4014, "min": 32838, "max": 41826}
+    },
+    "without_skill": {
+      "pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0},
+      "time_seconds": {"mean": 111.5, "stddev": 10.3, "min": 102.9, "max": 126.3},
+      "tokens": {"mean": 17098, "stddev": 1462, "min": 16006, "max": 19211}
+    },
+    "delta": {
+      "pass_rate": "+0.00",
+      "time_seconds": "+40.1",
+      "tokens": "+21352"
+    }
+  },
+  "notes": [
+    "All assertions pass 100% in both configurations -- assertions are non-discriminating for this task set. The skill's value must be evaluated qualitatively.",
+    "With-skill runs used ~2.25x more tokens (reading skill references) and took ~36% longer on average.",
+    "Qualitative difference: without-skill eval-2 used deprecated @Input/@Output decorators and @HostListener instead of signal-based APIs and host object -- the skill steered toward modern Angular 21 patterns.",
+    "With-skill eval-1 included ARIA semantics rationale (role='alert' vs role='status' for different severity levels, aria-atomic=true) not present in without-skill output.",
+    "With-skill eval-3 referenced resource() error behavior (errors not forwarded to ErrorHandler) from the skill's error-handling.md -- without-skill also documented this but from general knowledge.",
+    "The skill's current accessibility.md has NO testing guidance -- yet both with-skill and without-skill produced correct axe-core patterns, meaning the skill didn't help here. This confirms the identified gap."
+  ]
+}

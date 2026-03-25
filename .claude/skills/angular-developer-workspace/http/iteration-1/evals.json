@@ -1,0 +1,23 @@
+{
+  "skill_name": "angular-developer",
+  "evals": [
+    {
+      "id": 0,
+      "name": "http-error-retry-interceptor",
+      "prompt": "Create an Angular 21 service called `ApiService` that wraps HttpClient to fetch products from `/api/products`. It should:\n1. Return typed `Product[]` responses (interface with id, name, price, category)\n2. Include a retry interceptor that retries 503 and 429 errors with exponential backoff (max 3 retries)\n3. The retry interceptor should use an `HttpContextToken` called `RETRY_COUNT` so callers can override the retry count per-request\n4. Handle errors by distinguishing network errors (status 0) from backend errors (4xx/5xx) in the service\n5. Include complete unit tests for both the service and the interceptor using HttpTestingController\n6. The test should verify: successful fetch, backend error handling (404), network error handling, and that the retry interceptor retries on 503\n\nUse standalone components, inject(), provideHttpClient with withFetch and withInterceptors. Follow Angular 21 best practices.",
+      "expected_output": "Service with typed HttpClient calls, functional retry interceptor with HttpContextToken, HttpErrorResponse handling distinguishing status 0 vs 4xx/5xx, and comprehensive tests with provideHttpClientTesting"
+    },
+    {
+      "id": 1,
+      "name": "httpresource-zod-validation",
+      "prompt": "Build an Angular 21 component called `UserProfileComponent` that uses `httpResource` with Zod validation to fetch user data from `/api/users/:id`. Requirements:\n1. The user ID comes from a signal input\n2. Define a Zod schema for the user (name: string, email: email, role: enum admin/editor/viewer, lastLogin: datetime string)\n3. Use httpResource with the `parse` option for runtime validation\n4. Display loading, error, and success states in the template using @if/@else\n5. Guard .value() reads with .hasValue() to prevent runtime errors in error state\n6. Write unit tests using HttpTestingController that test: successful fetch with valid data, handling of invalid data (Zod parse failure), and re-fetching when the userId signal changes. Use TestBed.tick() and ApplicationRef.whenStable() for httpResource testing.\n\nFollow Angular 21 conventions: OnPush, signals, standalone.",
+      "expected_output": "Component with httpResource + Zod parse, proper hasValue guard, signal input for reactive re-fetching, and tests using TestBed.tick() + whenStable() pattern"
+    },
+    {
+      "id": 2,
+      "name": "auth-interceptor-context-testing",
+      "prompt": "Create an Angular 21 authentication interceptor system with these requirements:\n1. A functional `authInterceptor` that adds Bearer token from an `AuthService`\n2. An `HttpContextToken` called `SKIP_AUTH` (default false) so public endpoints can skip the auth header\n3. A `loggingInterceptor` that logs request method, URL, and response status\n4. Configure both interceptors with provideHttpClient(withInterceptors([...]))\n5. Write a `ProtectedApiService` that uses HttpClient to call both authenticated (`/api/protected/data`) and public (`/api/public/health`) endpoints. The public endpoint should set SKIP_AUTH to true.\n6. Write comprehensive tests that verify:\n   - The auth interceptor adds the Authorization header for protected routes\n   - The auth interceptor skips the header when SKIP_AUTH is set\n   - Both interceptors are tested in isolation using provideHttpClientTesting\n   - Provider ordering: provideHttpClient() before provideHttpClientTesting()\n\nUse inject() for DI, functional interceptors only, Angular 21 patterns.",
+      "expected_output": "Auth interceptor with HttpContextToken, logging interceptor, service with context-aware requests, and tests verifying header presence/absence with provideHttpClientTesting"
+    }
+  ]
+}

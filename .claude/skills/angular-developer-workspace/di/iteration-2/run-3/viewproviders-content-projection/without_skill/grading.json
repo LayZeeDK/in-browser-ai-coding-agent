@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "Uses viewProviders array in the form wrapper component",
+      "passed": true,
+      "evidence": "Found viewProviders"
+    },
+    {
+      "text": "Uses ng-content for content projection",
+      "passed": true,
+      "evidence": "Found ng-content"
+    },
+    {
+      "text": "FormStateService is injectable",
+      "passed": true,
+      "evidence": "Found FormState service"
+    },
+    {
+      "text": "Projected content uses inject() with { optional: true }",
+      "passed": false,
+      "evidence": "No optional injection"
+    },
+    {
+      "text": "Explains #VIEW boundary or viewProviders isolation from projected content",
+      "passed": true,
+      "evidence": "Explains projection isolation"
+    },
+    {
+      "text": "Components use ChangeDetectionStrategy.OnPush",
+      "passed": true,
+      "evidence": "Found OnPush"
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 1,
+    "total": 6,
+    "pass_rate": 0.83
+  }
+}

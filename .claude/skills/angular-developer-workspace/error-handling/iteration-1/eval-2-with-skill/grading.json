@@ -1,0 +1,52 @@
+{
+  "eval_id": 2,
+  "eval_name": "error-boundary-retry-ux",
+  "expectations": [
+    {
+      "text": "httpresource-error-not-errorhandler",
+      "passed": true,
+      "evidence": "data-panel.component.ts JSDoc: 'httpResource errors are exposed via .error() signal and do NOT reach the global ErrorHandler.' Also global-error-handler.ts: 'Does NOT catch: httpResource errors (exposed via .error() signal instead)'"
+    },
+    {
+      "text": "httpresource-reload-pattern",
+      "passed": true,
+      "evidence": "data-panel.component.ts: retry button '(click)=\"reload()\"' calls 'protected reload(): void { this.panelData.reload(); }'"
+    },
+    {
+      "text": "error-signal-display",
+      "passed": true,
+      "evidence": "data-panel.component.ts template: '@else if (panelData.error())' branch displays '{{ errorMessage() }}' which reads 'this.panelData.error()'. No ErrorHandler or error boundary involved."
+    },
+    {
+      "text": "retry-interceptor-exponential",
+      "passed": true,
+      "evidence": "retry.interceptor.ts: 'delay: (error, retryCount) => { if (error instanceof HttpErrorResponse && error.status === 503) { return timer(Math.pow(2, retryCount) * 1000); } }' \u00e2\u20ac\u201d exponential backoff for 503"
+    },
+    {
+      "text": "http-context-token-opt-out",
+      "passed": true,
+      "evidence": "retry.interceptor.ts: 'export const SKIP_RETRY = new HttpContextToken<boolean>(() => false)' with 'if (req.context.get(SKIP_RETRY)) { return next(req); }'"
+    },
+    {
+      "text": "errorhandler-for-component-errors",
+      "passed": true,
+      "evidence": "global-error-handler.ts JSDoc: 'Catches errors from: Component constructors and lifecycle hooks, Template event handlers, AsyncPipe observable/promise errors, PendingTasks.run failures'"
+    },
+    {
+      "text": "test-errorhandler-bypass",
+      "passed": true,
+      "evidence": "global-error-handler.spec.ts Suite 'GlobalErrorHandler \u00e2\u20ac\u201d httpResource errors bypass ErrorHandler': 'expect(analyticsStub.trackEvent).not.toHaveBeenCalled()' after httpResource 500 error. Suite 'GlobalErrorHandler': 'expect(analyticsStub.trackEvent).toHaveBeenCalledOnce()' when ThrowingChildComponent's ngOnInit throws. Both directions covered."
+    },
+    {
+      "text": "onpush-and-signals",
+      "passed": true,
+      "evidence": "data-panel.component.ts: 'changeDetection: ChangeDetectionStrategy.OnPush', uses input() signal and httpResource reactive state. error-boundary.component.ts: 'changeDetection: ChangeDetectionStrategy.OnPush', uses inject() and service signals."
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "pass_rate": 1.0
+  }
+}

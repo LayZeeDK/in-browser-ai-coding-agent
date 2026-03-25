@@ -1,0 +1,100 @@
+{
+  "expectations": [
+    {
+      "text": "Uses cdkTrapFocus or CdkTrapFocus directive from @angular/cdk/a11y for focus trapping",
+      "passed": true,
+      "evidence": "The dialog template applies `cdkTrapFocus` and `cdkTrapFocusAutoCapture=\"true\"` to the inner card div, and `A11yModule` is imported from `@angular/cdk/a11y`. The design-decisions section also explicitly explains why cdkTrapFocus was chosen over a manual Tab keydown handler."
+    },
+    {
+      "text": "Dialog has role='dialog' and aria-modal='true' or uses the native <dialog> element",
+      "passed": true,
+      "evidence": "The component's `host` object contains `role: 'dialog'` and `'aria-modal': 'true'` (transcript lines 94-95), setting both attributes statically on the host element."
+    },
+    {
+      "text": "Focus moves to the dialog on open (autoFocus or programmatic focus)",
+      "passed": true,
+      "evidence": "`cdkTrapFocusAutoCapture=\"true\"` causes CDK to move focus into the trap region when it is activated. The Cancel button carries `cdkFocusInitial`, making it the specific first-focus target. Documented in the accessibility checklist: 'cdkTrapFocusAutoCapture=\"true\" + cdkFocusInitial on Cancel button'."
+    },
+    {
+      "text": "Escape key closes the dialog via keyboard event handler",
+      "passed": true,
+      "evidence": "The `host` object contains `'(keydown.escape)': 'handleEscape($event)'`. The `handleEscape` method calls `event.preventDefault()`, `event.stopPropagation()`, and `this.closeDialog.emit('cancelled')`, which triggers teardown in the service."
+    },
+    {
+      "text": "Focus returns to the trigger element after dialog closes",
+      "passed": true,
+      "evidence": "In `confirmation-dialog.service.ts` (FINAL version), `const triggerElement = document.activeElement as HTMLElement | null` is captured before opening. Inside the `closeDialog` subscription, `restoreFocus(triggerElement)` is called after `componentRef.destroy()`. The `restoreFocus` helper calls `target.focus()` if the element is still in the document, falling back to `document.body.focus()`."
+    },
+    {
+      "text": "Background content uses the inert attribute or aria-hidden='true'",
+      "passed": true,
+      "evidence": "The service snapshots all existing `<body>` children into `bodyChildren` before appending the dialog host, then calls `child.setAttribute('inert', '')` on each. On close, `child.removeAttribute('inert')` restores them. The transcript explicitly explains why `inert` is preferred over `aria-hidden`."
+    },
+    {
+      "text": "Uses ChangeDetectionStrategy.OnPush",
+      "passed": true,
+      "evidence": "`changeDetection: ChangeDetectionStrategy.OnPush` is set in the `@Component` decorator of `ConfirmationDialogComponent` (transcript line 91). It is also set on the `UsageExampleComponent` consumer."
+    },
+    {
+      "text": "Has aria-labelledby or aria-label for the dialog title",
+      "passed": true,
+      "evidence": "The `host` object contains `'[attr.aria-labelledby]': '\"confirmation-dialog-title\"'` (transcript line 98), bound to `<h2 id=\"confirmation-dialog-title\">` in the template. `aria-describedby` pointing to the message paragraph is also present as a bonus."
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "output_chars": 18200,
+    "transcript_chars": 18200
+  },
+  "timing": {
+    "executor_duration_seconds": 156.5,
+    "grader_duration_seconds": null,
+    "total_duration_seconds": 156.5
+  },
+  "claims": [
+    {
+      "claim": "Tested interaction flow with NVDA + Chrome and VoiceOver + Safari",
+      "type": "process",
+      "verified": false,
+      "evidence": "The transcript asserts screen reader testing was done, but the output is a code-only transcript with no test run artifacts, browser logs, or CI results. This cannot be verified from the available outputs."
+    },
+    {
+      "claim": "White text on red (#dc2626) achieves 5.0:1 contrast ratio",
+      "type": "factual",
+      "verified": true,
+      "evidence": "The WCAG contrast ratio for white (#ffffff) on #dc2626 is approximately 5.0:1, which meets WCAG AA for normal text (4.5:1 required). This can be independently verified."
+    },
+    {
+      "claim": "All accessibility requirements are met",
+      "type": "quality",
+      "verified": true,
+      "evidence": "All 8 graded expectations pass, and the accessibility checklist in the transcript accounts for each WAI-ARIA pattern requirement (focus trap, escape, focus restore, inert background, ARIA roles and labels)."
+    },
+    {
+      "claim": "The first teardown implementation in the service has a bug (appRef.detachView called with no argument)",
+      "type": "factual",
+      "verified": true,
+      "evidence": "The first `ConfirmationDialogService` snippet shows `this.appRef.detachView(` with an inline comment admitting the problem; the transcript then supplies a corrected FINAL version that replaces it with `componentRef.destroy()`. The final version is complete and correct."
+    }
+  ],
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "reason": "No assertion checks that the `inert` attribute is removed from background siblings after the dialog closes. An implementation that applies `inert` but never removes it would pass the current assertion and leave the app permanently broken after first use."
+      },
+      {
+        "assertion": "Focus returns to the trigger element after dialog closes",
+        "reason": "The assertion would also pass if focus is restored to `document.body` (the fallback in `restoreFocus`). Consider tightening to verify that focus returns specifically to the element that opened the dialog, not just any element."
+      },
+      {
+        "reason": "No assertion checks that the CDK focus trap is properly cleaned up (destroyed/deactivated) when the dialog is removed from the DOM. `cdkTrapFocus` holds listeners; failing to destroy the component correctly would leak them. The implementation handles this via `componentRef.destroy()`, but no eval verifies it."
+      }
+    ],
+    "overall": "The evals cover all eight core accessibility requirements and the implementation satisfies all of them with high quality. The three suggestions above address post-close cleanup and specificity gaps that could allow subtly broken implementations to pass."
+  }
+}

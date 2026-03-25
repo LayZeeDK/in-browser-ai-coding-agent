@@ -1,0 +1,46 @@
+{
+  "eval_id": 0,
+  "eval_name": "http-error-retry-interceptor",
+  "expectations": [
+    {
+      "text": "functional-interceptor-signature",
+      "passed": true,
+      "evidence": "retry.interceptor.ts line 8: 'export const retryInterceptor: HttpInterceptorFn = (req, next) =>'"
+    },
+    {
+      "text": "http-context-token-usage",
+      "passed": true,
+      "evidence": "retry.interceptor.ts line 4: 'export const RETRY_COUNT = new HttpContextToken<number>(() => 3)' and line 9: 'req.context.get(RETRY_COUNT)'"
+    },
+    {
+      "text": "exponential-backoff-pattern",
+      "passed": true,
+      "evidence": "retry.interceptor.ts line 16: 'return timer(Math.pow(2, retryIndex) * 1000)' inside retry({ delay: ... })"
+    },
+    {
+      "text": "status-code-filtering",
+      "passed": true,
+      "evidence": "retry.interceptor.ts: 'RETRYABLE_STATUSES = [503, 429]' checked via .includes(); non-matching errors reach 'throw error'"
+    },
+    {
+      "text": "http-error-response-distinction",
+      "passed": true,
+      "evidence": "api.service.ts lines 13-18: 'if (error.status === 0)' -> network error; else -> 'Backend error ${error.status}'"
+    },
+    {
+      "text": "provider-ordering",
+      "passed": true,
+      "evidence": "api.service.spec.ts lines 21-23: provideHttpClient(withInterceptors([retryInterceptor])) before provideHttpClientTesting()"
+    },
+    {
+      "text": "with-interceptors-in-test",
+      "passed": true,
+      "evidence": "api.service.spec.ts lines 21, 72: provideHttpClient(withInterceptors([retryInterceptor])) in both describe blocks"
+    },
+    {
+      "text": "inject-function",
+      "passed": true,
+      "evidence": "api.service.ts line 8: 'private readonly http = inject(HttpClient)'"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "eval_id": 0,
+  "eval_name": "animate-leave-event-binding",
+  "configuration": "without_skill",
+  "expectations": [
+    {
+      "text": "uses_animate_leave_event",
+      "passed": false,
+      "evidence": "Uses `(@leave.start)=\"onLeaveAnimationStart($event)\"` trigger syntax, not `(animate.leave)=`"
+    },
+    {
+      "text": "imports_animation_callback_event",
+      "passed": false,
+      "evidence": "Uses `AnimationEvent` type (no import shown, cast via `as unknown`), not `AnimationCallbackEvent` from `@angular/core`"
+    },
+    {
+      "text": "calls_animation_complete",
+      "passed": false,
+      "evidence": "No call to `event.animationComplete()`; relies on Angular trigger duration for DOM removal"
+    },
+    {
+      "text": "no_legacy_dsl",
+      "passed": false,
+      "evidence": "Imports `animate, style, transition, trigger` from `@angular/animations`"
+    },
+    {
+      "text": "js_animation_in_handler",
+      "passed": true,
+      "evidence": "Uses Web Animations API `panel.animate()` with keyframes in `runLeaveAnimation()`"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "expectations": [
+    {"text": "Harness class extends ComponentHarness from @angular/cdk/testing", "passed": true, "evidence": "Harness file extends ComponentHarness from @angular/cdk/testing"},
+    {"text": "Declares static hostSelector matching the component selector", "passed": true, "evidence": "static hostSelector = 'app-date-range-picker'"},
+    {"text": "Uses this.locatorFor() or this.locatorForOptional() to find child elements", "passed": true, "evidence": "Uses locatorFor and locatorForOptional for DOM elements. However, produces TS errors: 'Property locatorFor does not exist on type DateRangePickerHarness'"},
+    {"text": "Returns TestElement instances and uses their API (sendKeys, clear, click, text, getProperty, getAttribute)", "passed": true, "evidence": "Uses sendKeys, clear, click, getProperty, dispatchEvent on TestElement instances"},
+    {"text": "Includes a static with() method that returns a HarnessPredicate for filtering", "passed": true, "evidence": "Includes static with(filters) returning HarnessPredicate"},
+    {"text": "Tests use TestbedHarnessEnvironment.loader(fixture) to create a HarnessLoader", "passed": true, "evidence": "Uses TestbedHarnessEnvironment.loader(fixture)"},
+    {"text": "Tests use loader.getHarness(DateRangePickerHarness) to get the harness instance", "passed": true, "evidence": "Uses loader.getHarness(DateRangePickerHarness)"},
+    {"text": "Tests verify validation error display through the harness API", "passed": true, "evidence": "Tests call hasValidationError() and check error text through harness"}
+  ],
+  "summary": {"passed": 8, "failed": 0, "total": 8, "pass_rate": 1.0},
+  "eval_feedback": {
+    "suggestions": [
+      {"reason": "Both with-skill and without-skill produce similar harness quality. The TS errors in without-skill are due to missing CDK types, not harness logic. The eval assertions don't differentiate well enough here — consider adding assertions about code quality or compile-correctness."},
+      {"reason": "Missing describe/it/expect imports in without-skill spec causes TS errors, showing less Vitest awareness"}
+    ],
+    "overall": "Harness eval 5 doesn't discriminate well between skill/no-skill. Both models have solid CDK knowledge."
+  }
+}

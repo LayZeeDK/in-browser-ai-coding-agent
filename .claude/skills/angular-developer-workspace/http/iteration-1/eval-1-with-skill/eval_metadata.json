@@ -1,0 +1,39 @@
+{
+  "eval_id": 1,
+  "eval_name": "httpresource-zod-validation",
+  "prompt": "Build Angular 21 UserProfileComponent with httpResource, Zod validation, and HttpTestingController tests",
+  "assertions": [
+    {
+      "name": "httpresource-with-parse",
+      "description": "Uses httpResource() with parse option set to Zod schema.parse"
+    },
+    {
+      "name": "has-value-guard",
+      "description": "Guards .value() reads with .hasValue() in template to prevent runtime throw in error state"
+    },
+    {
+      "name": "error-signal-usage",
+      "description": "Uses .error() signal for error state display, not try/catch"
+    },
+    {
+      "name": "signal-input-reactive",
+      "description": "userId is a signal input (input() or input.required()) driving reactive re-fetch"
+    },
+    {
+      "name": "testbed-tick-pattern",
+      "description": "Tests use TestBed.tick() to trigger the httpResource effect"
+    },
+    {
+      "name": "when-stable-pattern",
+      "description": "Tests use ApplicationRef.whenStable() (or equivalent) to await value propagation"
+    },
+    {
+      "name": "onpush-change-detection",
+      "description": "Component uses ChangeDetectionStrategy.OnPush"
+    },
+    {
+      "name": "zod-schema-definition",
+      "description": "Defines a proper Zod schema with z.object(), z.string(), z.enum(), z.string().email()"
+    }
+  ]
+}

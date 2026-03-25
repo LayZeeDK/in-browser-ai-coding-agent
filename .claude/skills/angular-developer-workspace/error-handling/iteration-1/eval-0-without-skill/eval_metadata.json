@@ -1,0 +1,39 @@
+{
+  "eval_id": 0,
+  "eval_name": "global-error-handler-analytics",
+  "prompt": "Create GlobalErrorHandler with AnalyticsService, provideBrowserGlobalErrorListeners, and tests with rethrowApplicationErrors",
+  "assertions": [
+    {
+      "name": "error-handler-implements-interface",
+      "description": "GlobalErrorHandler class implements ErrorHandler interface with handleError(error: unknown) method"
+    },
+    {
+      "name": "inject-router-for-url",
+      "description": "Uses inject(Router) to get current URL for error context, not constructor injection"
+    },
+    {
+      "name": "provide-browser-global-listeners",
+      "description": "App config includes provideBrowserGlobalErrorListeners() in providers"
+    },
+    {
+      "name": "rethrow-application-errors-false",
+      "description": "Tests use TestBed.configureTestingModule({ rethrowApplicationErrors: false })"
+    },
+    {
+      "name": "error-handler-provider",
+      "description": "App config provides ErrorHandler via { provide: ErrorHandler, useClass: GlobalErrorHandler }"
+    },
+    {
+      "name": "catch-no-catch-documentation",
+      "description": "Comments explain Angular catches: component lifecycle, template events, AsyncPipe, PendingTasks.run; does NOT catch: service methods, resource() errors"
+    },
+    {
+      "name": "analytics-service-injectable",
+      "description": "AnalyticsService is @Injectable with providedIn: 'root'"
+    },
+    {
+      "name": "inject-function-usage",
+      "description": "Uses inject() function for DI throughout, not constructor injection"
+    }
+  ]
+}

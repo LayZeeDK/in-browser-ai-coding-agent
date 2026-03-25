@@ -1,0 +1,101 @@
+{
+  "skill_name": "angular-developer",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "I'm building an Angular 21 app with a confirmation dialog component. When the user clicks 'confirm' or 'cancel', I want to run a custom JavaScript animation (using GSAP or the Web Animations API) to animate the dialog out -- scale it down and fade it. Only after the JS animation finishes should Angular remove the dialog element from the DOM. I need to use Angular's native animation event binding system (the animate.leave event, not the legacy @angular/animations DSL). Show me the dialog component with the leave event binding, the animation callback handler, and how to properly signal Angular that the animation is complete.",
+      "expected_output": "Component using (animate.leave)='onLeave($event)' event binding. Handler receives AnimationCallbackEvent from @angular/core. Handler runs GSAP/WAAPI animation then calls event.animationComplete() to signal Angular to remove the element. Must NOT use @angular/animations DSL.",
+      "assertions": [
+        {
+          "name": "uses_animate_leave_event",
+          "description": "Uses (animate.leave) event binding syntax",
+          "check": "Output contains (animate.leave)= event binding on the dialog element"
+        },
+        {
+          "name": "imports_animation_callback_event",
+          "description": "Imports AnimationCallbackEvent from @angular/core",
+          "check": "Output imports AnimationCallbackEvent from @angular/core"
+        },
+        {
+          "name": "calls_animation_complete",
+          "description": "Calls event.animationComplete() in the handler",
+          "check": "The leave handler calls animationComplete() on the event to signal DOM removal"
+        },
+        {
+          "name": "no_legacy_dsl",
+          "description": "Does not use @angular/animations DSL",
+          "check": "Output does NOT import trigger/transition/animate/style from @angular/animations"
+        },
+        {
+          "name": "js_animation_in_handler",
+          "description": "Runs JS animation (GSAP or WAAPI) inside the handler",
+          "check": "The handler contains GSAP (gsap.to/gsap.fromTo) or element.animate() Web Animations API calls"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "I have an Angular 21 app with a list of items that can be added and removed. I want to animate items entering and leaving the list with staggered transitions using the native CSS animation system (animate.enter and animate.leave). Each item should fade in and slide up when added, and fade out and slide down when removed. Items should stagger so they don't all animate at once. Show me the complete component with template, styles, and TypeScript.",
+      "expected_output": "Component using @for with animate.enter and animate.leave on each item. CSS keyframe animations for enter (fade-in + slide-up) and leave (fade-out + slide-down). Stagger effect using animation-delay with index. Complete working component.",
+      "assertions": [
+        {
+          "name": "uses_animate_enter",
+          "description": "Uses animate.enter for entering items",
+          "check": "Output contains animate.enter attribute on list item elements"
+        },
+        {
+          "name": "uses_animate_leave",
+          "description": "Uses animate.leave for leaving items",
+          "check": "Output contains animate.leave attribute on list item elements"
+        },
+        {
+          "name": "css_keyframes",
+          "description": "Defines CSS keyframe animations",
+          "check": "Output contains @keyframes definitions for enter and leave animations"
+        },
+        {
+          "name": "stagger_effect",
+          "description": "Implements staggered animation timing",
+          "check": "Output includes animation-delay varying per item index or a stagger mechanism"
+        },
+        {
+          "name": "uses_for_control_flow",
+          "description": "Uses @for native control flow",
+          "check": "Output uses @for (not *ngFor) for list rendering"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm building an Angular 21 FAQ page with collapsible accordion panels. When a panel opens, it should smoothly animate from zero height to its natural content height using the CSS grid auto-height animation trick. When the panel is about to be removed from the DOM entirely (e.g., filtering FAQ items), it should use animate.leave to fade out. Show me a complete accordion-item component that combines the CSS grid height transition with animate.leave for removal, including the template, styles, and TypeScript.",
+      "expected_output": "Component using CSS grid-template-rows: 0fr/1fr transition for expand/collapse, plus animate.leave for DOM removal animation. The grid trick handles dynamic content height without JS measurement. animate.leave handles the removal case separately.",
+      "assertions": [
+        {
+          "name": "css_grid_auto_height",
+          "description": "Uses CSS grid-template-rows 0fr/1fr for auto-height animation",
+          "check": "Output contains grid-template-rows with 0fr and 1fr values and a transition on grid-template-rows"
+        },
+        {
+          "name": "overflow_hidden_on_child",
+          "description": "Sets overflow: hidden on the grid child",
+          "check": "Output contains overflow: hidden on the content element inside the grid container"
+        },
+        {
+          "name": "uses_animate_leave",
+          "description": "Uses animate.leave for DOM removal",
+          "check": "Output contains animate.leave attribute for when the panel is removed from DOM"
+        },
+        {
+          "name": "toggle_via_class_binding",
+          "description": "Toggles open/closed state via class or style binding",
+          "check": "Output uses [class.open] or similar binding to toggle the grid-template-rows value"
+        },
+        {
+          "name": "no_legacy_dsl",
+          "description": "Does not use @angular/animations DSL",
+          "check": "Output does NOT import trigger/transition/animate/style from @angular/animations"
+        }
+      ]
+    }
+  ]
+}

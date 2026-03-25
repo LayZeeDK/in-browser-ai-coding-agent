@@ -1,0 +1,91 @@
+{
+  "expectations": [
+    {
+      "text": "Uses cdkTrapFocus or CdkTrapFocus directive from @angular/cdk/a11y for focus trapping",
+      "passed": false,
+      "evidence": "The response imports FocusTrapFactory and FocusTrap from @angular/cdk/a11y and uses the programmatic API (focusTrapFactory.create(panel)), but never uses the cdkTrapFocus attribute directive or the CdkTrapFocus directive. The assertion specifically requires the directive form."
+    },
+    {
+      "text": "Dialog has role='dialog' and aria-modal='true' or uses the native <dialog> element",
+      "passed": true,
+      "evidence": "ConfirmationDialogComponent host object sets role: 'dialog' and 'aria-modal': 'true' directly on the host element."
+    },
+    {
+      "text": "Focus moves to the dialog on open (autoFocus or programmatic focus)",
+      "passed": true,
+      "evidence": "ngOnInit defers a microtask then calls this.focusTrap.focusInitialElementWhenReady(). The confirm button also carries cdkFocusInitial to designate the initial focus target."
+    },
+    {
+      "text": "Escape key closes the dialog via keyboard event handler",
+      "passed": true,
+      "evidence": "Host binding '(keydown.escape)': 'onEscape($event)' is declared on the component. onEscape calls event.preventDefault() and emits cancelled, which the service handles by closing the overlay."
+    },
+    {
+      "text": "Focus returns to the trigger element after dialog closes",
+      "passed": true,
+      "evidence": "Service captures document.activeElement as triggerElement before attaching the portal. The close() method calls requestAnimationFrame(() => triggerElement.focus()) after overlayRef.dispose()."
+    },
+    {
+      "text": "Background content uses the inert attribute or aria-hidden='true'",
+      "passed": true,
+      "evidence": "applyInert() collects all siblings of .cdk-overlay-container and calls el.setAttribute('inert', '') on each. removeInert() cleans them up on close."
+    },
+    {
+      "text": "Uses ChangeDetectionStrategy.OnPush",
+      "passed": true,
+      "evidence": "ConfirmationDialogComponent decorator includes changeDetection: ChangeDetectionStrategy.OnPush. The usage example DeleteFileComponent also uses OnPush."
+    },
+    {
+      "text": "Has aria-labelledby or aria-label for the dialog title",
+      "passed": true,
+      "evidence": "Host binding '[attr.aria-labelledby]': '\"confirmation-dialog-title\"' links the host element to <h2 id=\"confirmation-dialog-title\"> in the template. aria-describedby is also provided for the message paragraph."
+    }
+  ],
+  "summary": {
+    "passed": 7,
+    "failed": 1,
+    "total": 8,
+    "pass_rate": 0.875
+  },
+  "execution_metrics": {
+    "tool_calls": {},
+    "total_tool_calls": 0,
+    "total_steps": 0,
+    "errors_encountered": 0,
+    "output_chars": 16204,
+    "transcript_chars": 16204
+  },
+  "timing": null,
+  "claims": [
+    {
+      "claim": "Background content is inert via OverlayRef host element",
+      "type": "process",
+      "verified": true,
+      "evidence": "applyInert() is called on the OverlayRef before attaching the portal and targets all siblings of .cdk-overlay-container, confirmed in both the initial and refactored service implementations."
+    },
+    {
+      "claim": "FocusTrap.focusInitialElementWhenReady honours cdkFocusInitial and falls back to first tabbable element",
+      "type": "factual",
+      "verified": true,
+      "evidence": "This is standard Angular CDK FocusTrap behavior; the code correctly uses focusInitialElementWhenReady() together with cdkFocusInitial on the confirm button."
+    },
+    {
+      "claim": "The refactored service is production-ready",
+      "type": "quality",
+      "verified": false,
+      "evidence": "The refactored service has a leftover dead subscribe block with a comment saying 'But we need to distinguish them' and an empty next handler, indicating incomplete cleanup before publishing."
+    }
+  ],
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "Uses cdkTrapFocus or CdkTrapFocus directive from @angular/cdk/a11y for focus trapping",
+        "reason": "The assertion is unnecessarily restrictive by requiring the directive form. Both the cdkTrapFocus directive and the programmatic FocusTrapFactory are official Angular CDK APIs from the same module that achieve the same result. The real outcome being tested is 'focus is trapped inside the dialog using CDK'. Consider rewording to 'Uses Angular CDK a11y (cdkTrapFocus directive or FocusTrapFactory) for focus trapping' to avoid penalizing a functionally correct and arguably more precise implementation."
+      },
+      {
+        "reason": "No assertion checks that Tab/Shift+Tab cycling is actually constrained to the dialog. The current assertions confirm CDK is imported and focus moves in, but not that the trap boundary prevents escaping the dialog via keyboard."
+      }
+    ],
+    "overall": "The single failing assertion tests implementation style (directive vs. programmatic API) rather than the accessibility outcome. The response is otherwise thorough and correct. Consider broadening assertion 1 to cover the programmatic FocusTrapFactory path."
+  }
+}

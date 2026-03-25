@@ -1,0 +1,15 @@
+{
+  "eval_id": 3,
+  "eval_name": "http-error-handling",
+  "prompt": "I'm building an Angular 21 dashboard that fetches data from three different REST APIs (users, orders, analytics). I need a robust error handling strategy. For HTTP errors, I want: typed error responses from the backend (the API returns { code: string, message: string, details?: Record<string, string> }), retry logic for transient failures (503, 429), user-facing error messages that distinguish between 'try again' errors and 'contact support' errors, and a global error handler that sends errors to our analytics service. Show me the interceptor, the error handling service, and how a component consumes it. Use httpResource where it makes sense.",
+  "assertions": [
+    "Defines a typed interface for the backend error response (code, message, details)",
+    "Uses HttpInterceptorFn or functional interceptor (not class-based HttpInterceptor)",
+    "Implements retry logic for specific HTTP status codes (503, 429) using RxJS retry/retryWhen",
+    "Distinguishes transient (retryable) errors from permanent errors in the error service",
+    "Custom ErrorHandler class extends or implements ErrorHandler and reports to analytics",
+    "Component uses httpResource() or resource() for at least one API call",
+    "Error states in the component template use resource status/error properties or catchError patterns",
+    "Uses provideHttpClient with withInterceptors() in the app config"
+  ]
+}

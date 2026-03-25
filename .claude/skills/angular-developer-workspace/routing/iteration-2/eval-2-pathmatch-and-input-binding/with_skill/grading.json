@@ -1,0 +1,11 @@
+{
+  "expectations": [
+    {"text": "Explains that pathMatch 'prefix' (default) matches any URL starting with empty string, causing the redirect-everything bug", "passed": true, "evidence": "Empty string is a prefix of every URL explanation"},
+    {"text": "Fixes the redirect by adding pathMatch: 'full' to the empty-path route", "passed": true, "evidence": "pathMatch: 'full' on empty redirect route"},
+    {"text": "Configures provideRouter with withComponentInputBinding() feature", "passed": true, "evidence": "withComponentInputBinding() in provideRouter"},
+    {"text": "Shows a component using input() or input.required() to receive a route parameter", "passed": true, "evidence": "input.required<string>() for :id route param"},
+    {"text": "Shows a component using input() or input.required() to receive resolved data", "passed": true, "evidence": "input.required<User>() for resolved user data"},
+    {"text": "The resolver is a functional ResolveFn, not class-based", "passed": true, "evidence": "ResolveFn<User> functional resolver"}
+  ],
+  "summary": {"passed": 6, "failed": 0, "total": 6, "pass_rate": 1.0}
+}

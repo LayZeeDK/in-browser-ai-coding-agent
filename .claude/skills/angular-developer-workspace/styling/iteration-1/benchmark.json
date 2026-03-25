@@ -1,0 +1,106 @@
+{
+  "skill_name": "angular-developer",
+  "iteration": 1,
+  "focus": "Styling & Animations",
+  "configurations": [
+    {
+      "name": "with_skill",
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0
+      },
+      "time": {
+        "mean_seconds": 118.0,
+        "stddev_seconds": 17.1
+      },
+      "tokens": {
+        "mean": 31747,
+        "stddev": 6912
+      }
+    },
+    {
+      "name": "without_skill",
+      "pass_rate": {
+        "mean": 0.80,
+        "stddev": 0.35
+      },
+      "time": {
+        "mean_seconds": 81.3,
+        "stddev_seconds": 10.1
+      },
+      "tokens": {
+        "mean": 17004,
+        "stddev": 771
+      }
+    }
+  ],
+  "delta": {
+    "pass_rate": "+20.0%",
+    "time": "+36.7s (slower due to reading references)",
+    "tokens": "+14743 (reference file reads)"
+  },
+  "per_eval": [
+    {
+      "eval_name": "css-theming-with-custom-properties",
+      "with_skill": {
+        "pass_rate": 1.0,
+        "passed": ["uses_css_custom_properties", "no_ng_deep", "runtime_theme_switching", "works_with_emulated_encapsulation", "child_component_consumption"],
+        "failed": [],
+        "time_seconds": 115.1,
+        "tokens": 24514
+      },
+      "without_skill": {
+        "pass_rate": 1.0,
+        "passed": ["uses_css_custom_properties", "no_ng_deep", "runtime_theme_switching", "works_with_emulated_encapsulation", "child_component_consumption"],
+        "failed": [],
+        "time_seconds": 86.5,
+        "tokens": 17172
+      },
+      "notes": "Non-discriminating: both configurations pass all assertions. CSS custom properties are well-known enough that the model handles this without skill guidance. Qualitative difference: with-skill version uses host bindings (idiomatic Angular) while without-skill uses Renderer2 + effect (more imperative)."
+    },
+    {
+      "eval_name": "tailwind-dark-mode",
+      "with_skill": {
+        "pass_rate": 1.0,
+        "passed": ["no_tailwind_config_js", "uses_v4_dark_mode", "os_preference_detection", "manual_toggle", "uses_signals"],
+        "failed": [],
+        "time_seconds": 139.8,
+        "tokens": 41177
+      },
+      "without_skill": {
+        "pass_rate": 1.0,
+        "passed": ["no_tailwind_config_js", "uses_v4_dark_mode", "os_preference_detection", "manual_toggle", "uses_signals"],
+        "failed": [],
+        "time_seconds": 68.3,
+        "tokens": 15985
+      },
+      "notes": "Non-discriminating: both configurations pass all assertions. Tailwind v4 dark mode is within the model's knowledge. Qualitative difference: without-skill provides a more complete 3-state system (system/dark/light) with localStorage persistence and FOIC prevention; with-skill follows the reference more closely with SSR-safe isPlatformBrowser guards."
+    },
+    {
+      "eval_name": "staggered-list-animations",
+      "with_skill": {
+        "pass_rate": 1.0,
+        "passed": ["uses_animate_enter", "uses_animate_leave", "css_keyframes", "stagger_effect", "uses_for_control_flow"],
+        "failed": [],
+        "time_seconds": 99.1,
+        "tokens": 29549
+      },
+      "without_skill": {
+        "pass_rate": 0.4,
+        "passed": ["stagger_effect", "uses_for_control_flow"],
+        "failed": ["uses_animate_enter", "uses_animate_leave", "css_keyframes"],
+        "failed_reason": "Used legacy @angular/animations DSL (trigger/query/stagger/style/animate) instead of native CSS animate.enter/animate.leave. This is the deprecated approach that requires provideAnimations() and @angular/animations imports.",
+        "time_seconds": 89.0,
+        "tokens": 17856
+      },
+      "notes": "DISCRIMINATING: The skill successfully guided the model to use Angular 20.2+ native CSS animations (animate.enter/animate.leave) instead of the deprecated @angular/animations DSL. Without the skill, the model defaults to legacy patterns despite the prompt explicitly requesting 'native CSS animation system (animate.enter and animate.leave)'. This is the strongest signal that the animation reference file is working."
+    }
+  ],
+  "analyst_observations": [
+    "Eval 0 (CSS theming) and Eval 1 (Tailwind dark mode) are non-discriminating -- both pass 100% with and without skill. These topics are well within the model's training data.",
+    "Eval 2 (staggered animations) is strongly discriminating. Without the skill, the model defaults to the legacy @angular/animations DSL even when the prompt explicitly asks for animate.enter/animate.leave. The skill's angular-animations.md reference successfully redirects to the modern API.",
+    "Token overhead for with-skill is significant (~14.7K extra) due to reference file reads. This is expected and acceptable given the correctness improvement on discriminating evals.",
+    "The without-skill Tailwind dark mode response is arguably more complete (3-state toggle, localStorage, FOIC prevention) -- the skill doesn't constrain the model in negative ways for well-known topics.",
+    "Qualitative patterns: with-skill outputs consistently use host bindings, protected members, and inject() -- Angular 21 idioms the skill reinforces."
+  ]
+}

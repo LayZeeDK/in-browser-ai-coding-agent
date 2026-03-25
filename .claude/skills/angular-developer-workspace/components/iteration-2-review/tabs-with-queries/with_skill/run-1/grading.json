@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "Uses viewChildren() function (not @ViewChildren decorator)",
+      "passed": true,
+      "evidence": "tabs.component.ts line 103: protected readonly panels = viewChildren(TabPanelComponent)"
+    },
+    {
+      "text": "Uses contentChildren() function (not @ContentChildren decorator)",
+      "passed": true,
+      "evidence": "tabs.component.ts line 100: protected readonly tabItems = contentChildren(TabItemComponent)"
+    },
+    {
+      "text": "TabItem has a label defined with input() function (not @Input decorator)",
+      "passed": true,
+      "evidence": "tab-item.component.ts line 14: readonly label = input.required<string>()"
+    },
+    {
+      "text": "Active tab is tracked with a signal",
+      "passed": true,
+      "evidence": "tabs.component.ts line 106: protected readonly activeIndex = signal(0)"
+    },
+    {
+      "text": "Uses ChangeDetectionStrategy.OnPush on all components",
+      "passed": true,
+      "evidence": "OnPush on TabsComponent (line 25), TabItemComponent (line 10), TabPanelComponent"
+    },
+    {
+      "text": "Uses @for for iteration (not *ngFor)",
+      "passed": true,
+      "evidence": "tabs.component.ts lines 66 and 85: @for (item of tabItems(); track item; let i = $index)"
+    },
+    {
+      "text": "Does NOT import ViewChildren, ContentChildren, or ContentChild decorators",
+      "passed": true,
+      "evidence": "Imports on lines 1-8: contentChildren, viewChildren (lowercase functions), no decorator versions"
+    }
+  ],
+  "summary": {"passed": 7, "failed": 0, "total": 7, "pass_rate": 1.0}
+}

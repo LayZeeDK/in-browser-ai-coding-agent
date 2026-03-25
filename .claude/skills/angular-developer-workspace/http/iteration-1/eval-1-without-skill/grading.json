@@ -1,0 +1,46 @@
+{
+  "eval_id": 1,
+  "eval_name": "httpresource-zod-validation",
+  "expectations": [
+    {
+      "text": "httpresource-with-parse",
+      "passed": true,
+      "evidence": "user-profile.component.ts line 40: 'httpResource<User>(() => ..., { parse: (data) => userSchema.parse(data) })'"
+    },
+    {
+      "text": "has-value-guard",
+      "passed": true,
+      "evidence": "Template: '@else if (userResource.hasValue())' is the only branch that accesses '.value()'; error branch precedes it but .value() is never called there"
+    },
+    {
+      "text": "error-signal-usage",
+      "passed": true,
+      "evidence": "Template line 16: '@else if (userResource.error())' displays error state; no try/catch used"
+    },
+    {
+      "text": "signal-input-reactive",
+      "passed": true,
+      "evidence": "user-profile.component.ts line 38: 'readonly userId = input.required<string>()'; used in '() => /api/users/${this.userId()}'"
+    },
+    {
+      "text": "testbed-tick-pattern",
+      "passed": true,
+      "evidence": "user-profile.component.spec.ts lines 74, 98, 123, 140: 'TestBed.tick()' called to trigger httpResource effect"
+    },
+    {
+      "text": "when-stable-pattern",
+      "passed": true,
+      "evidence": "user-profile.component.spec.ts: 'stabilize()' helper calls 'TestBed.inject(ApplicationRef).whenStable()' and is awaited throughout tests"
+    },
+    {
+      "text": "onpush-change-detection",
+      "passed": true,
+      "evidence": "user-profile.component.ts line 11: 'changeDetection: ChangeDetectionStrategy.OnPush'"
+    },
+    {
+      "text": "zod-schema-definition",
+      "passed": true,
+      "evidence": "user.schema.ts: 'z.object({ name: z.string(), email: z.string().email(), role: z.enum([...]), lastLogin: z.string().datetime() })'"
+    }
+  ]
+}

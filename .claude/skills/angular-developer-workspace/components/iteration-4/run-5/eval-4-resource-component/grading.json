@@ -1,0 +1,45 @@
+{
+  "expectations": [
+    {
+      "text": "Uses TestBed.configureTestingModule with imports: [UserProfileComponent]",
+      "passed": true,
+      "evidence": "Line 81-87: `await TestBed.configureTestingModule({ imports: [UserProfileComponent], providers: [provideHttpClient(), provideHttpClientTesting()] }).compileComponents();`"
+    },
+    {
+      "text": "Uses componentRef.setInput() or fixture.componentRef.setInput() to set the id input signal",
+      "passed": true,
+      "evidence": "Line 101: `fixture.componentRef.setInput('id', 1);` and throughout"
+    },
+    {
+      "text": "Uses await fixture.whenStable() for async change detection (not just detectChanges)",
+      "passed": true,
+      "evidence": "Line 103: `await fixture.whenStable();` used consistently"
+    },
+    {
+      "text": "Provides a mock or spy for the HTTP/fetch dependency (vi.fn, vi.spyOn, or provider override)",
+      "passed": true,
+      "evidence": "Line 99: `vi.spyOn(fetchService, 'getUser').mockReturnValue(new Promise(() => {}));` — spies on the injected service"
+    },
+    {
+      "text": "Tests loading state (checks for loading indicator in DOM)",
+      "passed": true,
+      "evidence": "Lines 97-129: checks `[data-testid=\"loading\"]` truthy, `[data-testid=\"user-profile\"]` null, `[data-testid=\"error\"]` null"
+    },
+    {
+      "text": "Tests successful data display (checks rendered user data)",
+      "passed": true,
+      "evidence": "Lines 136-209: checks user-name is 'Alice Liddell' and user-email is 'alice@example.com'"
+    },
+    {
+      "text": "Tests error state (simulates fetch failure and checks error display)",
+      "passed": true,
+      "evidence": "Lines 216-265: `vi.spyOn(fetchService, 'getUser').mockRejectedValue(new Error('Not found'))`, checks error element truthy"
+    },
+    {
+      "text": "Tests that changing the input signal value triggers a new fetch",
+      "passed": true,
+      "evidence": "Lines 271-348: sets id=1 then id=2, asserts spy called twice with correct args, DOM shows 'Bob Builder'"
+    }
+  ],
+  "summary": { "passed": 8, "failed": 0, "total": 8, "pass_rate": 1.0 }
+}

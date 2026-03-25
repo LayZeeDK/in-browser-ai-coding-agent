@@ -1,0 +1,32 @@
+{
+  "eval_id": 2,
+  "eval_name": "staggered-list-animations",
+  "configuration": "without_skill",
+  "expectations": [
+    {
+      "text": "uses_animate_enter",
+      "passed": false,
+      "evidence": "Does NOT use animate.enter HTML attribute. Invents CSS selectors .item:is(.animate\\\\.enter) claiming Angular adds this class -- this is not a real Angular mechanism. No animate.enter=\"className\" attribute in the template"
+    },
+    {
+      "text": "uses_animate_leave",
+      "passed": false,
+      "evidence": "Does NOT use animate.leave HTML attribute. Invents CSS selector .item:is(.animate\\\\.leave) -- this is not how Angular's animate.leave works. No animate.leave=\"className\" attribute in the template"
+    },
+    {
+      "text": "css_keyframes",
+      "passed": true,
+      "evidence": "@keyframes fade-slide-in (enter) and @keyframes fade-slide-out (leave) defined in CSS"
+    },
+    {
+      "text": "stagger_effect",
+      "passed": true,
+      "evidence": "animation-delay: calc(var(--index, 0) * 60ms) for enter and calc(var(--index, 0) * 40ms) for leave with [style.--index]=\"i\""
+    },
+    {
+      "text": "uses_for_control_flow",
+      "passed": true,
+      "evidence": "@for (item of items(); track item.id; let i = $index) used for list rendering"
+    }
+  ]
+}

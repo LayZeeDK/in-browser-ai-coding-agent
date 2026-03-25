@@ -1,0 +1,13 @@
+{
+  "eval_id": 2,
+  "eval_name": "viewproviders-content-projection",
+  "prompt": "I'm building a reusable form wrapper component in Angular 21 that uses content projection. The wrapper provides a FormStateService via viewProviders so that its own template can access form state. But I need projected content (child components passed via ng-content) to NOT see this service — they should get their own instance or the parent's instance instead. Show me the form wrapper component with viewProviders, the FormStateService, and a child component that demonstrates the isolation behavior.",
+  "assertions": [
+    "Uses viewProviders array (not providers) in the form wrapper component",
+    "Uses ng-content for content projection in the form wrapper template",
+    "FormStateService is injectable and demonstrates isolated state",
+    "Projected content component does NOT receive the viewProviders instance of FormStateService",
+    "Code or comments explain why viewProviders isolates from projected content",
+    "Components use ChangeDetectionStrategy.OnPush"
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "expectations": [
+    {
+      "text": "Test file imports and uses axe-core or jest-axe for accessibility audits",
+      "passed": true,
+      "evidence": "The test file contains `import { AxeResults, run as axeRun } from 'axe-core';` and the helper `expectNoAxeViolations` calls `await axeRun(fixture.nativeElement as HTMLElement, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'best-practice'] } })`."
+    },
+    {
+      "text": "Tests render the component via TestBed and run axe against the DOM",
+      "passed": true,
+      "evidence": "The `beforeEach` sets up `TestBed.configureTestingModule({ imports: [NotificationBannerComponent] }).compileComponents()` and `fixture = TestBed.createComponent(NotificationBannerComponent)`. Each axe test calls `createBanner(fixture, ...)` then `await expectNoAxeViolations(fixture)`, which runs `axeRun` against `fixture.nativeElement`."
+    },
+    {
+      "text": "Tests cover multiple component states (at least success and error)",
+      "passed": true,
+      "evidence": "Separate `describe` blocks exist for 'success variant', 'error variant', and 'warning variant', each containing a dedicated `it('has no axe violations', ...)` test. The cross-cutting 'all variants' block additionally iterates over all three types."
+    },
+    {
+      "text": "Each axe test asserts that violations array is empty or uses toHaveNoViolations",
+      "passed": true,
+      "evidence": "The `expectNoAxeViolations` helper checks `if (results.violations.length > 0)` and throws an error listing all violations. This is the functional equivalent of asserting the violations array is empty. Every axe test calls `await expectNoAxeViolations(fixture)` and will fail if any violation is found."
+    },
+    {
+      "text": "ESLint config includes @angular-eslint template accessibility rules",
+      "passed": true,
+      "evidence": "The ESLint config section defines a block for `files: ['**/*.html']` using `angular.templateParser` and `@angular-eslint/template` plugin with rules including `@angular-eslint/template/no-positive-tabindex`, `role-has-required-aria-props`, `interactive-supports-focus`, `click-events-have-key-events`, `mouse-events-have-key-events`, `alt-text`, `label-has-associated-control`, `valid-aria`, `no-aria-hidden-body`, and `accessibility-valid-aria`."
+    },
+    {
+      "text": "Explanation distinguishes runtime axe checks from static lint rules",
+      "passed": true,
+      "evidence": "Section 4 ('What Each Tool Catches and What It Cannot') provides distinct tables for axe-core (runtime, in-browser — evaluates the rendered DOM after change detection) and angular-eslint template rules (static analysis, author time — evaluates the template AST). The 'Why You Need Both' subsection explicitly maps what each tool catches exclusively and notes they are complementary."
+    },
+    {
+      "text": "Uses ChangeDetectionStrategy.OnPush on the component",
+      "passed": true,
+      "evidence": "The component definition in the response context section includes `changeDetection: ChangeDetectionStrategy.OnPush` in the `@Component` decorator, and `ChangeDetectionStrategy` is imported from `'@angular/core'`."
+    },
+    {
+      "text": "Uses signal-based input() for the notification state/type",
+      "passed": true,
+      "evidence": "The component declares `readonly type = input.required<NotificationType>();` using the `input` function from `'@angular/core'`. The test uses the signal-compatible `fixture.componentRef.setInput('type', type)` to set the input value."
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": null,
+  "timing": null,
+  "claims": [
+    {
+      "claim": "axe-core's `run()` function works without an Angular-specific adapter in Vitest browser mode",
+      "type": "factual",
+      "verified": true,
+      "evidence": "The response correctly explains that Vitest browser mode runs inside a real browser, so `fixture.nativeElement` is a live DOM node. axe-core is a plain npm package that works against any live DOM. This is accurate."
+    },
+    {
+      "claim": "The eslint rule `@angular-eslint/accessibility-no-redundant-roles` is a TypeScript-side angular-eslint rule",
+      "type": "factual",
+      "verified": false,
+      "evidence": "The rule is listed under `files: ['**/*.ts']` with a comment about accessibility, but `accessibility-no-redundant-roles` is actually a template rule, not a TS-side rule. Placing it in the TS block with `processor: angular.processInlineTemplates` may work for inline templates but is an unusual placement. Cannot fully verify without running eslint."
+    },
+    {
+      "claim": "`@angular-eslint/no-host-metadata-property` enforces that interactive elements are not given non-interactive roles",
+      "type": "factual",
+      "verified": false,
+      "evidence": "The comment in the config says 'Enforces that interactive elements are not given non-interactive roles' but `no-host-metadata-property` actually prevents using the `host` metadata property in `@Component`/`@Directive` decorators — it has nothing to do with ARIA roles. This is a misleading comment / wrong rule paired with wrong description."
+    },
+    {
+      "claim": "The `expectNoAxeViolations` helper returns `AxeResults` and can be reused across spec files",
+      "type": "quality",
+      "verified": true,
+      "evidence": "The function signature is `async function expectNoAxeViolations(fixture): Promise<AxeResults>` and the response suggests placing it in `apps/in-browser-ai-coding-agent/src/testing/axe.ts` for shared use."
+    }
+  ],
+  "user_notes_summary": null,
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "ESLint config includes @angular-eslint template accessibility rules",
+        "reason": "The assertion passes on the presence of template rules but does not check whether the rules listed actually exist in angular-eslint under those names. The response includes `@angular-eslint/template/accessibility-valid-aria` which is not a real rule in angular-eslint (the actual rule is `@angular-eslint/template/valid-aria`). A stronger assertion would verify that the listed rule names are real and correctly categorised."
+      },
+      {
+        "reason": "No assertion checks that `@angular-eslint/no-host-metadata-property` is correctly described or placed. The response puts it in the TS block with a comment about ARIA roles, but this rule is about preventing `host` metadata in decorators — unrelated to ARIA. This is a factual error in the output that no assertion catches."
+      },
+      {
+        "assertion": "Each axe test asserts that violations array is empty or uses toHaveNoViolations",
+        "reason": "The assertion is satisfied by a throw-on-violation pattern rather than a Vitest `expect` assertion. This is functionally correct but means a try/catch around `expectNoAxeViolations` in user code could silently swallow failures. The assertion could be tightened to require an explicit `expect(violations).toHaveLength(0)` or equivalent Vitest matcher."
+      }
+    ],
+    "overall": "The evals are well-targeted and discriminating. The main gap is in the ESLint rule verification — checking for rule name presence without checking rule name correctness allows a plausible-looking but partially incorrect config to pass. The component-side assertions (OnPush, signal input) are well-chosen and genuinely require correct Angular 21 patterns."
+  }
+}

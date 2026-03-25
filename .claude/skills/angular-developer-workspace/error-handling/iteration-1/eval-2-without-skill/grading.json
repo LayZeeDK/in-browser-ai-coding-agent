@@ -1,0 +1,52 @@
+{
+  "eval_id": 2,
+  "eval_name": "error-boundary-retry-ux",
+  "expectations": [
+    {
+      "text": "httpresource-error-not-errorhandler",
+      "passed": true,
+      "evidence": "app-error-handler.ts: 'NOTE: httpResource() errors do NOT reach this handler. They surface on the resource's .error() signal instead.' data-panel.component.ts: 'httpResource errors are handled internally by the resource and never bubble up to the zone's error handler.'"
+    },
+    {
+      "text": "httpresource-reload-pattern",
+      "passed": true,
+      "evidence": "data-panel.component.ts: retry button '(click)=\"reload()\"' calls 'protected reload(): void { this.resource.reload(); }'"
+    },
+    {
+      "text": "error-signal-display",
+      "passed": true,
+      "evidence": "data-panel.component.ts template: '@else if (resource.error())' branch displays '{{ errorMessage() }}' which reads 'this.resource.error()'. Standalone signal display, not routed through ErrorHandler."
+    },
+    {
+      "text": "retry-interceptor-exponential",
+      "passed": true,
+      "evidence": "retry-interceptor.ts: 'function exponentialDelay(attempt: number) { return BASE_DELAY_MS * Math.pow(2, attempt); }' applied when 'error instanceof HttpErrorResponse && error.status === 503'"
+    },
+    {
+      "text": "http-context-token-opt-out",
+      "passed": true,
+      "evidence": "retry-interceptor.ts: 'export const SKIP_RETRY = new HttpContextToken<boolean>(() => false)'; 'shouldRetry()' returns false when 'skipRetry' is true"
+    },
+    {
+      "text": "errorhandler-for-component-errors",
+      "passed": true,
+      "evidence": "app-error-handler.ts: 'AppErrorHandler implements ErrorHandler' handles 'Angular component/zone errors'. error-handling.spec.ts Suite 'AppErrorHandler' calls handleError() and verifies analytics tracking."
+    },
+    {
+      "text": "test-errorhandler-bypass",
+      "passed": true,
+      "evidence": "error-handling.spec.ts Suite 'AppErrorHandler does not receive httpResource errors': 'expect(errorHandler.handleError).not.toHaveBeenCalled()' after httpResource 500 flush. Suite 'AppErrorHandler' verifies handleError IS called for zone errors. Both directions verified."
+    },
+    {
+      "text": "onpush-and-signals",
+      "passed": true,
+      "evidence": "data-panel.component.ts: 'changeDetection: ChangeDetectionStrategy.OnPush', uses 'input.required<string>()' signal and httpResource reactive state. error-boundary.component.ts: 'changeDetection: ChangeDetectionStrategy.OnPush', uses 'signal(false)' and 'signal('')' for state."
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "pass_rate": 1.0
+  }
+}

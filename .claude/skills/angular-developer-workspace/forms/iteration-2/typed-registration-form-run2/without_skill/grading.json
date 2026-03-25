@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "Uses fb.nonNullable.group() or NonNullableFormBuilder",
+      "passed": true,
+      "evidence": "Pattern matched in output"
+    },
+    {
+      "text": "FormControls are typed -- no any/Untyped",
+      "passed": true,
+      "evidence": "Pattern matched in output"
+    },
+    {
+      "text": "Custom async validator returns Observable<ValidationErrors | null>",
+      "passed": true,
+      "evidence": "Pattern matched in output"
+    },
+    {
+      "text": "Async validator in third argument or asyncValidators option",
+      "passed": true,
+      "evidence": "Pattern matched in output"
+    },
+    {
+      "text": "Template uses @if (not *ngIf)",
+      "passed": true,
+      "evidence": "Pattern matched in output"
+    },
+    {
+      "text": "Submit button disabled when invalid",
+      "passed": true,
+      "evidence": "Pattern matched in output"
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1
+  }
+}

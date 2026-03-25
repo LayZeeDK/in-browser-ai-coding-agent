@@ -1,0 +1,52 @@
+{
+  "eval_id": 1,
+  "eval_name": "resource-error-handling-patterns",
+  "expectations": [
+    {
+      "text": "resource-error-via-signals",
+      "passed": true,
+      "evidence": "data-dashboard.component.ts: statsResource uses resource(); template branches on 'statsResource.status() === 'error'' and renders 'statsErrorMessage()' which reads 'statsResource.error()'. No ErrorHandler involvement."
+    },
+    {
+      "text": "httpresource-has-value-guard",
+      "passed": true,
+      "evidence": "Template: '@else if (recentItems.hasValue())' gates the '@for' loop that calls 'recentItems.value()'. Spec also asserts 'component.recentItems.hasValue()' before accessing value."
+    },
+    {
+      "text": "httpresource-error-signal",
+      "passed": true,
+      "evidence": "Template: '@else if (recentItems.error())' branch displays '{{ recentItemsErrorMessage() }}' which calls 'this.recentItems.error()'"
+    },
+    {
+      "text": "catcherror-network-vs-backend",
+      "passed": true,
+      "evidence": "dashboard.service.ts: 'catchError((error: HttpErrorResponse) => { if (error.status === 0) { ... } else { console.error(`Backend error ${error.status}...`) } })'"
+    },
+    {
+      "text": "try-catch-for-service-methods",
+      "passed": true,
+      "evidence": "data-dashboard.component.ts: 'runRiskyOperation()' wraps 'this.dashboardService.performRiskyOperation(null)' in try/catch with comment 'Service method errors are NOT caught by Angular \u00e2\u20ac\u201d we must handle them.'"
+    },
+    {
+      "text": "resource-error-does-not-reach-errorhandler",
+      "passed": true,
+      "evidence": "Component class comment: 'resource() errors surface via .status() and .error() signals, never through ErrorHandler.' Spec comment: 'resource() traps the thrown error and surfaces it as a signal.'"
+    },
+    {
+      "text": "onpush-change-detection",
+      "passed": true,
+      "evidence": "data-dashboard.component.ts: 'changeDetection: ChangeDetectionStrategy.OnPush'"
+    },
+    {
+      "text": "httpresource-test-with-controller",
+      "passed": true,
+      "evidence": "spec Suite 2 'httpResource() error state with HttpTestingController': uses 'HttpTestingController', 'httpTesting.expectOne('/api/dashboard/recent').flush(..., { status: 500, ... })' to trigger httpResource error state"
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "pass_rate": 1.0
+  }
+}

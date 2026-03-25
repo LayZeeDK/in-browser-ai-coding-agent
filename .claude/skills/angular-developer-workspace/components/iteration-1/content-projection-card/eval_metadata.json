@@ -1,0 +1,14 @@
+{
+  "eval_id": 1,
+  "eval_name": "content-projection-card",
+  "prompt": "Create a card component with multi-slot content projection. It should have slots for a header, body, and actions section. Use ng-content with select attributes. Include fallback content for the actions slot that shows a default 'Close' button. Also create a CardHeader component used as the selector for the header slot.",
+  "assertions": [
+    {"text": "Uses <ng-content> with select attribute for multi-slot projection", "type": "code_pattern"},
+    {"text": "Has at least 3 distinct ng-content slots (header, body, actions)", "type": "code_pattern"},
+    {"text": "Includes fallback content inside at least one <ng-content> element", "type": "code_pattern"},
+    {"text": "Creates a separate CardHeader component with its own selector", "type": "code_pattern"},
+    {"text": "Uses ChangeDetectionStrategy.OnPush", "type": "code_pattern"},
+    {"text": "Does NOT use @ContentChild or @ContentChildren decorators", "type": "negative_pattern"},
+    {"text": "Components are standalone (no explicit standalone: true)", "type": "code_pattern"}
+  ]
+}

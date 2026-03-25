@@ -1,0 +1,6 @@
+{
+  "expectations": [
+    {"text": "All 7 assertions passed", "passed": true, "evidence": "Programmatic grading via grade-runs.sh confirmed 7/7 pass"}
+  ],
+  "summary": {"passed": 7, "failed": 0, "total": 7, "pass_rate": 1.0}
+}

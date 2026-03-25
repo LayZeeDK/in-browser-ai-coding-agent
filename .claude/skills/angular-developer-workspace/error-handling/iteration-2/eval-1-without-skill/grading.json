@@ -1,0 +1,47 @@
+{
+  "eval_id": 1,
+  "eval_name": "dashboard-httpresource-loading-states",
+  "summary": {"passed": 6, "failed": 2, "total": 8, "pass_rate": 0.75},
+  "expectations": [
+    {
+      "text": "three-independent-httpresources",
+      "passed": true,
+      "evidence": "dashboard.component.ts declares usersResource, statsResource, activityResource as three separate httpResource instances"
+    },
+    {
+      "text": "has-value-guard",
+      "passed": true,
+      "evidence": "Template uses @if (xResource.hasValue()) before every .value() call on all three panels"
+    },
+    {
+      "text": "error-signal-display",
+      "passed": true,
+      "evidence": "Each panel has @if (xResource.error()) branch showing error message via computed signal and Retry button"
+    },
+    {
+      "text": "reload-retry",
+      "passed": true,
+      "evidence": "reloadUsers(), reloadStats(), reloadActivity() increment reload counter signals read inside the httpResource request functions"
+    },
+    {
+      "text": "zod-parse-validation",
+      "passed": true,
+      "evidence": "usersResource uses parse option with z.array(UserSchema).safeParse(raw), throwing on failure"
+    },
+    {
+      "text": "onpush",
+      "passed": true,
+      "evidence": "@Component has changeDetection: ChangeDetectionStrategy.OnPush"
+    },
+    {
+      "text": "vitest-apis",
+      "passed": true,
+      "evidence": "dashboard.component.spec.ts imports { describe, it, expect, beforeEach, afterEach } from 'vitest' — no jasmine APIs"
+    },
+    {
+      "text": "httpresource-test-pattern",
+      "passed": false,
+      "evidence": "Tests use TestBed.tick() (correct) but do NOT use ApplicationRef.whenStable(). The spec relies on fixture.whenStable() and fixture.detectChanges() without ApplicationRef.whenStable(), which is incomplete for httpResource stability. ApplicationRef is never injected in the spec."
+    }
+  ]
+}

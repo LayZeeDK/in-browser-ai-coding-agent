@@ -1,0 +1,13 @@
+{
+  "eval_id": 3,
+  "eval_name": "smart-dropdown-selection",
+  "prompt": "I have an Angular 21 component with a signal-based dropdown. The available options come from an API (fetched via resource), and the user can select one. When the options list changes (e.g., user switches category), I want to keep the user's selection if it's still in the new list, otherwise reset to the first option. Also, I need a computed signal that shows a formatted display string based on the selection. Can you show me how to wire this up with proper signal equality to avoid unnecessary rerenders?",
+  "assertions": [
+    {"text": "Uses resource() to fetch dropdown options based on category signal", "type": "code_pattern"},
+    {"text": "Uses linkedSignal with object syntax (source + computation + previous) to preserve valid selection", "type": "code_pattern"},
+    {"text": "Uses computed() for derived display string", "type": "code_pattern"},
+    {"text": "Uses custom equality function ({equal: fn}) on at least one signal", "type": "code_pattern"},
+    {"text": "Does NOT use effect() to sync selection state", "type": "anti_pattern"},
+    {"text": "Component uses ChangeDetectionStrategy.OnPush", "type": "code_pattern"}
+  ]
+}

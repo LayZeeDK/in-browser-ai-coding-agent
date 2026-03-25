@@ -1,0 +1,32 @@
+{
+  "eval_id": 2,
+  "eval_name": "accordion-grid-animate-leave",
+  "configuration": "without_skill",
+  "expectations": [
+    {
+      "text": "css_grid_auto_height",
+      "passed": false,
+      "evidence": "Uses `grid-template-rows` with `0fr`/`1fr` but driven by Angular animations DSL `state()`/`transition()`, not a CSS `transition` property"
+    },
+    {
+      "text": "overflow_hidden_on_child",
+      "passed": false,
+      "evidence": "`overflow: hidden` is on `.accordion-body` (the grid container), not on `.accordion-content` (the child). Child only has `min-height: 0`"
+    },
+    {
+      "text": "uses_animate_leave",
+      "passed": false,
+      "evidence": "Uses legacy `@angular/animations` trigger with `transition(':leave', [...])` and `[@fadeLeave]` binding, not `animate.leave` HTML attribute"
+    },
+    {
+      "text": "toggle_via_class_binding",
+      "passed": false,
+      "evidence": "Grid state is toggled via `[@accordion]=\"animationState()\"` Angular animation trigger, not a class binding"
+    },
+    {
+      "text": "no_legacy_dsl",
+      "passed": false,
+      "evidence": "Imports `animate, state, style, transition, trigger` from `@angular/animations`"
+    }
+  ]
+}

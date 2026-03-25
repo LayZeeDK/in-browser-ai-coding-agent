@@ -1,0 +1,14 @@
+{
+  "eval_id": 2,
+  "eval_name": "streaming-ai-chat",
+  "prompt": "I need to build an AI chat component in Angular 21 that streams responses from an LLM API at /api/chat/stream. The user types a message, clicks send, and the response should appear token by token as it streams in. I also need to keep a chat history that accumulates across multiple messages. Please show me the full component with the template.",
+  "assertions": [
+    {"text": "Uses resource() with the stream property for streaming responses", "type": "code_pattern"},
+    {"text": "Uses ResourceStreamItem signal pattern inside the stream function", "type": "code_pattern"},
+    {"text": "Separates user input signal from submitted prompt signal (no fetch on keystroke)", "type": "code_pattern"},
+    {"text": "Uses linkedSignal to accumulate chat history across multiple responses", "type": "code_pattern"},
+    {"text": "Template shows loading state while streaming", "type": "code_pattern"},
+    {"text": "Template displays error state with retry option", "type": "code_pattern"},
+    {"text": "Component uses ChangeDetectionStrategy.OnPush", "type": "code_pattern"}
+  ]
+}

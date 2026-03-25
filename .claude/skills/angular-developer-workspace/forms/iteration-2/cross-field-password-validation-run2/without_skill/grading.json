@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "Cross-field validator is a ValidatorFn",
+      "passed": true,
+      "evidence": "Pattern matched in output"
+    },
+    {
+      "text": "Validator attached to FormGroup via validators option",
+      "passed": true,
+      "evidence": "Pattern matched in output"
+    },
+    {
+      "text": "Validator uses control.get() to compare sibling controls",
+      "passed": true,
+      "evidence": "Pattern matched in output"
+    },
+    {
+      "text": "Returns { passwordMismatch: true } or null",
+      "passed": true,
+      "evidence": "Pattern matched in output"
+    },
+    {
+      "text": "Template checks group-level hasError or form.errors for passwordMismatch",
+      "passed": false,
+      "evidence": "Pattern not found in output"
+    },
+    {
+      "text": "Uses typed forms (nonNullable, not UntypedFormGroup)",
+      "passed": false,
+      "evidence": "Pattern not found in output"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 2,
+    "total": 6,
+    "pass_rate": 0.67
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "expectations": [
+    {"text": "Uses TestBed.configureTestingModule with imports: [UserProfileComponent]", "passed": true, "evidence": "Line 98-100: await TestBed.configureTestingModule({ imports: [UserProfileComponent] }).compileComponents()"},
+    {"text": "Uses componentRef.setInput() or fixture.componentRef.setInput() to set the id input signal", "passed": true, "evidence": "Lines 113, 143, 175, 201, 244, 261: fixture.componentRef.setInput('id', ...) used throughout"},
+    {"text": "Uses await fixture.whenStable() for async change detection (not just detectChanges)", "passed": true, "evidence": "Lines 116, 128, 146, 162, 177, 203, 214, 226, 245, 262, 280: await fixture.whenStable() used consistently without detectChanges()"},
+    {"text": "Provides a mock or spy for the HTTP/fetch dependency (vi.fn, vi.spyOn, or provider override)", "passed": true, "evidence": "Lines 61-79: mockFetchSuccess and mockFetchError helper functions using vi.stubGlobal('fetch', vi.fn())"},
+    {"text": "Tests loading state (checks for loading indicator in DOM)", "passed": true, "evidence": "Lines 110-122: 'shows a loading indicator while the resource is fetching' test checks querySelector('[data-testid=\"loading\"]')"},
+    {"text": "Tests successful data display (checks rendered user data)", "passed": true, "evidence": "Lines 140-156: 'renders the user name and email after the resource resolves' asserts on name and email content"},
+    {"text": "Tests error state (simulates fetch failure and checks error display)", "passed": true, "evidence": "Lines 199-207: mockFetchError(404) then checks querySelector('[data-testid=\"error\"]') is truthy. Uses rethrowApplicationErrors: false"},
+    {"text": "Tests that changing the input signal value triggers a new fetch", "passed": true, "evidence": "Lines 236-270: setInput('id','1') then setInput('id','2'), asserts fetchSpy called twice with both URLs"}
+  ],
+  "summary": {"passed": 8, "failed": 0, "total": 8, "pass_rate": 1.0}
+}

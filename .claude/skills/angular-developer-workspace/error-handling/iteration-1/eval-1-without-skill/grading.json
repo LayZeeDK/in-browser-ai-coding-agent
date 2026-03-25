@@ -1,0 +1,52 @@
+{
+  "eval_id": 1,
+  "eval_name": "resource-error-handling-patterns",
+  "expectations": [
+    {
+      "text": "resource-error-via-signals",
+      "passed": true,
+      "evidence": "data-dashboard.component.ts: '@switch (statsResource.status())' with '@case ('error')' branch displaying 'statsResource.error()?.message'. No ErrorHandler involvement."
+    },
+    {
+      "text": "httpresource-has-value-guard",
+      "passed": true,
+      "evidence": "Template: '@else if (!itemsResource.hasValue())' shows error; '@else' branch (implying hasValue) then calls 'itemsResource.value()'. Value access is effectively guarded by prior hasValue check."
+    },
+    {
+      "text": "httpresource-error-signal",
+      "passed": true,
+      "evidence": "Template: '{{ itemsResource.error()?.message ?? 'Request failed' }}' displayed in the error branch"
+    },
+    {
+      "text": "catcherror-network-vs-backend",
+      "passed": true,
+      "evidence": "dashboard.service.ts: '#handleHttpError' checks 'err.status === 0' for network errors vs backend errors with 'err.status' in message. Used in 'performRxjsAction().pipe(catchError(...))'"
+    },
+    {
+      "text": "try-catch-for-service-methods",
+      "passed": true,
+      "evidence": "data-dashboard.component.ts: 'triggerThrowingAction()' wraps 'this.#service.performThrowingAction()' in try/catch with comment 'Service errors thrown synchronously are NOT caught by Angular. try/catch is the only safety net here.'"
+    },
+    {
+      "text": "resource-error-does-not-reach-errorhandler",
+      "passed": true,
+      "evidence": "Template comment: 'Errors surface via .status() === 'error' and .error() signal. They do NOT propagate to Angular's ErrorHandler.' on the resource() section"
+    },
+    {
+      "text": "onpush-change-detection",
+      "passed": true,
+      "evidence": "data-dashboard.component.ts: 'changeDetection: ChangeDetectionStrategy.OnPush'"
+    },
+    {
+      "text": "httpresource-test-with-controller",
+      "passed": true,
+      "evidence": "data-dashboard.component.spec.ts Suite 'httpResource() \u00e2\u20ac\u201d itemsResource': 'httpTesting.expectOne('/api/recent-items').flush('Not found', { status: 404, ... })' then verifies 'component.itemsResource.hasValue()' is false and '.error()' is truthy"
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "pass_rate": 1.0
+  }
+}

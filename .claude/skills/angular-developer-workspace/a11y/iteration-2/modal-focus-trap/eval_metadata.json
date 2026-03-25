@@ -1,0 +1,15 @@
+{
+  "eval_id": 2,
+  "eval_name": "modal-focus-trap",
+  "prompt": "Build a confirmation dialog component for my Angular 21 app. Requirements: (1) When the dialog opens, focus must move to the dialog container or the first focusable element inside it, (2) Tab/Shift+Tab must cycle focus only within the dialog (focus trap), (3) Escape key closes the dialog, (4) When the dialog closes, focus must return to the element that triggered it, (5) Background content behind the dialog must be inert. Use Angular CDK where appropriate. Include the component, a service or directive to open it, and a usage example. Make sure it passes screen reader testing.",
+  "assertions": [
+    "Uses cdkTrapFocus or CdkTrapFocus directive from @angular/cdk/a11y for focus trapping",
+    "Dialog has role='dialog' and aria-modal='true' or uses the native <dialog> element",
+    "Focus moves to the dialog on open (autoFocus or programmatic focus)",
+    "Escape key closes the dialog via keyboard event handler",
+    "Focus returns to the trigger element after dialog closes",
+    "Background content uses the inert attribute or aria-hidden='true'",
+    "Uses ChangeDetectionStrategy.OnPush",
+    "Has aria-labelledby or aria-label for the dialog title"
+  ]
+}

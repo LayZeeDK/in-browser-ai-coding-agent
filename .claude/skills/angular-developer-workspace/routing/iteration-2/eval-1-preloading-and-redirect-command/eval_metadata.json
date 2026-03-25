@@ -1,0 +1,13 @@
+{
+  "eval_id": 1,
+  "eval_name": "preloading-and-redirect-command",
+  "prompt": "I have an Angular 21 app with lazy-loaded feature routes for /dashboard and /settings. The app loads fine but navigation feels sluggish because each lazy chunk downloads on demand. I want to preload all feature routes after the initial page loads so navigation is instant. Also, the /admin section should only be accessible to logged-in users — if they're not authenticated, redirect them to /login using the modern RedirectCommand approach instead of router.parseUrl. Show me how to set up provideRouter with PreloadAllModules and write the canActivate guard with RedirectCommand.",
+  "assertions": [
+    "Uses withPreloading() router feature function with PreloadAllModules strategy",
+    "Uses provideRouter() with at least withPreloading as a feature",
+    "Creates a functional canActivate guard (not class-based)",
+    "Uses RedirectCommand for the auth redirect instead of router.parseUrl or router.navigate",
+    "Shows route config with canActivate guard applied to admin route",
+    "Lazy-loads the admin route with loadComponent or loadChildren"
+  ]
+}

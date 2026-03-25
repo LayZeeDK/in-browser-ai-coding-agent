@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "Uses withPreloading() router feature function with PreloadAllModules strategy",
+      "passed": true,
+      "evidence": "Line 68: withPreloading(PreloadAllModules) in provideRouter"
+    },
+    {
+      "text": "Uses provideRouter() with at least withPreloading as a feature",
+      "passed": true,
+      "evidence": "Lines 66-71: provideRouter(routes, withPreloading(PreloadAllModules))"
+    },
+    {
+      "text": "Creates a functional canActivate guard (not class-based)",
+      "passed": true,
+      "evidence": "Line 114: export const authGuard: CanActivateFn = () => { ... }"
+    },
+    {
+      "text": "Uses RedirectCommand for the auth redirect instead of router.parseUrl or router.navigate",
+      "passed": true,
+      "evidence": "Line 126: return new RedirectCommand(loginUrlTree, { replaceUrl: true });"
+    },
+    {
+      "text": "Shows route config with canActivate guard applied to admin route",
+      "passed": true,
+      "evidence": "Line 37: canActivate: [authGuard] on the admin route"
+    },
+    {
+      "text": "Lazy-loads the admin route with loadComponent or loadChildren",
+      "passed": true,
+      "evidence": "Lines 38-39: loadComponent: () => import('./features/admin/admin.component').then((m) => m.AdminComponent)"
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  }
+}

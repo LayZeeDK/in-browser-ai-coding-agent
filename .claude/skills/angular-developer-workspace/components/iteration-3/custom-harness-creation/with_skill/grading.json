@@ -1,0 +1,13 @@
+{
+  "expectations": [
+    {"text": "Harness class extends ComponentHarness from @angular/cdk/testing", "passed": true, "evidence": "Line 1 of harness.ts: import { ComponentHarness, HarnessPredicate } from '@angular/cdk/testing'; Line 21: class DateRangePickerHarness extends ComponentHarness"},
+    {"text": "Declares static hostSelector matching the component selector", "passed": true, "evidence": "Line 23: static readonly hostSelector = 'app-date-range-picker'"},
+    {"text": "Uses this.locatorFor() or this.locatorForOptional() to find child elements", "passed": true, "evidence": "Lines 29-32: locatorFor for start-date, end-date, clear-btn; locatorForOptional for date-error"},
+    {"text": "Returns TestElement instances and uses their API (sendKeys, clear, click, text, getProperty, getAttribute)", "passed": true, "evidence": "Uses getProperty<string>('value'), clear(), sendKeys(), dispatchEvent('change'), click(), text(), getProperty<boolean>('disabled')"},
+    {"text": "Includes a static with() method that returns a HarnessPredicate for filtering", "passed": true, "evidence": "Lines 42-50: static with() returns new HarnessPredicate with addOption for disabled filter"},
+    {"text": "Tests use TestbedHarnessEnvironment.loader(fixture) to create a HarnessLoader", "passed": true, "evidence": "Spec file uses TestbedHarnessEnvironment.loader(fixture) in beforeEach"},
+    {"text": "Tests use loader.getHarness(DateRangePickerHarness) to get the harness instance", "passed": true, "evidence": "Spec file uses loader.getHarness(DateRangePickerHarness) to obtain harness"},
+    {"text": "Tests verify validation error display through the harness API", "passed": true, "evidence": "Multiple tests call harness.hasValidationError() and harness.getValidationErrorText() to verify validation state"}
+  ],
+  "summary": {"passed": 8, "failed": 0, "total": 8, "pass_rate": 1.0}
+}

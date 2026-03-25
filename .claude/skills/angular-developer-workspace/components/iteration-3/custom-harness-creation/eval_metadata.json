@@ -1,0 +1,15 @@
+{
+  "eval_id": 5,
+  "eval_name": "custom-harness-creation",
+  "prompt": "Create a custom Angular CDK `ComponentHarness` for a `DateRangePickerComponent` that has two date input fields (start and end), a clear button, and validation that shows an error when the end date is before the start date. The harness should expose methods to get/set start and end dates, click clear, check if validation error is shown, and check if the component is disabled. Include both the harness class and example unit tests using it.",
+  "assertions": [
+    "Harness class extends ComponentHarness from @angular/cdk/testing",
+    "Declares static hostSelector matching the component selector",
+    "Uses this.locatorFor() or this.locatorForOptional() to find child elements",
+    "Returns TestElement instances and uses their API (sendKeys, clear, click, text, getProperty, getAttribute)",
+    "Includes a static with() method that returns a HarnessPredicate for filtering",
+    "Tests use TestbedHarnessEnvironment.loader(fixture) to create a HarnessLoader",
+    "Tests use loader.getHarness(DateRangePickerHarness) to get the harness instance",
+    "Tests verify validation error display through the harness API"
+  ]
+}

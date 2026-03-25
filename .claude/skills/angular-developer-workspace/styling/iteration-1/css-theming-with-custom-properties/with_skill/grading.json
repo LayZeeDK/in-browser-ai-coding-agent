@@ -1,0 +1,32 @@
+{
+  "eval_id": 0,
+  "eval_name": "css-theming-with-custom-properties",
+  "configuration": "with_skill",
+  "expectations": [
+    {
+      "text": "uses_css_custom_properties",
+      "passed": true,
+      "evidence": "Defines --color-primary, --color-secondary, --color-surface etc. in theme.css under .theme-light/.theme-dark selectors. All components consume via var(--color-*)."
+    },
+    {
+      "text": "no_ng_deep",
+      "passed": true,
+      "evidence": "Explicitly avoids ::ng-deep. Includes a comparison table showing why CSS custom properties are superior to ::ng-deep."
+    },
+    {
+      "text": "runtime_theme_switching",
+      "passed": true,
+      "evidence": "AppShellComponent uses host bindings [class.theme-light]='isLight()' and [class.theme-dark]='isDark()' driven by ThemeService signal."
+    },
+    {
+      "text": "works_with_emulated_encapsulation",
+      "passed": true,
+      "evidence": "Uses default ViewEncapsulation.Emulated throughout. Explains that CSS custom properties pierce emulated encapsulation because Angular's attribute rewriting doesn't affect var() resolution."
+    },
+    {
+      "text": "child_component_consumption",
+      "passed": true,
+      "evidence": "ThemeToggleComponent uses var(--color-outline), var(--color-surface-variant), etc. ProductCardComponent uses var(--color-surface-variant), var(--color-primary), var(--color-on-primary) extensively."
+    }
+  ]
+}

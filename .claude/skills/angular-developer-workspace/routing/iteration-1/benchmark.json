@@ -1,0 +1,184 @@
+{
+  "metadata": {
+    "skill_name": "angular-developer",
+    "skill_path": ".claude/skills/angular-developer",
+    "executor_model": "claude-sonnet-4-6",
+    "analyzer_model": "claude-opus-4-6",
+    "timestamp": "2026-03-24T12:00:00Z",
+    "evals_run": [1, 2, 3],
+    "runs_per_configuration": 1
+  },
+
+  "runs": [
+    {
+      "eval_id": 1,
+      "eval_name": "preloading-and-redirect-command",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 121.5,
+        "tokens": 34647,
+        "tool_calls": 23,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Uses withPreloading() router feature function with PreloadAllModules strategy", "passed": true, "evidence": "withPreloading(PreloadAllModules) in provideRouter"},
+        {"text": "Uses provideRouter() with at least withPreloading as a feature", "passed": true, "evidence": "provideRouter(routes, withPreloading(PreloadAllModules))"},
+        {"text": "Creates a functional canActivate guard (not class-based)", "passed": true, "evidence": "export const authGuard: CanActivateFn = () => { ... }"},
+        {"text": "Uses RedirectCommand for the auth redirect", "passed": true, "evidence": "new RedirectCommand(router.parseUrl('/login'), { replaceUrl: true })"},
+        {"text": "Shows route config with canActivate guard applied to admin route", "passed": true, "evidence": "canActivate: [authGuard] on admin route"},
+        {"text": "Lazy-loads the admin route with loadComponent or loadChildren", "passed": true, "evidence": "loadChildren: () => import('./admin/admin.routes')"}
+      ]
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "preloading-and-redirect-command",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 45.2,
+        "tokens": 13792,
+        "tool_calls": 2,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Uses withPreloading() router feature function with PreloadAllModules strategy", "passed": true, "evidence": "withPreloading(PreloadAllModules) in provideRouter"},
+        {"text": "Uses provideRouter() with at least withPreloading as a feature", "passed": true, "evidence": "provideRouter(routes, withPreloading(PreloadAllModules))"},
+        {"text": "Creates a functional canActivate guard (not class-based)", "passed": true, "evidence": "export const authGuard: CanActivateFn = () => { ... }"},
+        {"text": "Uses RedirectCommand for the auth redirect", "passed": true, "evidence": "new RedirectCommand(loginUrlTree, { replaceUrl: true })"},
+        {"text": "Shows route config with canActivate guard applied to admin route", "passed": true, "evidence": "canActivate: [authGuard] on admin route"},
+        {"text": "Lazy-loads the admin route with loadComponent or loadChildren", "passed": true, "evidence": "loadComponent: () => import('./features/admin/admin.component')"}
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "pathmatch-and-input-binding",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 52.9,
+        "tokens": 24399,
+        "tool_calls": 8,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Explains pathMatch 'prefix' default causes redirect-everything bug", "passed": true, "evidence": "Detailed explanation of empty string prefix matching"},
+        {"text": "Fixes redirect with pathMatch: 'full'", "passed": true, "evidence": "{ path: '', redirectTo: 'home', pathMatch: 'full' }"},
+        {"text": "Configures provideRouter with withComponentInputBinding()", "passed": true, "evidence": "withComponentInputBinding() in provideRouter"},
+        {"text": "Component uses input() for route parameter", "passed": true, "evidence": "readonly id = input.required<string>()"},
+        {"text": "Component uses input() for resolved data", "passed": true, "evidence": "readonly user = input.required<User>()"},
+        {"text": "Resolver is functional ResolveFn", "passed": true, "evidence": "export const userResolver: ResolveFn<User> = (route) => { ... }"}
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "pathmatch-and-input-binding",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 33.9,
+        "tokens": 13339,
+        "tool_calls": 2,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Explains pathMatch 'prefix' default causes redirect-everything bug", "passed": true, "evidence": "Explains empty string prefix matches beginning of every URL"},
+        {"text": "Fixes redirect with pathMatch: 'full'", "passed": true, "evidence": "{ path: '', pathMatch: 'full', redirectTo: 'home' }"},
+        {"text": "Configures provideRouter with withComponentInputBinding()", "passed": true, "evidence": "withComponentInputBinding() in provideRouter"},
+        {"text": "Component uses input() for route parameter", "passed": true, "evidence": "readonly id = input.required<string>()"},
+        {"text": "Component uses input() for resolved data", "passed": true, "evidence": "readonly user = input.required<User>()"},
+        {"text": "Resolver is functional ResolveFn", "passed": true, "evidence": "export const userResolver: ResolveFn<User> = (route) => { ... }"}
+      ]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "view-transitions-and-events",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 85.8,
+        "tokens": 26557,
+        "tool_calls": 9,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Configures withViewTransitions() in provideRouter", "passed": true, "evidence": "withViewTransitions() in provideRouter"},
+        {"text": "Assigns view-transition-name to product image in both components", "passed": true, "evidence": "style.view-transition-name binding in list and detail"},
+        {"text": "Subscribes to Router.events for NavigationStart", "passed": true, "evidence": "router.events filter for NavigationStart, sets isLoading(true)"},
+        {"text": "Handles NavigationEnd, NavigationCancel, NavigationError", "passed": true, "evidence": "All three in filter, sets isLoading(false)"},
+        {"text": "Mentions or handles NavigationSkipped", "passed": true, "evidence": "NavigationSkipped in filter with dedicated explanation"},
+        {"text": "Uses onViewTransitionCreated or CSS pseudo-elements", "passed": true, "evidence": "Both CSS pseudo-elements and onViewTransitionCreated callback shown"}
+      ]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "view-transitions-and-events",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 77.6,
+        "tokens": 16605,
+        "tool_calls": 2,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Configures withViewTransitions() in provideRouter", "passed": true, "evidence": "withViewTransitions() in provideRouter"},
+        {"text": "Assigns view-transition-name to product image in both components", "passed": true, "evidence": "style.view-transition-name binding in list and detail"},
+        {"text": "Subscribes to Router.events for NavigationStart", "passed": true, "evidence": "router.events filter for NavigationStart, loadingService.show()"},
+        {"text": "Handles NavigationEnd, NavigationCancel, NavigationError", "passed": true, "evidence": "All three in filter, loadingService.hide()"},
+        {"text": "Mentions or handles NavigationSkipped", "passed": true, "evidence": "NavigationSkipped in filter with section explaining trigger scenarios"},
+        {"text": "Uses onViewTransitionCreated or CSS pseudo-elements", "passed": true, "evidence": "Both CSS pseudo-elements and onViewTransitionCreated shown"}
+      ]
+    }
+  ],
+
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0},
+      "time_seconds": {"mean": 86.7, "stddev": 28.1, "min": 52.9, "max": 121.5},
+      "tokens": {"mean": 28534, "stddev": 4283, "min": 24399, "max": 34647}
+    },
+    "without_skill": {
+      "pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0},
+      "time_seconds": {"mean": 52.2, "stddev": 18.5, "min": 33.9, "max": 77.6},
+      "tokens": {"mean": 14579, "stddev": 1425, "min": 13339, "max": 16605}
+    },
+    "delta": {
+      "pass_rate": "+0.00",
+      "time_seconds": "+34.5",
+      "tokens": "+13955"
+    }
+  },
+
+  "notes": [
+    "All 18 assertions pass in both configurations (100% pass rate) — the current assertions do NOT discriminate between with-skill and without-skill. Claude's base knowledge of Angular routing (withPreloading, RedirectCommand, pathMatch, withComponentInputBinding, NavigationSkipped, view-transition-name) is strong enough to pass all assertions without the skill.",
+    "With-skill runs are ~66% slower (86.7s vs 52.2s mean) and use ~96% more tokens (28.5k vs 14.6k mean) due to reading multiple reference files. The skill adds overhead without improving pass rate on these assertions.",
+    "The with-skill eval 1 run used 23 tool calls (browsed router type definitions in node_modules) — this exploratory behavior suggests the skill's loading-strategies.md and route-guards.md lack the specific APIs (withPreloading, RedirectCommand) needed, forcing the agent to research them independently.",
+    "Qualitative difference: with-skill responses tend to cite skill references and cross-reference other sections (e.g., data-resolvers.md for withComponentInputBinding). Without-skill responses are more concise and self-contained.",
+    "To make these evals discriminating, assertions would need to target nuanced details that base knowledge gets wrong — for example, the binding priority order (path > query > resolve), or the fact that RedirectCommand accepts NavigationBehaviorOptions. But both configurations covered these details."
+  ]
+}

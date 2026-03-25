@@ -1,0 +1,20 @@
+{
+  "expectations": [
+    {"text": "Configures TestBed with provideHttpClient() and provideHttpClientTesting()", "passed": true, "evidence": "Lines 63-68: providers: [provideHttpClient(), provideHttpClientTesting(), TodoService]"},
+    {"text": "Injects HttpTestingController from TestBed", "passed": true, "evidence": "Line 72: httpTesting = TestBed.inject(HttpTestingController)"},
+    {"text": "Injects the TodoService from TestBed using TestBed.inject()", "passed": true, "evidence": "Line 71: service = TestBed.inject(TodoService)"},
+    {"text": "Tests httpResource by expecting a request with HttpTestingController and flushing a response", "passed": true, "evidence": "Lines 85-93: httpTesting.expectOne('/api/todos') then req.flush([])"},
+    {"text": "Tests the addTodo method triggers an HTTP POST request", "passed": false, "evidence": "The inlined TodoService at line 31 uses native fetch() for addTodo, not HttpClient. This means HttpTestingController cannot intercept the POST. The test at line 140-158 acknowledges this in comments and only verifies the reload GET, not the POST itself."},
+    {"text": "Tests the completedCount computed signal returns the correct derived value", "passed": true, "evidence": "Lines 196-257: Multiple tests verify completedCount() returns 0, 2, 3 based on flushed data"},
+    {"text": "Includes afterEach or cleanup that calls httpTesting.verify() to ensure no unexpected requests", "passed": true, "evidence": "Lines 75-78: afterEach(() => { httpTesting.verify(); })"},
+    {"text": "Tests an error scenario (e.g., flush with error status, verify resource error state)", "passed": true, "evidence": "Lines 264-333: Tests network error, HTTP 500, HTTP 404, recovery after reload, completedCount during error"}
+  ],
+  "summary": {"passed": 7, "failed": 1, "total": 8, "pass_rate": 0.875},
+  "eval_feedback": {
+    "suggestions": [
+      {"reason": "The with-skill agent used native fetch() for addTodo instead of HttpClient.post(). This is a design flaw — the skill's testing references should explicitly warn that httpResource uses HttpClient internally, so all HTTP operations should use HttpClient to stay interceptable by HttpTestingController"},
+      {"reason": "httpResource('/api/todos') with a string literal produces a TS error in Angular 21 — requires () => '/api/todos'. The skill should document the function wrapper form"}
+    ],
+    "overall": "Strong overall but the native fetch for addTodo is a significant gap the skill should address"
+  }
+}

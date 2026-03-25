@@ -1,0 +1,45 @@
+{
+  "expectations": [
+    {
+      "text": "Uses TestBed.configureTestingModule with imports: [UserProfileComponent]",
+      "passed": true,
+      "evidence": "Line 86-88: `await TestBed.configureTestingModule({ imports: [UserProfileComponent], providers: [...] }).compileComponents();`"
+    },
+    {
+      "text": "Uses componentRef.setInput() or fixture.componentRef.setInput() to set the id input signal",
+      "passed": true,
+      "evidence": "Line 103: `fixture.componentRef.setInput('id', 1);` and similar at lines 126, 153, 176, 182"
+    },
+    {
+      "text": "Uses await fixture.whenStable() for async change detection (not just detectChanges)",
+      "passed": true,
+      "evidence": "Lines 104, 127, 154, 177, 183: `await fixture.whenStable();`"
+    },
+    {
+      "text": "Provides a mock or spy for the HTTP/fetch dependency (vi.fn, vi.spyOn, or provider override)",
+      "passed": true,
+      "evidence": "Line 79: `const fetchStub = { getUser: vi.fn<[number], Promise<User>>() };` provided via line 88: `providers: [{ provide: UserFetchService, useValue: fetchStub }]`"
+    },
+    {
+      "text": "Tests loading state (checks for loading indicator in DOM)",
+      "passed": true,
+      "evidence": "Lines 98-114: test 'should show the loading indicator while the fetch is in flight' checks `.loading` element is truthy"
+    },
+    {
+      "text": "Tests successful data display (checks rendered user data)",
+      "passed": true,
+      "evidence": "Lines 120-138: test checks h1 contains 'Alice' and textContent contains 'alice@example.com'"
+    },
+    {
+      "text": "Tests error state (simulates fetch failure and checks error display)",
+      "passed": true,
+      "evidence": "Lines 144-162: `fetchStub.getUser.mockRejectedValue(new Error('Not found'))` then checks `.error` element is truthy"
+    },
+    {
+      "text": "Tests that changing the input signal value triggers a new fetch",
+      "passed": true,
+      "evidence": "Lines 168-192: sets id to 1, waits, then sets id to 2, asserts `fetchStub.getUser` called twice with correct args and DOM shows 'Bob'"
+    }
+  ],
+  "summary": { "passed": 8, "failed": 0, "total": 8, "pass_rate": 1.0 }
+}

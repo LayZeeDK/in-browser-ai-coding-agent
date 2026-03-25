@@ -1,0 +1,47 @@
+{
+  "eval_id": 1,
+  "eval_name": "dashboard-httpresource-loading-states",
+  "summary": {"passed": 8, "failed": 0, "total": 8, "pass_rate": 1.0},
+  "expectations": [
+    {
+      "text": "three-independent-httpresources",
+      "passed": true,
+      "evidence": "dashboard.component.ts declares statsResource, activityResource, alertsResource as three separate httpResource instances, each with independent URL and retry counter"
+    },
+    {
+      "text": "has-value-guard",
+      "passed": true,
+      "evidence": "Template uses @else if (statsResource.hasValue()), @else if (activityResource.hasValue()), @else if (alertsResource.hasValue()) before every .value() call"
+    },
+    {
+      "text": "error-signal-display",
+      "passed": true,
+      "evidence": "Each panel has @else if (xResource.error()) branch showing error message and Retry button"
+    },
+    {
+      "text": "reload-retry",
+      "passed": true,
+      "evidence": "retryStats(), retryActivity(), retryAlerts() increment private signal counters which are read inside the httpResource request function, triggering re-execution"
+    },
+    {
+      "text": "zod-parse-validation",
+      "passed": true,
+      "evidence": "alertsResource uses parse: (raw) => AlertsResponseSchema.parse(raw) with a full Zod schema (AlertSchema with id, severity enum, message, createdAt datetime)"
+    },
+    {
+      "text": "onpush",
+      "passed": true,
+      "evidence": "@Component decorator has changeDetection: ChangeDetectionStrategy.OnPush"
+    },
+    {
+      "text": "vitest-apis",
+      "passed": true,
+      "evidence": "dashboard.component.spec.ts imports { afterEach, beforeEach, describe, expect, it } from 'vitest' — no jasmine APIs"
+    },
+    {
+      "text": "httpresource-test-pattern",
+      "passed": true,
+      "evidence": "Tests use appRef.whenStable() and fixture.whenStable() after flushing HTTP responses (flushAll helper calls both). ApplicationRef is injected and used throughout"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "expectations": [
+    {
+      "text": "Uses TestBed.configureTestingModule with imports: [UserProfileComponent]",
+      "passed": true,
+      "evidence": "Line 83-85: `await TestBed.configureTestingModule({ imports: [UserProfileComponent] }).compileComponents();`"
+    },
+    {
+      "text": "Uses componentRef.setInput() or fixture.componentRef.setInput() to set the id input signal",
+      "passed": true,
+      "evidence": "Line 122: `fixture.componentRef.setInput('id', 1);` and similar throughout"
+    },
+    {
+      "text": "Uses await fixture.whenStable() for async change detection (not just detectChanges)",
+      "passed": true,
+      "evidence": "Line 152: `await fixture.whenStable();` used in success, error, and refetch tests. Note: loading test at line 127 uses `await Promise.resolve()` instead, but whenStable is used elsewhere"
+    },
+    {
+      "text": "Provides a mock or spy for the HTTP/fetch dependency (vi.fn, vi.spyOn, or provider override)",
+      "passed": true,
+      "evidence": "Line 78: `const fetchSpy = vi.spyOn(globalThis, 'fetch');`"
+    },
+    {
+      "text": "Tests loading state (checks for loading indicator in DOM)",
+      "passed": true,
+      "evidence": "Lines 118-140: test checks `[data-testid=\"loading\"]` is truthy while fetch never resolves"
+    },
+    {
+      "text": "Tests successful data display (checks rendered user data)",
+      "passed": true,
+      "evidence": "Lines 146-171: checks user-name is 'Alice' and user-email is 'alice@example.com'"
+    },
+    {
+      "text": "Tests error state (simulates fetch failure and checks error display)",
+      "passed": true,
+      "evidence": "Lines 177-214: `fetchSpy.mockResolvedValue(errorResponse(404, 'Not Found'))` and `fetchSpy.mockRejectedValue(new Error('Network error'))`, checks error element truthy"
+    },
+    {
+      "text": "Tests that changing the input signal value triggers a new fetch",
+      "passed": true,
+      "evidence": "Lines 220-249: sets id=1 then id=2, asserts fetchSpy called twice with correct URLs, DOM shows 'Bob'"
+    }
+  ],
+  "summary": { "passed": 8, "failed": 0, "total": 8, "pass_rate": 1.0 }
+}

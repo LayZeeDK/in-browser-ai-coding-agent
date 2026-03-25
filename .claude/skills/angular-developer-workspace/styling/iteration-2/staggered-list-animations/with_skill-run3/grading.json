@@ -1,0 +1,32 @@
+{
+  "eval_id": 2,
+  "eval_name": "staggered-list-animations",
+  "configuration": "with_skill",
+  "expectations": [
+    {
+      "text": "uses_animate_enter",
+      "passed": true,
+      "evidence": "Template uses animate.enter=\"item-enter\" as HTML attribute on <li> elements; child component StaggeredListItemComponent also uses it"
+    },
+    {
+      "text": "uses_animate_leave",
+      "passed": true,
+      "evidence": "Template uses animate.leave=\"item-leave\" as HTML attribute on <li> elements in StaggeredListItemComponent"
+    },
+    {
+      "text": "css_keyframes",
+      "passed": true,
+      "evidence": "@keyframes fade-slide-in (enter) and @keyframes fade-slide-out (leave) defined"
+    },
+    {
+      "text": "stagger_effect",
+      "passed": true,
+      "evidence": "[animationDelay]=\"Math.min(i, 9) * 60\" passed to child; child binds [style.animation-delay]=\"delayMs()\""
+    },
+    {
+      "text": "uses_for_control_flow",
+      "passed": true,
+      "evidence": "@for (item of items(); track item.id; let i = $index) used for list rendering"
+    }
+  ]
+}

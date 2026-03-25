@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "Directive implements the Validator interface",
+      "passed": true,
+      "evidence": "Line 19: `export class RequiredIfDirective implements Validator`"
+    },
+    {
+      "text": "Registered with NG_VALIDATORS provider using useExisting and forwardRef with multi: true",
+      "passed": true,
+      "evidence": "Lines 13-14: `useExisting: forwardRef(() => RequiredIfDirective), multi: true` -- correctly uses forwardRef."
+    },
+    {
+      "text": "Has an input for the boolean condition (signal input or @Input)",
+      "passed": true,
+      "evidence": "Line 20: `readonly appRequiredIf = input.required<boolean>()` -- uses Angular signal input."
+    },
+    {
+      "text": "validate() method returns { required: true } when condition is truthy and value is empty/null",
+      "passed": true,
+      "evidence": "Line 46: `return isEmpty ? { requiredIf: true } : null` -- returns error object when condition true and value empty."
+    },
+    {
+      "text": "validate() method returns null when condition is falsy or value is present",
+      "passed": true,
+      "evidence": "Lines 36-38: returns null when `!this.appRequiredIf()`. Line 46: returns null when not isEmpty."
+    },
+    {
+      "text": "Template shows usage with [(ngModel)], name attribute, and conditional error display",
+      "passed": true,
+      "evidence": "contact-form.component.ts line 48: `[(ngModel)]=\"phone\"`, line 46: `name=\"phone\"`, line 49: `[appRequiredIf]=\"needsPhone()\"`, lines 52-54: conditional error display with @if."
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  }
+}
