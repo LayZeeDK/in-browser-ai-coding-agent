@@ -189,6 +189,10 @@ function resolveModelService(): typeof ModelService {
 export function provideModel(): EnvironmentProviders {
   return makeEnvironmentProviders([
     { provide: ModelService, useClass: resolveModelService() },
+    // The provideEnvironmentInitializer callback is synchronous per Angular docs
+    // (references/defining-providers.md). Calling model.initialize() (which returns
+    // Promise<void>) is intentional -- the promise is fire-and-forget for non-blocking
+    // startup. Do NOT await it.
     provideEnvironmentInitializer(() => {
       // Runs in injection context -- inject() works here
       const model = inject(ModelService);
@@ -389,6 +393,8 @@ export function provideModel(): EnvironmentProviders {
 
   return makeEnvironmentProviders([
     { provide: ModelService, useClass: impl },
+    // Synchronous callback per Angular docs (references/defining-providers.md).
+    // initialize() returns Promise<void> -- fire-and-forget, do NOT await.
     provideEnvironmentInitializer(() => {
       inject(ModelService).initialize();
     }),
@@ -536,7 +542,20 @@ export function provideModelTesting(): EnvironmentProviders {
   `,
 })
 export class ModelInfoComponent {
-  // inject(ModelService) -- abstract class token
+  // Per components.md style guide: protected for template-only members,
+  // readonly for signal/Angular-initialized properties.
+  protected readonly model = inject(ModelService);
+  protected readonly promptText = signal('');
+  protected readonly prompting = signal(false);
+  protected readonly response = signal('');
+  protected readonly error = signal('');
+
+  protected onDownload() {
+    /* ... */
+  }
+  protected onSubmit(event: Event) {
+    /* ... */
+  }
 }
 ```
 

@@ -68,10 +68,10 @@ Phase 1 artifacts are largely compliant with the angular-developer skill referen
 
 ## Remediation Actions
 
-| #   | Finding                                 | Action                                                           | Artifact                      | Status  |
-| --- | --------------------------------------- | ---------------------------------------------------------------- | ----------------------------- | ------- |
-| 1   | Sync callback constraint not documented | Add explicit note about fire-and-forget pattern                  | 01-01-PLAN.md, 01-RESEARCH.md | Pending |
-| 2   | Missing `protected` on template members | Note to use `protected` access modifier                          | 01-RESEARCH.md, 01-02-PLAN.md | Pending |
-| 3   | CONTEXT.md deprecated API reference     | Add upgrade note acknowledging `provideEnvironmentInitializer()` | 01-CONTEXT.md                 | Pending |
-| 4   | Form pattern justification missing      | Add note about signal binding choice                             | 01-02-PLAN.md                 | Pending |
-| 5   | Signal fields missing `readonly`        | Note to use `readonly` on signal fields                          | 01-RESEARCH.md, 01-02-PLAN.md | Pending |
+| #   | Finding                                 | Action                                                           | Artifact                      | Status             |
+| --- | --------------------------------------- | ---------------------------------------------------------------- | ----------------------------- | ------------------ |
+| 1   | Sync callback constraint not documented | Add explicit note about fire-and-forget pattern                  | 01-01-PLAN.md, 01-RESEARCH.md | Applied 2026-03-25 |
+| 2   | Missing `protected` on template members | Note to use `protected` access modifier                          | 01-RESEARCH.md, 01-02-PLAN.md | Applied 2026-03-25 |
+| 3   | CONTEXT.md deprecated API reference     | Add upgrade note acknowledging `provideEnvironmentInitializer()` | 01-CONTEXT.md                 | Applied 2026-03-25 |
+| 4   | Form pattern justification missing      | Add note about signal binding choice                             | 01-02-PLAN.md                 | Applied 2026-03-25 |
+| 5   | Signal fields missing `readonly`        | Note to use `readonly` on signal fields                          | 01-RESEARCH.md, 01-02-PLAN.md | Applied 2026-03-25 |

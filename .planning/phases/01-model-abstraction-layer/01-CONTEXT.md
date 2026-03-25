@@ -16,6 +16,7 @@ A stable Angular DI interface (abstract `ModelService` class + factory provider)
 ### Anchor session timing
 
 - Eager initialization at app startup via `ENVIRONMENT_INITIALIZER` (background, non-blocking)
+  - _Note: Research confirmed `ENVIRONMENT_INITIALIZER` is deprecated since Angular v19. Plans use `provideEnvironmentInitializer()` (the Angular 21 replacement) to fulfill the same intent._
 - App renders immediately; Generate button disabled until anchor is ready
 - Empty system prompt on anchor session (zero token cost — preserves full context window)
 - Measure `session.contextWindow` and `session.contextUsage` on anchor creation, store as public signals (avoid `window` as variable name — shadows global)
@@ -26,7 +27,8 @@ A stable Angular DI interface (abstract `ModelService` class + factory provider)
 
 - Abstract `ModelService` class as the lightweight injection token (per Angular's "Optimizing injection tokens" guide)
 - `provideModel()` function returning `EnvironmentProviders` via `makeEnvironmentProviders()` — follows Angular's `provideRouter()`/`provideHttpClient()` convention
-- `ENVIRONMENT_INITIALIZER` bundled inside `provideModel()` (single registration point — consumers can't forget)
+- `ENVIRONMENT_INITIALIZER` bundled inside `provideModel()` (single registration point -- consumers can't forget)
+  - _Note: Implemented as `provideEnvironmentInitializer()` -- the non-deprecated Angular 21 API._
 - No config parameter on `provideModel()` — keep it simple
 - Browser detection: check `typeof LanguageModel !== 'undefined'` first, then CDK `Platform` to distinguish Edge vs Chrome
   - Edge + API: `Phi4MiniModelService`
@@ -145,7 +147,8 @@ A stable Angular DI interface (abstract `ModelService` class + factory provider)
 <specifics>
 ## Specific Ideas
 
-- Use `ENVIRONMENT_INITIALIZER` for anchor session (not `APP_INITIALIZER` — `platformInitializer` doesn't work with `bootstrapApplication()`)
+- Use `ENVIRONMENT_INITIALIZER` for anchor session (not `APP_INITIALIZER` -- `platformInitializer` doesn't work with `bootstrapApplication()`)
+  - _Note: Research confirmed `ENVIRONMENT_INITIALIZER` is deprecated since Angular v19. Plans use `provideEnvironmentInitializer()` (the Angular 21 replacement)._
 - Angular CDK `Platform` for browser detection (user referenced `https://material.angular.dev/cdk/platform/overview`)
 - Angular DI docs "Optimizing injection tokens" pattern for abstract class as DI token (user referenced `https://angular.dev/guide/di/lightweight-injection-tokens`)
 - Angular DI docs "Library author provide pattern" for `provideModel()` (from `https://angular.dev/guide/di/defining-dependency-providers#the-provide-pattern`)
