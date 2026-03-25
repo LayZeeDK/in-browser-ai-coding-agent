@@ -1,7 +1,7 @@
 # Async Reactivity with `resource`
 
 > [!IMPORTANT]
-> The `resource` API is currently experimental in Angular.
+> The `resource` API (`@angular/core`) is experimental and only available from Angular 21.2 onwards. It does not exist in Angular 19, 20, 21.0, or 21.1. For HTTP data fetching in earlier versions, use `httpResource` (experimental since v19.2) or `HttpClient` directly.
 
 A `Resource` incorporates asynchronous data fetching into Angular's signal-based reactivity. It executes an async loader function whenever its dependencies change, exposing the status and result as synchronous signals.
 
@@ -10,7 +10,9 @@ A `Resource` incorporates asynchronous data fetching into Angular's signal-based
 The `resource` function accepts an options object with two main properties:
 
 1. `params`: A reactive computation (like `computed`). When signals read here change, the resource re-fetches.
-2. `loader`: An async function that fetches data based on the parameters.
+2. `loader`: An async function (returns `Promise`) that fetches data based on the parameters. Use `stream` instead of `loader` for Observable-based or streaming responses (see Streaming and rxResource sections below).
+
+> **v21.2+ only:** `resource()` uses `params` and `loader` (Promise) or `stream` (Observable/streaming). Cannot use both `loader` and `stream` at the same time.
 
 ```ts
 import { Component, resource, signal, computed } from '@angular/core';
@@ -197,3 +199,21 @@ import { httpResource } from '@angular/common/http';
 
 userResource = httpResource<User>(() => `/api/users/${this.userId()}`);
 ```
+
+## RxJS-Based Resources with `rxResource`
+
+`rxResource` (from `@angular/core/rxjs-interop`) is like `resource` but accepts an Observable-based `stream` function instead of a Promise-based `loader`. Use it when your data layer already returns Observables (e.g., HttpClient):
+
+```ts
+import { rxResource } from '@angular/core/rxjs-interop';
+import { HttpClient } from '@angular/common/http';
+
+userResource = rxResource<User, { id: string }>({
+  params: () => ({ id: this.userId() }),
+  stream: ({ params }) => this.http.get<User>(`/api/users/${params.id}`),
+});
+```
+
+The `stream` function receives `ResourceLoaderParams<R>` (with `params` and `abortSignal`) and must return an `Observable<T>`. The resource automatically unsubscribes from the previous Observable when params change.
+
+> **API rename in v20:** Angular 19's `rxResource` used `request` and `loader`. Angular 20+ renamed these to `params` and `stream`. Do not use `request`/`loader` with `rxResource` in v20+ projects -- the compiler will reject them.

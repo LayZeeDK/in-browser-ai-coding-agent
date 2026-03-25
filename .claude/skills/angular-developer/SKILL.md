@@ -58,7 +58,7 @@ When managing state and data reactivity, use Angular Signals and consult the fol
 
 - **Signals Overview**: Core signal concepts (`signal`, `computed`), reactive contexts, and `untracked`. Read [signals-overview.md](references/signals-overview.md)
 - **Dependent State (`linkedSignal`)**: Creating writable state linked to source signals. Read [linked-signal.md](references/linked-signal.md)
-- **Async Reactivity (`resource`)**: Fetching asynchronous data directly into signal state, streaming with `resource.stream`, composing with `ResourceSnapshot`. Read [resource.md](references/resource.md)
+- **Async Reactivity (`resource`, `rxResource`)**: Fetching asynchronous data directly into signal state, streaming with `resource.stream`, RxJS-based fetching with `rxResource`, composing with `ResourceSnapshot`. Read [resource.md](references/resource.md)
 - **Side Effects (`effect`)**: Logging, third-party DOM manipulation (`afterRenderEffect`), and when NOT to use effects. Read [effects.md](references/effects.md)
 
 ## AI Design Patterns
