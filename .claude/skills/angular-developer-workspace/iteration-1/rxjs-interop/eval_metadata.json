@@ -1,0 +1,12 @@
+{
+  "eval_id": 15,
+  "eval_name": "rxjs-interop",
+  "prompt": "Angular RxJS interop: toSignal/toObservable, takeUntilDestroyed, outputToObservable/outputFromObservable, rxResource, signals vs observables best practices.",
+  "assertions": [
+    { "name": "toSignal_toObservable", "description": "Shows toSignal() and toObservable() from @angular/core/rxjs-interop", "type": "content_check" },
+    { "name": "takeUntilDestroyed", "description": "Shows takeUntilDestroyed() for subscription cleanup", "type": "content_check" },
+    { "name": "output_interop", "description": "Shows outputToObservable() and/or outputFromObservable()", "type": "content_check" },
+    { "name": "rxResource", "description": "Shows rxResource() for reactive data fetching bridging RxJS and signals", "type": "content_check" },
+    { "name": "best_practices", "description": "Provides guidance on when to use signals vs observables", "type": "content_check" }
+  ]
+}

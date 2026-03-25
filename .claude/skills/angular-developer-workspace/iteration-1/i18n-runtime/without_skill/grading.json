@@ -1,0 +1,12 @@
+{
+  "eval_id": 12,
+  "config": "without_skill",
+  "expectations": [
+    { "text": "loadTranslations_usage", "passed": true, "evidence": "import { loadTranslations } from '@angular/localize'; with JSON and XLIFF loading" },
+    { "text": "angular_json_config", "passed": true, "evidence": "angular.json settings for runtime i18n (no localize property, translations as assets)" },
+    { "text": "extract_i18n_command", "passed": true, "evidence": "ng extract-i18n with format options and custom @@id markers" },
+    { "text": "build_vs_runtime_comparison", "passed": true, "evidence": "ASCII table comparing bundles, build time, performance, deployment, SEO, when to use each" },
+    { "text": "locale_init_polyfill", "passed": true, "evidence": "import '@angular/localize/init' with explanation of global $localize registration" }
+  ],
+  "qualitative_notes": "Both approaches to polyfill are valid: with-skill says DON'T use /init for runtime, baseline says DO use it. Angular docs say either works but loadTranslations() must be called before bootstrap regardless."
+}

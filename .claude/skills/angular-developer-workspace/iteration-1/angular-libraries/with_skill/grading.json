@@ -1,0 +1,11 @@
+{
+  "eval_id": 16,
+  "config": "with_skill",
+  "expectations": [
+    { "text": "generate_library", "passed": true, "evidence": "Line 11: 'ng generate library my-lib'" },
+    { "text": "project_structure", "passed": true, "evidence": "Lines 32-68: public-api.ts barrel, ng-package.json with entryFile/dest, library package.json with peerDependencies" },
+    { "text": "secondary_entry_points", "passed": true, "evidence": "Lines 107-145: Directory structure, per-entry ng-package.json, consumer import examples" },
+    { "text": "npm_publish", "passed": true, "evidence": "Lines 163-201: ng build --production, cd dist, npm publish --access public, version workflow" },
+    { "text": "forRoot_pattern", "passed": true, "evidence": "Lines 206-287: Modern provide* with makeEnvironmentProviders + withLogging feature function. Lines 288-323: Legacy forRoot/forChild commented as not recommended for Angular 21+" }
+  ]
+}

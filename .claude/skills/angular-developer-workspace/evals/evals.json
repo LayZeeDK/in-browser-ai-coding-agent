@@ -1,0 +1,117 @@
+{
+  "skill_name": "angular-developer",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create an Angular attribute directive called `appHighlight` that changes the background color of any element on hover. It should accept an optional color input (default yellow) and use the modern `host` metadata approach, not @HostBinding/@HostListener. Make it work with Angular 21 standalone APIs.",
+      "expected_output": "A standalone directive using host: { '(mouseenter)': ..., '(mouseleave)': ... } with input() for color, proper selector naming [appHighlight]",
+      "files": [],
+      "assertions": [
+        {
+          "name": "uses_host_metadata",
+          "description": "Uses host: {} in @Directive instead of @HostBinding/@HostListener",
+          "type": "content_check"
+        },
+        {
+          "name": "uses_input_function",
+          "description": "Uses input() function instead of @Input decorator",
+          "type": "content_check"
+        },
+        {
+          "name": "correct_selector",
+          "description": "Uses attribute selector [appHighlight] not element selector",
+          "type": "content_check"
+        },
+        {
+          "name": "standalone_implicit",
+          "description": "Does not explicitly set standalone: true (Angular 21 default)",
+          "type": "content_check"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I need to create a custom structural directive in Angular called `*appRepeat` that repeats its template a given number of times and exposes the current index as an implicit context variable. Show me the full implementation using TemplateRef and ViewContainerRef with the modern inject() function.",
+      "expected_output": "Structural directive injecting TemplateRef and ViewContainerRef via inject(), creating embedded views with context, exposing $implicit for index",
+      "files": [],
+      "assertions": [
+        {
+          "name": "uses_inject_function",
+          "description": "Uses inject(TemplateRef) and inject(ViewContainerRef) instead of constructor injection",
+          "type": "content_check"
+        },
+        {
+          "name": "creates_embedded_views",
+          "description": "Calls viewContainerRef.createEmbeddedView with context object",
+          "type": "content_check"
+        },
+        {
+          "name": "exposes_implicit_context",
+          "description": "Sets $implicit in the context to expose index to template",
+          "type": "content_check"
+        },
+        {
+          "name": "handles_changes",
+          "description": "Clears and recreates views when input changes, or uses effect/setter",
+          "type": "content_check"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I'm building an Angular component library and want to use the directive composition API (hostDirectives) to compose behaviors. I have a CdkTooltip directive and a CdkFocusable directive, and I want to create a ButtonComponent that composes both without the consumer needing to know about them. Show me how to expose specific inputs/outputs from the composed directives and how to add the directives to the host.",
+      "expected_output": "Component using hostDirectives: [{directive: CdkTooltip, inputs: ['tooltipText'], outputs: [...]}, {directive: CdkFocusable}] with proper input/output aliasing",
+      "files": [],
+      "assertions": [
+        {
+          "name": "uses_hostDirectives",
+          "description": "Uses hostDirectives array in @Component metadata",
+          "type": "content_check"
+        },
+        {
+          "name": "exposes_inputs_outputs",
+          "description": "Shows how to selectively expose inputs/outputs from composed directives",
+          "type": "content_check"
+        },
+        {
+          "name": "explains_aliasing",
+          "description": "Demonstrates or mentions input/output aliasing for host directives",
+          "type": "content_check"
+        },
+        {
+          "name": "explains_composition_benefit",
+          "description": "Explains why hostDirectives is useful (encapsulation, reuse without consumer awareness)",
+          "type": "content_check"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to use NgOptimizedImage in my Angular 21 app for a product gallery. Show me: (1) how to set it up with the provider, (2) how to use it for both static and dynamic images with proper width/height/priority attributes, (3) how to configure a custom image loader for Cloudinary, and (4) what fill mode is and when to use it.",
+      "expected_output": "provideImgixLoader or provideCloudinaryLoader in app config, <img ngSrc=... width=... height=... priority /> usage, custom loader function, fill mode for CSS-sized containers",
+      "files": [],
+      "assertions": [
+        {
+          "name": "provides_image_loader",
+          "description": "Shows provideCloudinaryLoader or custom IMAGE_LOADER provider in app config",
+          "type": "content_check"
+        },
+        {
+          "name": "uses_ngSrc",
+          "description": "Uses ngSrc attribute instead of src",
+          "type": "content_check"
+        },
+        {
+          "name": "shows_priority",
+          "description": "Demonstrates priority attribute for LCP images",
+          "type": "content_check"
+        },
+        {
+          "name": "explains_fill_mode",
+          "description": "Explains fill attribute for CSS-sized containers (no width/height needed)",
+          "type": "content_check"
+        }
+      ]
+    }
+  ]
+}

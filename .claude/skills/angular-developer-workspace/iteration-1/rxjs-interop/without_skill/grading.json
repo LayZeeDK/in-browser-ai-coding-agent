@@ -1,0 +1,12 @@
+{
+  "eval_id": 15,
+  "config": "without_skill",
+  "expectations": [
+    { "text": "toSignal_toObservable", "passed": true, "evidence": "Lines 83: toSignal with initialValue. Line 126: requireSync. Lines 148-154: toObservable -> debounceTime -> distinctUntilChanged -> toSignal" },
+    { "text": "takeUntilDestroyed", "passed": true, "evidence": "Line 159: takeUntilDestroyed() in constructor. Lines 210-215: explicit DestroyRef. Lines 222-231: service with DestroyRef" },
+    { "text": "output_interop", "passed": true, "evidence": "Lines 249: output<string>(). Lines 268-279: outputToObservable concept. Line 295: outputFromObservable()" },
+    { "text": "rxResource", "passed": true, "evidence": "Lines 385-398: rxResource with request/loader. Lines 422-425: single param. Lines 449-458: manual refresh with reload(). Lines 485-497: derived signal params" },
+    { "text": "best_practices", "passed": true, "evidence": "Lines 504-627: When to prefer signals vs observables, bridge patterns, 8 concrete guidelines" }
+  ],
+  "qualitative_notes": "Baseline uses 'request' property name (possibly older API naming) vs with-skill uses 'params'. Both are valid. Baseline provides 8 numbered guidelines which is more actionable."
+}

@@ -1,0 +1,11 @@
+{
+  "eval_id": 8,
+  "config": "without_skill",
+  "expectations": [
+    { "text": "uses_getDeferBlocks", "passed": true, "evidence": "fixture.getDeferBlocks()" },
+    { "text": "uses_DeferBlockState", "passed": true, "evidence": "DeferBlockState.Placeholder, .Loading, .Complete, .Error all used" },
+    { "text": "handles_async", "passed": true, "evidence": "await deferBlock.render(...) + fixture.detectChanges()" },
+    { "text": "complete_testbed_example", "passed": true, "evidence": "Full TestBed with deferBlockBehavior: DeferBlockBehavior.Manual, compileComponents()" }
+  ],
+  "qualitative_notes": "No nested defer testing, no Playthrough mode, uses detectChanges() instead of whenStable()"
+}

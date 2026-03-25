@@ -1,0 +1,27 @@
+{
+  "eval_id": 5,
+  "eval_name": "style-naming",
+  "prompt": "Create a user profile management feature with correct Angular naming conventions: component, service, pipe, guard with proper file names, class names, selectors, and file organization.",
+  "assertions": [
+    {
+      "name": "kebab_case_filenames",
+      "description": "Uses kebab-case for file names (user-profile.component.ts, user.service.ts, etc.)",
+      "type": "content_check"
+    },
+    {
+      "name": "proper_selectors",
+      "description": "Uses kebab-case selectors with app- prefix (e.g., app-user-profile)",
+      "type": "content_check"
+    },
+    {
+      "name": "proper_class_names",
+      "description": "Uses PascalCase class names with type suffix (UserProfileComponent, UserService, etc.)",
+      "type": "content_check"
+    },
+    {
+      "name": "modern_apis",
+      "description": "Uses modern Angular 21 APIs (inject(), input(), functional guards, etc.)",
+      "type": "content_check"
+    }
+  ]
+}

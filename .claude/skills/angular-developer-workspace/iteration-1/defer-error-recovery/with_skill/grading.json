@@ -1,0 +1,11 @@
+{
+  "eval_id": 10,
+  "config": "with_skill",
+  "expectations": [
+    { "text": "error_to_loading_retry", "passed": true, "evidence": "Renders Error, verifies, then renders Loading, verifies UI update" },
+    { "text": "complete_to_placeholder_reset", "passed": true, "evidence": "Renders Complete (UserCard visible), then Placeholder, verifies reset" },
+    { "text": "rapid_state_changes", "passed": true, "evidence": "Two sub-tests: P->L->C and P->L->E in quick succession, final state verified" },
+    { "text": "manual_default_state", "passed": true, "evidence": "Creates fixture without render(), verifies Placeholder is initial state" },
+    { "text": "compile_components_requirement", "passed": true, "evidence": "TestBed without compileComponents(), verifies getDeferBlocks() returns empty" }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "eval_id": 14,
+  "config": "with_skill",
+  "expectations": [
+    { "text": "basic_setup", "passed": true, "evidence": "Lines 118-125: cdkDropList on container, cdkDrag on items" },
+    { "text": "reorder", "passed": true, "evidence": "Lines 206-211: moveItemInArray from @angular/cdk/drag-drop" },
+    { "text": "transfer_between_lists", "passed": true, "evidence": "Lines 122-123: cdkDropListConnectedTo=[doneList]. Lines 213-219: transferArrayItem" },
+    { "text": "drag_handle_preview", "passed": true, "evidence": "Line 133: cdkDragHandle. Line 138: *cdkDragPreview" },
+    { "text": "conditional_disable", "passed": true, "evidence": "Line 130: [cdkDragDisabled]='dragDisabled()'" }
+  ]
+}

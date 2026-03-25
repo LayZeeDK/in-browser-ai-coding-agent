@@ -1,0 +1,27 @@
+{
+  "eval_id": 7,
+  "eval_name": "defer-element-ref",
+  "prompt": "Use @defer with element reference triggers: on hover(ref), on interaction(ref), on viewport(ref) where trigger element differs from placeholder. Combine multiple triggers with semicolons.",
+  "assertions": [
+    {
+      "name": "uses_template_ref_variable",
+      "description": "Defines a template reference variable (#ref) on the trigger element",
+      "type": "content_check"
+    },
+    {
+      "name": "uses_element_ref_in_trigger",
+      "description": "Passes the ref to trigger: on hover(refName) or on interaction(refName)",
+      "type": "content_check"
+    },
+    {
+      "name": "combines_triggers",
+      "description": "Shows combining multiple triggers with semicolons in a single @defer",
+      "type": "content_check"
+    },
+    {
+      "name": "trigger_before_defer",
+      "description": "Trigger element appears in template ABOVE/BEFORE the @defer block",
+      "type": "content_check"
+    }
+  ]
+}

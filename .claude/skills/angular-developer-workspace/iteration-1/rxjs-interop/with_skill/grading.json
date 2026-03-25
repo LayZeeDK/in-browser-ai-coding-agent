@@ -1,0 +1,11 @@
+{
+  "eval_id": 15,
+  "config": "with_skill",
+  "expectations": [
+    { "text": "toSignal_toObservable", "passed": true, "evidence": "Lines 106-108: toSignal with initialValue. Line 133: requireSync. Lines 177-193: toObservable -> debounceTime -> switchMap -> toSignal round-trip" },
+    { "text": "takeUntilDestroyed", "passed": true, "evidence": "Line 217: takeUntilDestroyed() in constructor. Line 245: takeUntilDestroyed(this.destroyRef) outside injection context. Line 267: service accepting DestroyRef" },
+    { "text": "output_interop", "passed": true, "evidence": "Lines 328-330: outputFromObservable(). Lines 381-387: outputToObservable() with debounce pipeline" },
+    { "text": "rxResource", "passed": true, "evidence": "Lines 442-458: rxResource with params/loader returning Observable. Lines 524-544: dependent params with debounced signal" },
+    { "text": "best_practices", "passed": true, "evidence": "Lines 551-657: Detailed prefer-signals vs prefer-observables guidance with summary table and combined example" }
+  ]
+}

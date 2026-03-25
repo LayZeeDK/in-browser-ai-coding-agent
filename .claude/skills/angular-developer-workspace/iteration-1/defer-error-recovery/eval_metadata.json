@@ -1,0 +1,32 @@
+{
+  "eval_id": 10,
+  "eval_name": "defer-error-recovery",
+  "prompt": "Test @defer edge cases: Error->Loading retry, Complete->Placeholder reset, rapid state changes, compileComponents requirement, Manual mode default state.",
+  "assertions": [
+    {
+      "name": "error_to_loading_retry",
+      "description": "Tests transitioning from Error state back to Loading (simulating retry)",
+      "type": "content_check"
+    },
+    {
+      "name": "complete_to_placeholder_reset",
+      "description": "Tests transitioning from Complete back to Placeholder",
+      "type": "content_check"
+    },
+    {
+      "name": "rapid_state_changes",
+      "description": "Tests multiple rapid state transitions ending in correct final state",
+      "type": "content_check"
+    },
+    {
+      "name": "manual_default_state",
+      "description": "Tests that Manual mode shows Placeholder by default without explicit render()",
+      "type": "content_check"
+    },
+    {
+      "name": "compile_components_requirement",
+      "description": "Tests or documents that compileComponents() is required for @defer blocks",
+      "type": "content_check"
+    }
+  ]
+}

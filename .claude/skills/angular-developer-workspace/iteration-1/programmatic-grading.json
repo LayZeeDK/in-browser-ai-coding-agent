@@ -1,0 +1,854 @@
+{
+  "totalPassed": 148,
+  "totalAssertions": 148,
+  "results": {
+    "attr-directive": {
+      "with_skill": {
+        "passed": 4,
+        "total": 4,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "uses_host_metadata": {
+            "passed": true,
+            "description": "host: {} in @Directive"
+          },
+          "uses_input_function": {
+            "passed": true,
+            "description": "input() or input<>()"
+          },
+          "correct_selector": {
+            "passed": true,
+            "description": "[appHighlight] selector"
+          },
+          "standalone_implicit": {
+            "passed": true,
+            "description": "No standalone: true"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 4,
+        "total": 4,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "uses_host_metadata": {
+            "passed": true,
+            "description": "host: {} in @Directive"
+          },
+          "uses_input_function": {
+            "passed": true,
+            "description": "input() or input<>()"
+          },
+          "correct_selector": {
+            "passed": true,
+            "description": "[appHighlight] selector"
+          },
+          "standalone_implicit": {
+            "passed": true,
+            "description": "No standalone: true"
+          }
+        }
+      }
+    },
+    "structural-directive": {
+      "with_skill": {
+        "passed": 4,
+        "total": 4,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "uses_inject_function": {
+            "passed": true,
+            "description": "inject(TemplateRef)"
+          },
+          "creates_embedded_views": {
+            "passed": true,
+            "description": "createEmbeddedView call"
+          },
+          "exposes_implicit_context": {
+            "passed": true,
+            "description": "$implicit in context"
+          },
+          "handles_changes": {
+            "passed": true,
+            "description": "Clears/recreates on change"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 4,
+        "total": 4,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "uses_inject_function": {
+            "passed": true,
+            "description": "inject(TemplateRef)"
+          },
+          "creates_embedded_views": {
+            "passed": true,
+            "description": "createEmbeddedView call"
+          },
+          "exposes_implicit_context": {
+            "passed": true,
+            "description": "$implicit in context"
+          },
+          "handles_changes": {
+            "passed": true,
+            "description": "Clears/recreates on change"
+          }
+        }
+      }
+    },
+    "host-directives": {
+      "with_skill": {
+        "passed": 4,
+        "total": 4,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "uses_hostDirectives": {
+            "passed": true,
+            "description": "hostDirectives array"
+          },
+          "exposes_inputs_outputs": {
+            "passed": true,
+            "description": "inputs array in hostDirectives"
+          },
+          "explains_aliasing": {
+            "passed": true,
+            "description": "aliasing syntax"
+          },
+          "explains_composition_benefit": {
+            "passed": true,
+            "description": "Composition benefit explanation"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 4,
+        "total": 4,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "uses_hostDirectives": {
+            "passed": true,
+            "description": "hostDirectives array"
+          },
+          "exposes_inputs_outputs": {
+            "passed": true,
+            "description": "inputs array in hostDirectives"
+          },
+          "explains_aliasing": {
+            "passed": true,
+            "description": "aliasing syntax"
+          },
+          "explains_composition_benefit": {
+            "passed": true,
+            "description": "Composition benefit explanation"
+          }
+        }
+      }
+    },
+    "ng-optimized-image": {
+      "with_skill": {
+        "passed": 4,
+        "total": 4,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "provides_image_loader": {
+            "passed": true,
+            "description": "Image loader provider"
+          },
+          "uses_ngSrc": {
+            "passed": true,
+            "description": "ngSrc attribute"
+          },
+          "shows_priority": {
+            "passed": true,
+            "description": "priority attribute"
+          },
+          "explains_fill_mode": {
+            "passed": true,
+            "description": "fill mode"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 4,
+        "total": 4,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "provides_image_loader": {
+            "passed": true,
+            "description": "Image loader provider"
+          },
+          "uses_ngSrc": {
+            "passed": true,
+            "description": "ngSrc attribute"
+          },
+          "shows_priority": {
+            "passed": true,
+            "description": "priority attribute"
+          },
+          "explains_fill_mode": {
+            "passed": true,
+            "description": "fill mode"
+          }
+        }
+      }
+    },
+    "style-naming": {
+      "with_skill": {
+        "passed": 4,
+        "total": 4,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "kebab_case_filenames": {
+            "passed": true,
+            "description": "kebab-case filenames"
+          },
+          "proper_selectors": {
+            "passed": true,
+            "description": "app-user-profile selector"
+          },
+          "proper_class_names": {
+            "passed": true,
+            "description": "PascalCase class name"
+          },
+          "modern_apis": {
+            "passed": true,
+            "description": "Modern Angular APIs"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 4,
+        "total": 4,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "kebab_case_filenames": {
+            "passed": true,
+            "description": "kebab-case filenames"
+          },
+          "proper_selectors": {
+            "passed": true,
+            "description": "app-user-profile selector"
+          },
+          "proper_class_names": {
+            "passed": true,
+            "description": "PascalCase class name"
+          },
+          "modern_apis": {
+            "passed": true,
+            "description": "Modern Angular APIs"
+          }
+        }
+      }
+    },
+    "style-patterns": {
+      "with_skill": {
+        "passed": 6,
+        "total": 6,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "fixes_selector": {
+            "passed": true,
+            "description": "app-user-list selector"
+          },
+          "removes_standalone_true": {
+            "passed": true,
+            "description": "No standalone: true"
+          },
+          "uses_control_flow": {
+            "passed": true,
+            "description": "@if/@for control flow"
+          },
+          "uses_inject": {
+            "passed": true,
+            "description": "inject() or httpResource"
+          },
+          "adds_onpush": {
+            "passed": true,
+            "description": "OnPush change detection"
+          },
+          "removes_any": {
+            "passed": true,
+            "description": "No any types (except interface definitions)"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 6,
+        "total": 6,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "fixes_selector": {
+            "passed": true,
+            "description": "app-user-list selector"
+          },
+          "removes_standalone_true": {
+            "passed": true,
+            "description": "No standalone: true"
+          },
+          "uses_control_flow": {
+            "passed": true,
+            "description": "@if/@for control flow"
+          },
+          "uses_inject": {
+            "passed": true,
+            "description": "inject() or httpResource"
+          },
+          "adds_onpush": {
+            "passed": true,
+            "description": "OnPush change detection"
+          },
+          "removes_any": {
+            "passed": true,
+            "description": "No any types (except interface definitions)"
+          }
+        }
+      }
+    },
+    "defer-element-ref": {
+      "with_skill": {
+        "passed": 4,
+        "total": 4,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "uses_template_ref_variable": {
+            "passed": true,
+            "description": "Template reference variable"
+          },
+          "uses_element_ref_in_trigger": {
+            "passed": true,
+            "description": "Element ref in trigger"
+          },
+          "combines_triggers": {
+            "passed": true,
+            "description": "Multiple triggers with ;"
+          },
+          "trigger_before_defer": {
+            "passed": true,
+            "description": "Button with ref before @defer"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 4,
+        "total": 4,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "uses_template_ref_variable": {
+            "passed": true,
+            "description": "Template reference variable"
+          },
+          "uses_element_ref_in_trigger": {
+            "passed": true,
+            "description": "Element ref in trigger"
+          },
+          "combines_triggers": {
+            "passed": true,
+            "description": "Multiple triggers with ;"
+          },
+          "trigger_before_defer": {
+            "passed": true,
+            "description": "Button with ref before @defer"
+          }
+        }
+      }
+    },
+    "defer-testing": {
+      "with_skill": {
+        "passed": 4,
+        "total": 4,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "uses_getDeferBlocks": {
+            "passed": true,
+            "description": "getDeferBlocks() call"
+          },
+          "uses_DeferBlockState": {
+            "passed": true,
+            "description": "DeferBlockState enum"
+          },
+          "handles_async": {
+            "passed": true,
+            "description": "Async handling"
+          },
+          "complete_testbed_example": {
+            "passed": true,
+            "description": "TestBed setup"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 4,
+        "total": 4,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "uses_getDeferBlocks": {
+            "passed": true,
+            "description": "getDeferBlocks() call"
+          },
+          "uses_DeferBlockState": {
+            "passed": true,
+            "description": "DeferBlockState enum"
+          },
+          "handles_async": {
+            "passed": true,
+            "description": "Async handling"
+          },
+          "complete_testbed_example": {
+            "passed": true,
+            "description": "TestBed setup"
+          }
+        }
+      }
+    },
+    "defer-nested-prefetch": {
+      "with_skill": {
+        "passed": 5,
+        "total": 5,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "top_level_only_getDeferBlocks": {
+            "passed": true,
+            "description": "getDeferBlocks on fixture"
+          },
+          "nested_access_after_parent_complete": {
+            "passed": true,
+            "description": "Nested access after Complete"
+          },
+          "three_level_nesting": {
+            "passed": true,
+            "description": "3-level Complete chain"
+          },
+          "playthrough_auto_resolve": {
+            "passed": true,
+            "description": "Playthrough mode"
+          },
+          "error_blocks_nested": {
+            "passed": true,
+            "description": "Error state tested"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 5,
+        "total": 5,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "top_level_only_getDeferBlocks": {
+            "passed": true,
+            "description": "getDeferBlocks on fixture"
+          },
+          "nested_access_after_parent_complete": {
+            "passed": true,
+            "description": "Nested access after Complete"
+          },
+          "three_level_nesting": {
+            "passed": true,
+            "description": "3-level Complete chain"
+          },
+          "playthrough_auto_resolve": {
+            "passed": true,
+            "description": "Playthrough mode"
+          },
+          "error_blocks_nested": {
+            "passed": true,
+            "description": "Error state tested"
+          }
+        }
+      }
+    },
+    "defer-error-recovery": {
+      "with_skill": {
+        "passed": 5,
+        "total": 5,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "error_to_loading_retry": {
+            "passed": true,
+            "description": "Error to Loading transition"
+          },
+          "complete_to_placeholder_reset": {
+            "passed": true,
+            "description": "Complete to Placeholder"
+          },
+          "rapid_state_changes": {
+            "passed": true,
+            "description": "Rapid state changes"
+          },
+          "manual_default_state": {
+            "passed": true,
+            "description": "Manual default state"
+          },
+          "compile_components_requirement": {
+            "passed": true,
+            "description": "compileComponents reference"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 5,
+        "total": 5,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "error_to_loading_retry": {
+            "passed": true,
+            "description": "Error to Loading transition"
+          },
+          "complete_to_placeholder_reset": {
+            "passed": true,
+            "description": "Complete to Placeholder"
+          },
+          "rapid_state_changes": {
+            "passed": true,
+            "description": "Rapid state changes"
+          },
+          "manual_default_state": {
+            "passed": true,
+            "description": "Manual default state"
+          },
+          "compile_components_requirement": {
+            "passed": true,
+            "description": "compileComponents reference"
+          }
+        }
+      }
+    },
+    "i18n-icu": {
+      "with_skill": {
+        "passed": 5,
+        "total": 5,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "i18n_attribute_with_meaning": {
+            "passed": true,
+            "description": "i18n with meaning|description"
+          },
+          "icu_plural": {
+            "passed": true,
+            "description": "ICU plural expression"
+          },
+          "icu_select": {
+            "passed": true,
+            "description": "ICU select expression"
+          },
+          "i18n_on_attributes": {
+            "passed": true,
+            "description": "i18n on attributes"
+          },
+          "localize_tagged_template": {
+            "passed": true,
+            "description": "$localize tagged template"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 5,
+        "total": 5,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "i18n_attribute_with_meaning": {
+            "passed": true,
+            "description": "i18n with meaning|description"
+          },
+          "icu_plural": {
+            "passed": true,
+            "description": "ICU plural expression"
+          },
+          "icu_select": {
+            "passed": true,
+            "description": "ICU select expression"
+          },
+          "i18n_on_attributes": {
+            "passed": true,
+            "description": "i18n on attributes"
+          },
+          "localize_tagged_template": {
+            "passed": true,
+            "description": "$localize tagged template"
+          }
+        }
+      }
+    },
+    "i18n-runtime": {
+      "with_skill": {
+        "passed": 5,
+        "total": 5,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "loadTranslations_usage": {
+            "passed": true,
+            "description": "loadTranslations() call"
+          },
+          "angular_json_config": {
+            "passed": true,
+            "description": "Angular CLI i18n config"
+          },
+          "extract_i18n_command": {
+            "passed": true,
+            "description": "ng extract-i18n command"
+          },
+          "build_vs_runtime_comparison": {
+            "passed": true,
+            "description": "Build vs runtime comparison"
+          },
+          "locale_init_polyfill": {
+            "passed": true,
+            "description": "@angular/localize setup"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 5,
+        "total": 5,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "loadTranslations_usage": {
+            "passed": true,
+            "description": "loadTranslations() call"
+          },
+          "angular_json_config": {
+            "passed": true,
+            "description": "Angular CLI i18n config"
+          },
+          "extract_i18n_command": {
+            "passed": true,
+            "description": "ng extract-i18n command"
+          },
+          "build_vs_runtime_comparison": {
+            "passed": true,
+            "description": "Build vs runtime comparison"
+          },
+          "locale_init_polyfill": {
+            "passed": true,
+            "description": "@angular/localize setup"
+          }
+        }
+      }
+    },
+    "service-workers": {
+      "with_skill": {
+        "passed": 5,
+        "total": 5,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "ng_add_pwa": {
+            "passed": true,
+            "description": "ng add @angular/pwa"
+          },
+          "ngsw_config": {
+            "passed": true,
+            "description": "ngsw-config structure"
+          },
+          "sw_update": {
+            "passed": true,
+            "description": "SwUpdate usage"
+          },
+          "sw_push": {
+            "passed": true,
+            "description": "SwPush usage"
+          },
+          "local_testing": {
+            "passed": true,
+            "description": "Local testing instructions"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 5,
+        "total": 5,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "ng_add_pwa": {
+            "passed": true,
+            "description": "ng add @angular/pwa"
+          },
+          "ngsw_config": {
+            "passed": true,
+            "description": "ngsw-config structure"
+          },
+          "sw_update": {
+            "passed": true,
+            "description": "SwUpdate usage"
+          },
+          "sw_push": {
+            "passed": true,
+            "description": "SwPush usage"
+          },
+          "local_testing": {
+            "passed": true,
+            "description": "Local testing instructions"
+          }
+        }
+      }
+    },
+    "drag-drop": {
+      "with_skill": {
+        "passed": 5,
+        "total": 5,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "basic_setup": {
+            "passed": true,
+            "description": "cdkDropList + cdkDrag"
+          },
+          "reorder": {
+            "passed": true,
+            "description": "moveItemInArray"
+          },
+          "transfer_between_lists": {
+            "passed": true,
+            "description": "transferArrayItem"
+          },
+          "drag_handle_preview": {
+            "passed": true,
+            "description": "cdkDragHandle"
+          },
+          "conditional_disable": {
+            "passed": true,
+            "description": "cdkDragDisabled"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 5,
+        "total": 5,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "basic_setup": {
+            "passed": true,
+            "description": "cdkDropList + cdkDrag"
+          },
+          "reorder": {
+            "passed": true,
+            "description": "moveItemInArray"
+          },
+          "transfer_between_lists": {
+            "passed": true,
+            "description": "transferArrayItem"
+          },
+          "drag_handle_preview": {
+            "passed": true,
+            "description": "cdkDragHandle"
+          },
+          "conditional_disable": {
+            "passed": true,
+            "description": "cdkDragDisabled"
+          }
+        }
+      }
+    },
+    "rxjs-interop": {
+      "with_skill": {
+        "passed": 5,
+        "total": 5,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "toSignal_toObservable": {
+            "passed": true,
+            "description": "toSignal + toObservable"
+          },
+          "takeUntilDestroyed": {
+            "passed": true,
+            "description": "takeUntilDestroyed()"
+          },
+          "output_interop": {
+            "passed": true,
+            "description": "Output interop functions"
+          },
+          "rxResource": {
+            "passed": true,
+            "description": "rxResource()"
+          },
+          "best_practices": {
+            "passed": true,
+            "description": "Signals vs observables guidance"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 5,
+        "total": 5,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "toSignal_toObservable": {
+            "passed": true,
+            "description": "toSignal + toObservable"
+          },
+          "takeUntilDestroyed": {
+            "passed": true,
+            "description": "takeUntilDestroyed()"
+          },
+          "output_interop": {
+            "passed": true,
+            "description": "Output interop functions"
+          },
+          "rxResource": {
+            "passed": true,
+            "description": "rxResource()"
+          },
+          "best_practices": {
+            "passed": true,
+            "description": "Signals vs observables guidance"
+          }
+        }
+      }
+    },
+    "angular-libraries": {
+      "with_skill": {
+        "passed": 5,
+        "total": 5,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "generate_library": {
+            "passed": true,
+            "description": "ng generate library"
+          },
+          "project_structure": {
+            "passed": true,
+            "description": "public-api.ts + ng-package.json"
+          },
+          "secondary_entry_points": {
+            "passed": true,
+            "description": "Secondary entry points"
+          },
+          "npm_publish": {
+            "passed": true,
+            "description": "npm publish command"
+          },
+          "forRoot_pattern": {
+            "passed": true,
+            "description": "forRoot or provide* pattern"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 5,
+        "total": 5,
+        "pass_rate": "100.0%",
+        "assertions": {
+          "generate_library": {
+            "passed": true,
+            "description": "ng generate library"
+          },
+          "project_structure": {
+            "passed": true,
+            "description": "public-api.ts + ng-package.json"
+          },
+          "secondary_entry_points": {
+            "passed": true,
+            "description": "Secondary entry points"
+          },
+          "npm_publish": {
+            "passed": true,
+            "description": "npm publish command"
+          },
+          "forRoot_pattern": {
+            "passed": true,
+            "description": "forRoot or provide* pattern"
+          }
+        }
+      }
+    }
+  }
+}

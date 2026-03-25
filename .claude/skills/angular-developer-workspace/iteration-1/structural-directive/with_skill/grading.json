@@ -1,0 +1,10 @@
+{
+  "eval_id": 2,
+  "config": "with_skill",
+  "expectations": [
+    { "text": "uses_inject_function", "passed": true, "evidence": "inject<TemplateRef<RepeatContext>>(TemplateRef) and inject(ViewContainerRef)" },
+    { "text": "creates_embedded_views", "passed": true, "evidence": "viewContainerRef.createEmbeddedView(templateRef, { $implicit: i, index: i })" },
+    { "text": "exposes_implicit_context", "passed": true, "evidence": "$implicit: i in context object" },
+    { "text": "handles_changes", "passed": true, "evidence": "Uses effect() that calls viewContainerRef.clear() then recreates views" }
+  ]
+}

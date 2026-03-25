@@ -58,4 +58,8 @@ vitest.config.*.timestamp*
 __screenshots__/
 
 .nx/polygraph
-*-workspace/
+# Skill benchmark workspaces: keep eval configs/scripts/reports, ignore generated outputs
+.claude/skills/*-workspace/**/outputs/
+.claude/skills/*-workspace/.claude/
+# Legacy skill-creator workspace at repo root (from earlier sessions)
+angular-developer-workspace/

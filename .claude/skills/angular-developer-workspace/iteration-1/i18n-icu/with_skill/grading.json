@@ -1,0 +1,11 @@
+{
+  "eval_id": 11,
+  "config": "with_skill",
+  "expectations": [
+    { "text": "i18n_attribute_with_meaning", "passed": true, "evidence": "i18n='product list heading|Main heading for the product catalog page'" },
+    { "text": "icu_plural", "passed": true, "evidence": "{itemCount(), plural, =0 {...} =1 {...} few {...} other {...}}" },
+    { "text": "icu_select", "passed": true, "evidence": "{userGender(), select, male {...} female {...} other {...}}" },
+    { "text": "i18n_on_attributes", "passed": true, "evidence": "i18n-placeholder and i18n-title on input element" },
+    { "text": "localize_tagged_template", "passed": true, "evidence": "$localize in computed signal and methods with :meaning|description: syntax" }
+  ]
+}

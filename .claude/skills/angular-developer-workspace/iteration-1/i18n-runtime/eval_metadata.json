@@ -1,0 +1,32 @@
+{
+  "eval_id": 12,
+  "eval_name": "i18n-runtime",
+  "prompt": "Set up runtime translation loading in Angular 21: loadTranslations(), dynamic locale switching, angular.json i18n config, ng extract-i18n, build-time vs runtime comparison.",
+  "assertions": [
+    {
+      "name": "loadTranslations_usage",
+      "description": "Shows loadTranslations() from @angular/localize for runtime loading",
+      "type": "content_check"
+    },
+    {
+      "name": "angular_json_config",
+      "description": "Shows i18n configuration in angular.json (sourceLocale, locales)",
+      "type": "content_check"
+    },
+    {
+      "name": "extract_i18n_command",
+      "description": "Shows ng extract-i18n command for extracting translation files",
+      "type": "content_check"
+    },
+    {
+      "name": "build_vs_runtime_comparison",
+      "description": "Explains the difference between build-time (separate bundles) and runtime (single bundle + dynamic) i18n",
+      "type": "content_check"
+    },
+    {
+      "name": "locale_init_polyfill",
+      "description": "Shows @angular/localize/init import or polyfill setup",
+      "type": "content_check"
+    }
+  ]
+}

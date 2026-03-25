@@ -1,0 +1,12 @@
+{
+  "eval_id": 13,
+  "eval_name": "service-workers",
+  "prompt": "PWA with Angular service workers: @angular/pwa, ngsw-config.json caching strategies, SwUpdate versionUpdates, SwPush, local testing.",
+  "assertions": [
+    { "name": "ng_add_pwa", "description": "Shows ng add @angular/pwa command", "type": "content_check" },
+    { "name": "ngsw_config", "description": "Shows ngsw-config.json with assetGroups and dataGroups", "type": "content_check" },
+    { "name": "sw_update", "description": "Uses SwUpdate.versionUpdates and activateUpdate()", "type": "content_check" },
+    { "name": "sw_push", "description": "Shows SwPush for push notifications", "type": "content_check" },
+    { "name": "local_testing", "description": "Shows how to test service workers locally (http-server or ng serve --configuration production)", "type": "content_check" }
+  ]
+}

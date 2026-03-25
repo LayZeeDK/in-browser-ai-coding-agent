@@ -1,0 +1,27 @@
+{
+  "eval_id": 4,
+  "eval_name": "ng-optimized-image",
+  "prompt": "Use NgOptimizedImage in Angular 21 app for product gallery: (1) provider setup, (2) static/dynamic images with width/height/priority, (3) custom Cloudinary image loader, (4) fill mode explanation.",
+  "assertions": [
+    {
+      "name": "provides_image_loader",
+      "description": "Shows provideCloudinaryLoader or custom IMAGE_LOADER provider in app config",
+      "type": "content_check"
+    },
+    {
+      "name": "uses_ngSrc",
+      "description": "Uses ngSrc attribute instead of src",
+      "type": "content_check"
+    },
+    {
+      "name": "shows_priority",
+      "description": "Demonstrates priority attribute for LCP images",
+      "type": "content_check"
+    },
+    {
+      "name": "explains_fill_mode",
+      "description": "Explains fill attribute for CSS-sized containers (no width/height needed)",
+      "type": "content_check"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "eval_id": 13,
+  "config": "without_skill",
+  "expectations": [
+    { "text": "ng_add_pwa", "passed": true, "evidence": "Line 18: 'ng add @angular/pwa' plus Nx alternative. Full schematic description" },
+    { "text": "ngsw_config", "passed": true, "evidence": "Lines 69-176: ngsw-config as JS object with assetGroups, dataGroups (freshness+performance), navigationUrls, navigationRequestStrategy. More comprehensive than with-skill (includes external API group)" },
+    { "text": "sw_update", "passed": true, "evidence": "Lines 241-247: versionUpdates filtered for VERSION_READY with type guard. Line 259: activateUpdate(). Also includes UpdateCheckService with periodic polling and UnrecoverableStateHandler" },
+    { "text": "sw_push", "passed": true, "evidence": "Lines 363-436: PushNotificationService with requestSubscription, messages, notificationClicks, unsubscribe. Plus PushSettingsComponent" },
+    { "text": "local_testing", "passed": true, "evidence": "Lines 478-609: Full testing guide PLUS unit test mocking examples for SwUpdate and SwPush -- significantly more comprehensive than with-skill" }
+  ],
+  "qualitative_notes": "Baseline is MORE comprehensive: includes unit test mocking for SwUpdate/SwPush, periodic polling service, external API data group, type guard on filter"
+}

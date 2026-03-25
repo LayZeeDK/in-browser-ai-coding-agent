@@ -1,0 +1,12 @@
+{
+  "eval_id": 14,
+  "config": "without_skill",
+  "expectations": [
+    { "text": "basic_setup", "passed": true, "evidence": "Lines 46-51: cdkDropList on container, cdkDrag on items" },
+    { "text": "reorder", "passed": true, "evidence": "Lines 192-194: moveItemInArray on cloned array" },
+    { "text": "transfer_between_lists", "passed": true, "evidence": "Lines 50: cdkDropListConnectedTo=[doneList]. Lines 197-203: transferArrayItem with immutable updates" },
+    { "text": "drag_handle_preview", "passed": true, "evidence": "Line 63: cdkDragHandle. Line 67: *cdkDragPreview" },
+    { "text": "conditional_disable", "passed": true, "evidence": "Line 59: [cdkDragDisabled]='dragDisabled()'" }
+  ],
+  "qualitative_notes": "Baseline uses a more sophisticated updateList() pattern matching drop list IDs"
+}

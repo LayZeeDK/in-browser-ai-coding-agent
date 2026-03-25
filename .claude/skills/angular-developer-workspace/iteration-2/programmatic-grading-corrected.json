@@ -1,0 +1,414 @@
+{
+  "tp": 78,
+  "ta": 80,
+  "wsp": 39,
+  "wst": 40,
+  "wosp": 39,
+  "wost": 40,
+  "results": {
+    "real-component-refactor": {
+      "with_skill": {
+        "passed": 10,
+        "total": 10,
+        "assertions": {
+          "removes_standalone_true": {
+            "passed": true,
+            "desc": "Removes standalone:true"
+          },
+          "uses_onpush": {
+            "passed": true,
+            "desc": "OnPush"
+          },
+          "uses_native_control_flow": {
+            "passed": true,
+            "desc": "@if/@for control flow"
+          },
+          "uses_input_function": {
+            "passed": true,
+            "desc": "input() function"
+          },
+          "uses_inject": {
+            "passed": true,
+            "desc": "inject() DI"
+          },
+          "removes_any": {
+            "passed": true,
+            "desc": "No any types"
+          },
+          "uses_class_binding": {
+            "passed": true,
+            "desc": "[class.x] binding"
+          },
+          "uses_proper_selector": {
+            "passed": true,
+            "desc": "app- prefix"
+          },
+          "uses_ng_optimized_image": {
+            "passed": true,
+            "desc": "NgOptimizedImage"
+          },
+          "uses_track_expression": {
+            "passed": true,
+            "desc": "@for uses track (any expression)"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 10,
+        "total": 10,
+        "assertions": {
+          "removes_standalone_true": {
+            "passed": true,
+            "desc": "Removes standalone:true"
+          },
+          "uses_onpush": {
+            "passed": true,
+            "desc": "OnPush"
+          },
+          "uses_native_control_flow": {
+            "passed": true,
+            "desc": "@if/@for control flow"
+          },
+          "uses_input_function": {
+            "passed": true,
+            "desc": "input() function"
+          },
+          "uses_inject": {
+            "passed": true,
+            "desc": "inject() DI"
+          },
+          "removes_any": {
+            "passed": true,
+            "desc": "No any types"
+          },
+          "uses_class_binding": {
+            "passed": true,
+            "desc": "[class.x] binding"
+          },
+          "uses_proper_selector": {
+            "passed": true,
+            "desc": "app- prefix"
+          },
+          "uses_ng_optimized_image": {
+            "passed": true,
+            "desc": "NgOptimizedImage"
+          },
+          "uses_track_expression": {
+            "passed": true,
+            "desc": "@for uses track (any expression)"
+          }
+        }
+      }
+    },
+    "real-data-fetching": {
+      "with_skill": {
+        "passed": 6,
+        "total": 6,
+        "assertions": {
+          "uses_httpResource_or_resource": {
+            "passed": true,
+            "desc": "Reactive resource API"
+          },
+          "uses_onpush": {
+            "passed": true,
+            "desc": "OnPush"
+          },
+          "handles_loading": {
+            "passed": true,
+            "desc": "Loading state"
+          },
+          "handles_error": {
+            "passed": true,
+            "desc": "Error state"
+          },
+          "uses_signals": {
+            "passed": true,
+            "desc": "Signals"
+          },
+          "has_form_validation": {
+            "passed": true,
+            "desc": "Validation"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 5,
+        "total": 6,
+        "assertions": {
+          "uses_httpResource_or_resource": {
+            "passed": false,
+            "desc": "Reactive resource API"
+          },
+          "uses_onpush": {
+            "passed": true,
+            "desc": "OnPush"
+          },
+          "handles_loading": {
+            "passed": true,
+            "desc": "Loading state"
+          },
+          "handles_error": {
+            "passed": true,
+            "desc": "Error state"
+          },
+          "uses_signals": {
+            "passed": true,
+            "desc": "Signals"
+          },
+          "has_form_validation": {
+            "passed": true,
+            "desc": "Validation"
+          }
+        }
+      }
+    },
+    "real-testing": {
+      "with_skill": {
+        "passed": 6,
+        "total": 6,
+        "assertions": {
+          "mocks_ai_service": {
+            "passed": true,
+            "desc": "Mocks AiService"
+          },
+          "tests_loading_state": {
+            "passed": true,
+            "desc": "Tests loading"
+          },
+          "tests_error_state": {
+            "passed": true,
+            "desc": "Tests error"
+          },
+          "tests_send_message": {
+            "passed": true,
+            "desc": "Tests send"
+          },
+          "tests_ai_response": {
+            "passed": true,
+            "desc": "Tests AI response"
+          },
+          "uses_async_handling": {
+            "passed": true,
+            "desc": "Async handling"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 6,
+        "total": 6,
+        "assertions": {
+          "mocks_ai_service": {
+            "passed": true,
+            "desc": "Mocks AiService"
+          },
+          "tests_loading_state": {
+            "passed": true,
+            "desc": "Tests loading"
+          },
+          "tests_error_state": {
+            "passed": true,
+            "desc": "Tests error"
+          },
+          "tests_send_message": {
+            "passed": true,
+            "desc": "Tests send"
+          },
+          "tests_ai_response": {
+            "passed": true,
+            "desc": "Tests AI response"
+          },
+          "uses_async_handling": {
+            "passed": true,
+            "desc": "Async handling"
+          }
+        }
+      }
+    },
+    "real-accessibility": {
+      "with_skill": {
+        "passed": 6,
+        "total": 6,
+        "assertions": {
+          "uses_role_combobox": {
+            "passed": true,
+            "desc": "role=combobox"
+          },
+          "uses_aria_expanded": {
+            "passed": true,
+            "desc": "aria-expanded"
+          },
+          "uses_aria_activedescendant": {
+            "passed": true,
+            "desc": "aria-activedescendant"
+          },
+          "handles_keyboard": {
+            "passed": true,
+            "desc": "Keyboard nav"
+          },
+          "uses_listbox_role": {
+            "passed": true,
+            "desc": "role=listbox"
+          },
+          "debounces_input": {
+            "passed": true,
+            "desc": "Debounces API"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 6,
+        "total": 6,
+        "assertions": {
+          "uses_role_combobox": {
+            "passed": true,
+            "desc": "role=combobox"
+          },
+          "uses_aria_expanded": {
+            "passed": true,
+            "desc": "aria-expanded"
+          },
+          "uses_aria_activedescendant": {
+            "passed": true,
+            "desc": "aria-activedescendant"
+          },
+          "handles_keyboard": {
+            "passed": true,
+            "desc": "Keyboard nav"
+          },
+          "uses_listbox_role": {
+            "passed": true,
+            "desc": "role=listbox"
+          },
+          "debounces_input": {
+            "passed": true,
+            "desc": "Debounces API"
+          }
+        }
+      }
+    },
+    "real-form": {
+      "with_skill": {
+        "passed": 6,
+        "total": 6,
+        "assertions": {
+          "multi_step": {
+            "passed": true,
+            "desc": "Multi-step"
+          },
+          "validates_email_async": {
+            "passed": true,
+            "desc": "Async email validation"
+          },
+          "validates_password": {
+            "passed": true,
+            "desc": "Password validation"
+          },
+          "validates_age": {
+            "passed": true,
+            "desc": "Age validation"
+          },
+          "shows_summary": {
+            "passed": true,
+            "desc": "Summary step"
+          },
+          "handles_submit_states": {
+            "passed": true,
+            "desc": "Submit states"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 6,
+        "total": 6,
+        "assertions": {
+          "multi_step": {
+            "passed": true,
+            "desc": "Multi-step"
+          },
+          "validates_email_async": {
+            "passed": true,
+            "desc": "Async email validation"
+          },
+          "validates_password": {
+            "passed": true,
+            "desc": "Password validation"
+          },
+          "validates_age": {
+            "passed": true,
+            "desc": "Age validation"
+          },
+          "shows_summary": {
+            "passed": true,
+            "desc": "Summary step"
+          },
+          "handles_submit_states": {
+            "passed": true,
+            "desc": "Submit states"
+          }
+        }
+      }
+    },
+    "real-performance": {
+      "with_skill": {
+        "passed": 5,
+        "total": 6,
+        "assertions": {
+          "uses_defer": {
+            "passed": true,
+            "desc": "@defer lazy loading"
+          },
+          "uses_ng_optimized_image": {
+            "passed": true,
+            "desc": "NgOptimizedImage"
+          },
+          "uses_onpush": {
+            "passed": true,
+            "desc": "OnPush"
+          },
+          "uses_virtual_scroll_or_delegation": {
+            "passed": true,
+            "desc": "Virtual scroll or child delegation"
+          },
+          "uses_track_or_for": {
+            "passed": false,
+            "desc": "track expression or @for"
+          },
+          "defers_chart": {
+            "passed": true,
+            "desc": "Defers heavy components"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 6,
+        "total": 6,
+        "assertions": {
+          "uses_defer": {
+            "passed": true,
+            "desc": "@defer lazy loading"
+          },
+          "uses_ng_optimized_image": {
+            "passed": true,
+            "desc": "NgOptimizedImage"
+          },
+          "uses_onpush": {
+            "passed": true,
+            "desc": "OnPush"
+          },
+          "uses_virtual_scroll_or_delegation": {
+            "passed": true,
+            "desc": "Virtual scroll or child delegation"
+          },
+          "uses_track_or_for": {
+            "passed": true,
+            "desc": "track expression or @for"
+          },
+          "defers_chart": {
+            "passed": true,
+            "desc": "Defers heavy components"
+          }
+        }
+      }
+    }
+  }
+}

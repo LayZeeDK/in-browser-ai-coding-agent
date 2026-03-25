@@ -1,0 +1,12 @@
+{
+  "eval_id": 11,
+  "config": "without_skill",
+  "expectations": [
+    { "text": "i18n_attribute_with_meaning", "passed": true, "evidence": "i18n with meaning|description syntax on elements" },
+    { "text": "icu_plural", "passed": true, "evidence": "ICU plural with =0, =1, few, other cases" },
+    { "text": "icu_select", "passed": true, "evidence": "ICU select for gender with male, female, other" },
+    { "text": "i18n_on_attributes", "passed": true, "evidence": "i18n-placeholder, i18n-title, i18n-aria-label" },
+    { "text": "localize_tagged_template", "passed": true, "evidence": "$localize in ProductNotificationService with :meaning|description: and named placeholders" }
+  ],
+  "qualitative_notes": "Baseline also includes nested ICU (plural inside select) and i18n-aria-label -- more comprehensive"
+}

@@ -1,0 +1,13 @@
+{
+  "eval_id": 6,
+  "config": "with_skill",
+  "expectations": [
+    { "text": "fixes_selector", "passed": true, "evidence": "selector: 'app-user-list'" },
+    { "text": "removes_standalone_true", "passed": true, "evidence": "No standalone: true in decorator" },
+    { "text": "uses_control_flow", "passed": true, "evidence": "@if, @for with @empty, @else if for error/loading states" },
+    { "text": "uses_inject", "passed": true, "evidence": "Uses httpResource (no constructor DI at all)" },
+    { "text": "adds_onpush", "passed": true, "evidence": "ChangeDetectionStrategy.OnPush" },
+    { "text": "removes_any", "passed": true, "evidence": "User interface with id, firstName, lastName, active" }
+  ],
+  "qualitative_notes": "Bonus: replaced subscribe with httpResource (reactive), replaced console.log with output<User>(), proper track user.id"
+}

@@ -1,0 +1,32 @@
+{
+  "eval_id": 9,
+  "eval_name": "defer-nested-prefetch",
+  "prompt": "Test 3-level nested @defer blocks with prefetch: getDeferBlocks() scoping, nested access after parent Complete, Error blocking nested access, full 3-level nesting, Playthrough auto-resolve, independent state rendering per level.",
+  "assertions": [
+    {
+      "name": "top_level_only_getDeferBlocks",
+      "description": "Tests that getDeferBlocks() on fixture returns only top-level blocks, not nested",
+      "type": "content_check"
+    },
+    {
+      "name": "nested_access_after_parent_complete",
+      "description": "Renders parent to Complete, then calls getDeferBlocks() on parent block to access nested",
+      "type": "content_check"
+    },
+    {
+      "name": "three_level_nesting",
+      "description": "Tests outer -> middle -> inner Complete rendering chain",
+      "type": "content_check"
+    },
+    {
+      "name": "playthrough_auto_resolve",
+      "description": "Tests DeferBlockBehavior.Playthrough auto-resolving all nesting levels",
+      "type": "content_check"
+    },
+    {
+      "name": "error_blocks_nested",
+      "description": "Tests that rendering parent to Error prevents accessing nested defer blocks",
+      "type": "content_check"
+    }
+  ]
+}

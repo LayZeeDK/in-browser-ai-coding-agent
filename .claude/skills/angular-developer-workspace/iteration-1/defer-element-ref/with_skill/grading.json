@@ -1,0 +1,10 @@
+{
+  "eval_id": 7,
+  "config": "with_skill",
+  "expectations": [
+    { "text": "uses_template_ref_variable", "passed": true, "evidence": "#previewBtn, #loadBtn, #scrollSentinel" },
+    { "text": "uses_element_ref_in_trigger", "passed": true, "evidence": "on hover(previewBtn), on interaction(loadBtn), on viewport(scrollSentinel)" },
+    { "text": "combines_triggers", "passed": true, "evidence": "on hover(previewBtn); on interaction(loadBtn); on viewport(scrollSentinel); prefetch on hover(previewBtn)" },
+    { "text": "trigger_before_defer", "passed": true, "evidence": "Button #previewBtn at line 20, @defer blocks below at lines 31, 49, 69, 92" }
+  ]
+}

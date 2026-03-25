@@ -1,0 +1,32 @@
+{
+  "eval_id": 11,
+  "eval_name": "i18n-icu",
+  "prompt": "Internationalize Angular 21 component with i18n attributes, ICU plural/select, interpolation, attribute i18n, $localize tagged templates.",
+  "assertions": [
+    {
+      "name": "i18n_attribute_with_meaning",
+      "description": "Uses i18n attribute with meaning|description syntax (e.g., i18n='site header|App title')",
+      "type": "content_check"
+    },
+    {
+      "name": "icu_plural",
+      "description": "ICU plural expression with =0, =1, few, other cases",
+      "type": "content_check"
+    },
+    {
+      "name": "icu_select",
+      "description": "ICU select expression for gender with male, female, other cases",
+      "type": "content_check"
+    },
+    {
+      "name": "i18n_on_attributes",
+      "description": "Uses i18n-placeholder, i18n-title, or similar attribute i18n markers",
+      "type": "content_check"
+    },
+    {
+      "name": "localize_tagged_template",
+      "description": "Uses $localize`...` tagged template literal in TypeScript code",
+      "type": "content_check"
+    }
+  ]
+}

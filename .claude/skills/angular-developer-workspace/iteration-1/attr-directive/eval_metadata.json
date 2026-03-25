@@ -1,0 +1,27 @@
+{
+  "eval_id": 1,
+  "eval_name": "attr-directive",
+  "prompt": "Create an Angular attribute directive called `appHighlight` that changes the background color of any element on hover. It should accept an optional color input (default yellow) and use the modern `host` metadata approach, not @HostBinding/@HostListener. Make it work with Angular 21 standalone APIs.",
+  "assertions": [
+    {
+      "name": "uses_host_metadata",
+      "description": "Uses host: {} in @Directive instead of @HostBinding/@HostListener",
+      "type": "content_check"
+    },
+    {
+      "name": "uses_input_function",
+      "description": "Uses input() function instead of @Input decorator",
+      "type": "content_check"
+    },
+    {
+      "name": "correct_selector",
+      "description": "Uses attribute selector [appHighlight] not element selector",
+      "type": "content_check"
+    },
+    {
+      "name": "standalone_implicit",
+      "description": "Does not explicitly set standalone: true (Angular 21 default)",
+      "type": "content_check"
+    }
+  ]
+}

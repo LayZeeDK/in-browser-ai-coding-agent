@@ -1,0 +1,11 @@
+{
+  "eval_id": 10,
+  "config": "without_skill",
+  "expectations": [
+    { "text": "error_to_loading_retry", "passed": true, "evidence": "Error -> Loading transition with UI verification" },
+    { "text": "complete_to_placeholder_reset", "passed": true, "evidence": "Complete -> Placeholder transition verified" },
+    { "text": "rapid_state_changes", "passed": true, "evidence": "P -> L -> C in quick succession, final state verified" },
+    { "text": "manual_default_state", "passed": true, "evidence": "Fixture created, detectChanges() only, verifies Placeholder is default" },
+    { "text": "compile_components_requirement", "passed": true, "evidence": "TestBed without compileComponents(), attempts defer block access" }
+  ]
+}

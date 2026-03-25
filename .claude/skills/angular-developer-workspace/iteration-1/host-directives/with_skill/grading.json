@@ -1,0 +1,10 @@
+{
+  "eval_id": 3,
+  "config": "with_skill",
+  "expectations": [
+    { "text": "uses_hostDirectives", "passed": true, "evidence": "hostDirectives: [{ directive: CdkTooltip, ... }, { directive: CdkFocusable, ... }]" },
+    { "text": "exposes_inputs_outputs", "passed": true, "evidence": "inputs: ['cdkTooltipText: tooltipText', 'cdkTooltipPosition: tooltipPosition'], outputs: ['tooltipShown']" },
+    { "text": "explains_aliasing", "passed": true, "evidence": "Comment: 'cdkTooltipText' becomes 'tooltipText' on the host" },
+    { "text": "explains_composition_benefit", "passed": true, "evidence": "Comment: The consumer does not need to know about the underlying directives" }
+  ]
+}

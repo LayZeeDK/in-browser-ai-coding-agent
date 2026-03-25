@@ -1,0 +1,10 @@
+{
+  "eval_id": 4,
+  "config": "without_skill",
+  "expectations": [
+    { "text": "provides_image_loader", "passed": true, "evidence": "app.config.ts has provideCloudinaryLoader and commented custom IMAGE_LOADER" },
+    { "text": "uses_ngSrc", "passed": true, "evidence": "ngSrc='v1/products/hero-banner.jpg' (static) and [ngSrc]='product.imageUrl' (dynamic)" },
+    { "text": "shows_priority", "passed": true, "evidence": "priority on hero, [priority]='idx < 2' for first 2 gallery items" },
+    { "text": "explains_fill_mode", "passed": true, "evidence": "Extensive fill section: positioned parent, object-fit, when to use vs when not to use" }
+  ]
+}

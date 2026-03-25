@@ -1,0 +1,650 @@
+{
+  "real-component-refactor": {
+    "with_skill": {
+      "runs": [
+        {
+          "run": "r1",
+          "passed": 10,
+          "total": 10,
+          "allPassed": true,
+          "details": {
+            "removes_standalone_true": true,
+            "uses_onpush": true,
+            "uses_native_control_flow": true,
+            "uses_input_function": true,
+            "uses_inject": true,
+            "removes_any": true,
+            "uses_class_binding": true,
+            "uses_proper_selector": true,
+            "uses_ng_optimized_image": true,
+            "uses_track_expression": true
+          }
+        },
+        {
+          "run": "_r2",
+          "passed": 9,
+          "total": 10,
+          "allPassed": false,
+          "details": {
+            "removes_standalone_true": true,
+            "uses_onpush": true,
+            "uses_native_control_flow": true,
+            "uses_input_function": true,
+            "uses_inject": false,
+            "removes_any": true,
+            "uses_class_binding": true,
+            "uses_proper_selector": true,
+            "uses_ng_optimized_image": true,
+            "uses_track_expression": true
+          }
+        },
+        {
+          "run": "_r3",
+          "passed": 9,
+          "total": 10,
+          "allPassed": false,
+          "details": {
+            "removes_standalone_true": true,
+            "uses_onpush": true,
+            "uses_native_control_flow": true,
+            "uses_input_function": true,
+            "uses_inject": true,
+            "removes_any": true,
+            "uses_class_binding": true,
+            "uses_proper_selector": true,
+            "uses_ng_optimized_image": false,
+            "uses_track_expression": true
+          }
+        }
+      ],
+      "passRates": [
+        1,
+        0.9,
+        0.9
+      ]
+    },
+    "without_skill": {
+      "runs": [
+        {
+          "run": "r1",
+          "passed": 10,
+          "total": 10,
+          "allPassed": true,
+          "details": {
+            "removes_standalone_true": true,
+            "uses_onpush": true,
+            "uses_native_control_flow": true,
+            "uses_input_function": true,
+            "uses_inject": true,
+            "removes_any": true,
+            "uses_class_binding": true,
+            "uses_proper_selector": true,
+            "uses_ng_optimized_image": true,
+            "uses_track_expression": true
+          }
+        },
+        {
+          "run": "_r2",
+          "passed": 10,
+          "total": 10,
+          "allPassed": true,
+          "details": {
+            "removes_standalone_true": true,
+            "uses_onpush": true,
+            "uses_native_control_flow": true,
+            "uses_input_function": true,
+            "uses_inject": true,
+            "removes_any": true,
+            "uses_class_binding": true,
+            "uses_proper_selector": true,
+            "uses_ng_optimized_image": true,
+            "uses_track_expression": true
+          }
+        },
+        {
+          "run": "_r3",
+          "passed": 10,
+          "total": 10,
+          "allPassed": true,
+          "details": {
+            "removes_standalone_true": true,
+            "uses_onpush": true,
+            "uses_native_control_flow": true,
+            "uses_input_function": true,
+            "uses_inject": true,
+            "removes_any": true,
+            "uses_class_binding": true,
+            "uses_proper_selector": true,
+            "uses_ng_optimized_image": true,
+            "uses_track_expression": true
+          }
+        }
+      ],
+      "passRates": [
+        1,
+        1,
+        1
+      ]
+    }
+  },
+  "real-data-fetching": {
+    "with_skill": {
+      "runs": [
+        {
+          "run": "r1",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "uses_httpResource_or_resource": true,
+            "uses_onpush": true,
+            "handles_loading": true,
+            "handles_error": true,
+            "uses_signals": true,
+            "has_form_validation": true
+          }
+        },
+        {
+          "run": "_r2",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "uses_httpResource_or_resource": true,
+            "uses_onpush": true,
+            "handles_loading": true,
+            "handles_error": true,
+            "uses_signals": true,
+            "has_form_validation": true
+          }
+        },
+        {
+          "run": "_r3",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "uses_httpResource_or_resource": true,
+            "uses_onpush": true,
+            "handles_loading": true,
+            "handles_error": true,
+            "uses_signals": true,
+            "has_form_validation": true
+          }
+        }
+      ],
+      "passRates": [
+        1,
+        1,
+        1
+      ]
+    },
+    "without_skill": {
+      "runs": [
+        {
+          "run": "r1",
+          "passed": 5,
+          "total": 6,
+          "allPassed": false,
+          "details": {
+            "uses_httpResource_or_resource": false,
+            "uses_onpush": true,
+            "handles_loading": true,
+            "handles_error": true,
+            "uses_signals": true,
+            "has_form_validation": true
+          }
+        },
+        {
+          "run": "_r2",
+          "passed": 5,
+          "total": 6,
+          "allPassed": false,
+          "details": {
+            "uses_httpResource_or_resource": false,
+            "uses_onpush": true,
+            "handles_loading": true,
+            "handles_error": true,
+            "uses_signals": true,
+            "has_form_validation": true
+          }
+        },
+        {
+          "run": "_r3",
+          "passed": 5,
+          "total": 6,
+          "allPassed": false,
+          "details": {
+            "uses_httpResource_or_resource": false,
+            "uses_onpush": true,
+            "handles_loading": true,
+            "handles_error": true,
+            "uses_signals": true,
+            "has_form_validation": true
+          }
+        }
+      ],
+      "passRates": [
+        0.8333333333333334,
+        0.8333333333333334,
+        0.8333333333333334
+      ]
+    }
+  },
+  "real-testing": {
+    "with_skill": {
+      "runs": [
+        {
+          "run": "r1",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "mocks_ai_service": true,
+            "tests_loading_state": true,
+            "tests_error_state": true,
+            "tests_send_message": true,
+            "tests_ai_response": true,
+            "uses_async_handling": true
+          }
+        },
+        {
+          "run": "_r2",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "mocks_ai_service": true,
+            "tests_loading_state": true,
+            "tests_error_state": true,
+            "tests_send_message": true,
+            "tests_ai_response": true,
+            "uses_async_handling": true
+          }
+        },
+        {
+          "run": "_r3",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "mocks_ai_service": true,
+            "tests_loading_state": true,
+            "tests_error_state": true,
+            "tests_send_message": true,
+            "tests_ai_response": true,
+            "uses_async_handling": true
+          }
+        }
+      ],
+      "passRates": [
+        1,
+        1,
+        1
+      ]
+    },
+    "without_skill": {
+      "runs": [
+        {
+          "run": "r1",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "mocks_ai_service": true,
+            "tests_loading_state": true,
+            "tests_error_state": true,
+            "tests_send_message": true,
+            "tests_ai_response": true,
+            "uses_async_handling": true
+          }
+        },
+        {
+          "run": "_r2",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "mocks_ai_service": true,
+            "tests_loading_state": true,
+            "tests_error_state": true,
+            "tests_send_message": true,
+            "tests_ai_response": true,
+            "uses_async_handling": true
+          }
+        },
+        {
+          "run": "_r3",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "mocks_ai_service": true,
+            "tests_loading_state": true,
+            "tests_error_state": true,
+            "tests_send_message": true,
+            "tests_ai_response": true,
+            "uses_async_handling": true
+          }
+        }
+      ],
+      "passRates": [
+        1,
+        1,
+        1
+      ]
+    }
+  },
+  "real-accessibility": {
+    "with_skill": {
+      "runs": [
+        {
+          "run": "r1",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "uses_role_combobox": true,
+            "uses_aria_expanded": true,
+            "uses_aria_activedescendant": true,
+            "handles_keyboard": true,
+            "uses_listbox_role": true,
+            "debounces_input": true
+          }
+        },
+        {
+          "run": "_r2",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "uses_role_combobox": true,
+            "uses_aria_expanded": true,
+            "uses_aria_activedescendant": true,
+            "handles_keyboard": true,
+            "uses_listbox_role": true,
+            "debounces_input": true
+          }
+        },
+        {
+          "run": "_r3",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "uses_role_combobox": true,
+            "uses_aria_expanded": true,
+            "uses_aria_activedescendant": true,
+            "handles_keyboard": true,
+            "uses_listbox_role": true,
+            "debounces_input": true
+          }
+        }
+      ],
+      "passRates": [
+        1,
+        1,
+        1
+      ]
+    },
+    "without_skill": {
+      "runs": [
+        {
+          "run": "r1",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "uses_role_combobox": true,
+            "uses_aria_expanded": true,
+            "uses_aria_activedescendant": true,
+            "handles_keyboard": true,
+            "uses_listbox_role": true,
+            "debounces_input": true
+          }
+        },
+        {
+          "run": "_r2",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "uses_role_combobox": true,
+            "uses_aria_expanded": true,
+            "uses_aria_activedescendant": true,
+            "handles_keyboard": true,
+            "uses_listbox_role": true,
+            "debounces_input": true
+          }
+        },
+        {
+          "run": "_r3",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "uses_role_combobox": true,
+            "uses_aria_expanded": true,
+            "uses_aria_activedescendant": true,
+            "handles_keyboard": true,
+            "uses_listbox_role": true,
+            "debounces_input": true
+          }
+        }
+      ],
+      "passRates": [
+        1,
+        1,
+        1
+      ]
+    }
+  },
+  "real-form": {
+    "with_skill": {
+      "runs": [
+        {
+          "run": "r1",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "multi_step": true,
+            "validates_email_async": true,
+            "validates_password": true,
+            "validates_age": true,
+            "shows_summary": true,
+            "handles_submit_states": true
+          }
+        },
+        {
+          "run": "_r2",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "multi_step": true,
+            "validates_email_async": true,
+            "validates_password": true,
+            "validates_age": true,
+            "shows_summary": true,
+            "handles_submit_states": true
+          }
+        },
+        {
+          "run": "_r3",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "multi_step": true,
+            "validates_email_async": true,
+            "validates_password": true,
+            "validates_age": true,
+            "shows_summary": true,
+            "handles_submit_states": true
+          }
+        }
+      ],
+      "passRates": [
+        1,
+        1,
+        1
+      ]
+    },
+    "without_skill": {
+      "runs": [
+        {
+          "run": "r1",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "multi_step": true,
+            "validates_email_async": true,
+            "validates_password": true,
+            "validates_age": true,
+            "shows_summary": true,
+            "handles_submit_states": true
+          }
+        },
+        {
+          "run": "_r2",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "multi_step": true,
+            "validates_email_async": true,
+            "validates_password": true,
+            "validates_age": true,
+            "shows_summary": true,
+            "handles_submit_states": true
+          }
+        },
+        {
+          "run": "_r3",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "multi_step": true,
+            "validates_email_async": true,
+            "validates_password": true,
+            "validates_age": true,
+            "shows_summary": true,
+            "handles_submit_states": true
+          }
+        }
+      ],
+      "passRates": [
+        1,
+        1,
+        1
+      ]
+    }
+  },
+  "real-performance": {
+    "with_skill": {
+      "runs": [
+        {
+          "run": "r1",
+          "passed": 5,
+          "total": 6,
+          "allPassed": false,
+          "details": {
+            "uses_defer": true,
+            "uses_ng_optimized_image": true,
+            "uses_onpush": true,
+            "uses_virtual_scroll_or_delegation": true,
+            "uses_track_or_for": false,
+            "defers_chart": true
+          }
+        },
+        {
+          "run": "_r2",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "uses_defer": true,
+            "uses_ng_optimized_image": true,
+            "uses_onpush": true,
+            "uses_virtual_scroll_or_delegation": true,
+            "uses_track_or_for": true,
+            "defers_chart": true
+          }
+        },
+        {
+          "run": "_r3",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "uses_defer": true,
+            "uses_ng_optimized_image": true,
+            "uses_onpush": true,
+            "uses_virtual_scroll_or_delegation": true,
+            "uses_track_or_for": true,
+            "defers_chart": true
+          }
+        }
+      ],
+      "passRates": [
+        0.8333333333333334,
+        1,
+        1
+      ]
+    },
+    "without_skill": {
+      "runs": [
+        {
+          "run": "r1",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "uses_defer": true,
+            "uses_ng_optimized_image": true,
+            "uses_onpush": true,
+            "uses_virtual_scroll_or_delegation": true,
+            "uses_track_or_for": true,
+            "defers_chart": true
+          }
+        },
+        {
+          "run": "_r2",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "uses_defer": true,
+            "uses_ng_optimized_image": true,
+            "uses_onpush": true,
+            "uses_virtual_scroll_or_delegation": true,
+            "uses_track_or_for": true,
+            "defers_chart": true
+          }
+        },
+        {
+          "run": "_r3",
+          "passed": 6,
+          "total": 6,
+          "allPassed": true,
+          "details": {
+            "uses_defer": true,
+            "uses_ng_optimized_image": true,
+            "uses_onpush": true,
+            "uses_virtual_scroll_or_delegation": true,
+            "uses_track_or_for": true,
+            "defers_chart": true
+          }
+        }
+      ],
+      "passRates": [
+        1,
+        1,
+        1
+      ]
+    }
+  }
+}

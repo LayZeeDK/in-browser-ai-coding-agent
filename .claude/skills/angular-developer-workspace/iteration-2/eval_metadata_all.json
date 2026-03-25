@@ -1,0 +1,72 @@
+{
+  "real-component-refactor": {
+    "eval_id": 19,
+    "assertions": [
+      { "name": "removes_standalone_true", "antiPattern": "standalone:\\s*true", "description": "Removes explicit standalone:true (Angular 21 default)" },
+      { "name": "uses_onpush", "pattern": "ChangeDetectionStrategy\\.OnPush", "description": "Adds OnPush change detection" },
+      { "name": "uses_native_control_flow", "pattern": "@if\\s*\\(|@for\\s*\\(", "description": "Replaces *ngIf/*ngFor with @if/@for" },
+      { "name": "uses_input_function", "pattern": "\\binput[<(]|input\\.required", "description": "Uses input() function instead of bare property" },
+      { "name": "uses_inject", "pattern": "inject\\(", "description": "Uses inject() instead of constructor DI" },
+      { "name": "removes_any", "antiPattern": ":\\s*any\\b", "description": "Removes any types" },
+      { "name": "uses_class_binding", "pattern": "\\[class\\.", "description": "Replaces [ngClass] with [class.x] binding" },
+      { "name": "uses_proper_selector", "pattern": "selector:\\s*'app-product-card'", "description": "Adds app- prefix to selector" },
+      { "name": "uses_ng_optimized_image", "pattern": "ngSrc|NgOptimizedImage", "description": "Uses NgOptimizedImage instead of raw src" },
+      { "name": "uses_track_expression", "pattern": "track\\s+\\w+\\.id|track\\s+review\\.id|track\\s+\\$index", "description": "@for uses track with id or $index" }
+    ]
+  },
+  "real-data-fetching": {
+    "eval_id": 20,
+    "assertions": [
+      { "name": "uses_httpResource_or_resource", "pattern": "httpResource|resource\\(|rxResource", "description": "Uses reactive resource API instead of manual subscribe" },
+      { "name": "uses_onpush", "pattern": "ChangeDetectionStrategy\\.OnPush", "description": "OnPush change detection" },
+      { "name": "handles_loading", "pattern": "loading|isLoading|Loading", "description": "Shows loading state" },
+      { "name": "handles_error", "pattern": "error|Error", "description": "Shows error state" },
+      { "name": "uses_signals", "pattern": "signal\\(|computed\\(", "description": "Uses signals for state management" },
+      { "name": "has_form_validation", "pattern": "Validators|required|email|pattern|valid", "description": "Form validation present" }
+    ]
+  },
+  "real-testing": {
+    "eval_id": 21,
+    "assertions": [
+      { "name": "mocks_ai_service", "pattern": "provide.*AiService|useValue.*prompt|vi\\.fn|jasmine\\.createSpy|mock.*AiService", "description": "Mocks the AiService" },
+      { "name": "tests_loading_state", "pattern": "loading|isLoading|Checking AI", "description": "Tests the loading state" },
+      { "name": "tests_error_state", "pattern": "error|unavailable|Error", "description": "Tests the error state" },
+      { "name": "tests_send_message", "pattern": "send|submit|user.*message", "description": "Tests sending a message" },
+      { "name": "tests_ai_response", "pattern": "assistant|response|AI.*response", "description": "Tests receiving AI response" },
+      { "name": "uses_async_handling", "pattern": "await|whenStable|fakeAsync|fixture\\.whenStable", "description": "Handles async properly" }
+    ]
+  },
+  "real-accessibility": {
+    "eval_id": 22,
+    "assertions": [
+      { "name": "uses_role_combobox", "pattern": "role.*combobox|combobox", "description": "Uses role=combobox ARIA pattern" },
+      { "name": "uses_aria_expanded", "pattern": "aria-expanded", "description": "Uses aria-expanded for dropdown state" },
+      { "name": "uses_aria_activedescendant", "pattern": "aria-activedescendant|activeDescendant|activedescendant", "description": "Uses aria-activedescendant for keyboard navigation" },
+      { "name": "handles_keyboard", "pattern": "ArrowDown|ArrowUp|keydown|KeyboardEvent", "description": "Handles keyboard navigation" },
+      { "name": "uses_listbox_role", "pattern": "role.*listbox|listbox", "description": "Uses role=listbox for results" },
+      { "name": "debounces_input", "pattern": "debounce|setTimeout|timer", "description": "Debounces API calls" }
+    ]
+  },
+  "real-form": {
+    "eval_id": 23,
+    "assertions": [
+      { "name": "multi_step", "pattern": "step|currentStep|Step", "description": "Implements multi-step navigation" },
+      { "name": "validates_email_async", "pattern": "async.*valid|AsyncValidator|check-email|blur.*email", "description": "Async email validation" },
+      { "name": "validates_password", "pattern": "password.*match|confirmPassword|passwordMatch|min.*8|minLength", "description": "Password validation with match check" },
+      { "name": "validates_age", "pattern": "18|dateOfBirth|age", "description": "Age validation (18+)" },
+      { "name": "shows_summary", "pattern": "summary|Summary|review|confirm", "description": "Shows summary before submit" },
+      { "name": "handles_submit_states", "pattern": "submitting|saving|success|submitted", "description": "Handles submission states" }
+    ]
+  },
+  "real-performance": {
+    "eval_id": 24,
+    "assertions": [
+      { "name": "uses_defer", "pattern": "@defer", "description": "Uses @defer for lazy loading heavy sections" },
+      { "name": "uses_ng_optimized_image", "pattern": "ngSrc|NgOptimizedImage", "description": "Uses NgOptimizedImage for images" },
+      { "name": "uses_onpush", "pattern": "ChangeDetectionStrategy\\.OnPush", "description": "OnPush change detection" },
+      { "name": "uses_virtual_scroll_or_pagination", "pattern": "virtual|cdk-virtual|pagination|paginate|pageSize|slice", "description": "Handles 500+ rows efficiently" },
+      { "name": "uses_track", "pattern": "track\\s+\\w+", "description": "Uses track expression in @for" },
+      { "name": "defers_chart", "pattern": "@defer.*chart|chart.*@defer|defer.*heavy|heavy.*defer", "description": "Defers the heavy chart component" }
+    ]
+  }
+}

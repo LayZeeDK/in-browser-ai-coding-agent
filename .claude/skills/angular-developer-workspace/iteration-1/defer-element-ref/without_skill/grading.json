@@ -1,0 +1,11 @@
+{
+  "eval_id": 7,
+  "config": "without_skill",
+  "expectations": [
+    { "text": "uses_template_ref_variable", "passed": true, "evidence": "#previewHoverBtn, #previewClickBtn, #viewportSentinel, #previewComboBtn, #comboSentinel, #previewPrefetchBtn, #previewWhenBtn" },
+    { "text": "uses_element_ref_in_trigger", "passed": true, "evidence": "on hover(previewHoverBtn), on interaction(previewClickBtn), on viewport(viewportSentinel)" },
+    { "text": "combines_triggers", "passed": true, "evidence": "on hover(previewComboBtn); on interaction(previewComboBtn); on viewport(comboSentinel)" },
+    { "text": "trigger_before_defer", "passed": true, "evidence": "Buttons defined above each @defer block throughout" }
+  ],
+  "qualitative_notes": "Baseline is MORE comprehensive: 6 examples including when+on combo. Also includes prefetch on hover(ref) pattern."
+}

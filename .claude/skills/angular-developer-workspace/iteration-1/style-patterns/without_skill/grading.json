@@ -1,0 +1,13 @@
+{
+  "eval_id": 6,
+  "config": "without_skill",
+  "expectations": [
+    { "text": "fixes_selector", "passed": true, "evidence": "selector: 'app-user-list'" },
+    { "text": "removes_standalone_true", "passed": true, "evidence": "No standalone: true in decorator" },
+    { "text": "uses_control_flow", "passed": true, "evidence": "@if, @for" },
+    { "text": "uses_inject", "passed": true, "evidence": "inject(HttpClient) via private field" },
+    { "text": "adds_onpush", "passed": true, "evidence": "ChangeDetectionStrategy.OnPush" },
+    { "text": "removes_any", "passed": true, "evidence": "User interface with firstName, lastName, active" }
+  ],
+  "qualitative_notes": "Weakness: kept subscribe pattern instead of httpResource, kept console.log instead of output, used 'track user' (reference identity) instead of 'track user.id'"
+}

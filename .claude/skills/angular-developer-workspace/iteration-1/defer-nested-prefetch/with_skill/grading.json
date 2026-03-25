@@ -1,0 +1,11 @@
+{
+  "eval_id": 9,
+  "config": "with_skill",
+  "expectations": [
+    { "text": "top_level_only_getDeferBlocks", "passed": true, "evidence": "Tests fixture.getDeferBlocks() returns exactly 1 top-level block" },
+    { "text": "nested_access_after_parent_complete", "passed": true, "evidence": "Renders outer to Complete, then outerBlock.getDeferBlocks() for middle, middleBlock.getDeferBlocks() for inner" },
+    { "text": "three_level_nesting", "passed": true, "evidence": "Full chain: outer Complete -> middle Complete -> inner Complete, verifies all 3 components render" },
+    { "text": "playthrough_auto_resolve", "passed": true, "evidence": "Separate describe with DeferBlockBehavior.Playthrough verifying auto-resolution" },
+    { "text": "error_blocks_nested", "passed": true, "evidence": "Tests that Error on outer/middle prevents nested content, getDeferBlocks() on errored block returns empty" }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "eval_id": 8,
+  "config": "with_skill",
+  "expectations": [
+    { "text": "uses_getDeferBlocks", "passed": true, "evidence": "fixture.getDeferBlocks() and nested outerBlock.getDeferBlocks()" },
+    { "text": "uses_DeferBlockState", "passed": true, "evidence": "DeferBlockState.Placeholder, .Loading, .Complete, .Error all used" },
+    { "text": "handles_async", "passed": true, "evidence": "await deferBlock.render(...) + await fixture.whenStable() throughout" },
+    { "text": "complete_testbed_example", "passed": true, "evidence": "Full TestBed with deferBlockBehavior: DeferBlockBehavior.Manual, compileComponents(), nested defer tests, Playthrough mode" }
+  ],
+  "qualitative_notes": "Bonus: nested defer block testing, Playthrough mode demo, uses whenStable() (async-first pattern from skill)"
+}

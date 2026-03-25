@@ -1,0 +1,12 @@
+{
+  "eval_id": 9,
+  "config": "without_skill",
+  "expectations": [
+    { "text": "top_level_only_getDeferBlocks", "passed": true, "evidence": "Tests fixture.getDeferBlocks() returns 1 top-level block, not nested" },
+    { "text": "nested_access_after_parent_complete", "passed": true, "evidence": "Renders outer to Complete, calls outerBlock.getDeferBlocks() for middle" },
+    { "text": "three_level_nesting", "passed": true, "evidence": "Outer -> middle -> inner Complete chain tested" },
+    { "text": "playthrough_auto_resolve", "passed": true, "evidence": "DeferBlockBehavior.Playthrough test with signal-gated inner block" },
+    { "text": "error_blocks_nested", "passed": true, "evidence": "Error on parent prevents nested access, getDeferBlocks() returns empty array" }
+  ],
+  "qualitative_notes": "Also tests mixed state combinations (outer Complete + middle Loading) and signal-gated Playthrough behavior"
+}

@@ -1,0 +1,27 @@
+{
+  "eval_id": 3,
+  "eval_name": "host-directives",
+  "prompt": "Building an Angular component library using the directive composition API (hostDirectives) to compose CdkTooltip and CdkFocusable into a ButtonComponent. Show how to expose specific inputs/outputs from composed directives.",
+  "assertions": [
+    {
+      "name": "uses_hostDirectives",
+      "description": "Uses hostDirectives array in @Component metadata",
+      "type": "content_check"
+    },
+    {
+      "name": "exposes_inputs_outputs",
+      "description": "Shows how to selectively expose inputs/outputs from composed directives",
+      "type": "content_check"
+    },
+    {
+      "name": "explains_aliasing",
+      "description": "Demonstrates or mentions input/output aliasing for host directives",
+      "type": "content_check"
+    },
+    {
+      "name": "explains_composition_benefit",
+      "description": "Explains why hostDirectives is useful (encapsulation, reuse)",
+      "type": "content_check"
+    }
+  ]
+}

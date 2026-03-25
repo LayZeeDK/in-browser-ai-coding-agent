@@ -1,0 +1,10 @@
+{
+  "eval_id": 4,
+  "config": "with_skill",
+  "expectations": [
+    { "text": "provides_image_loader", "passed": true, "evidence": "app.config.ts has custom IMAGE_LOADER provider with Cloudinary URL construction" },
+    { "text": "uses_ngSrc", "passed": true, "evidence": "ngSrc='hero/main-banner.jpg' (static) and [ngSrc]='image.src' (dynamic)" },
+    { "text": "shows_priority", "passed": true, "evidence": "priority attribute on hero image, comment: disables lazy loading and adds fetchpriority=high" },
+    { "text": "explains_fill_mode", "passed": true, "evidence": "fill attribute with positioned parent (.hero-banner position: relative), object-fit: cover, comments explain when to use" }
+  ]
+}

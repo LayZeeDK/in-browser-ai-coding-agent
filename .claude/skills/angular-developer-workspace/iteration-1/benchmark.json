@@ -1,0 +1,32 @@
+{
+  "skill_name": "angular-developer",
+  "iteration": 1,
+  "focus": "directives-gap-analysis",
+  "configs": ["with_skill", "without_skill"],
+  "evals": [
+    {
+      "eval_name": "attr-directive",
+      "with_skill": { "pass_rate": 1.0, "passed": 4, "total": 4, "tokens": 20875, "duration_ms": 40966 },
+      "without_skill": { "pass_rate": 1.0, "passed": 4, "total": 4, "tokens": 10185, "duration_ms": 19107 }
+    },
+    {
+      "eval_name": "structural-directive",
+      "with_skill": { "pass_rate": 1.0, "passed": 4, "total": 4, "tokens": 15693, "duration_ms": 30561 },
+      "without_skill": { "pass_rate": 1.0, "passed": 4, "total": 4, "tokens": 10363, "duration_ms": 25421 }
+    },
+    {
+      "eval_name": "host-directives",
+      "with_skill": { "pass_rate": 1.0, "passed": 4, "total": 4, "tokens": 25584, "duration_ms": 64482 },
+      "without_skill": { "pass_rate": 1.0, "passed": 4, "total": 4, "tokens": 11544, "duration_ms": 38505 }
+    },
+    {
+      "eval_name": "ng-optimized-image",
+      "with_skill": { "pass_rate": 1.0, "passed": 4, "total": 4, "tokens": 25586, "duration_ms": 80267 },
+      "without_skill": { "pass_rate": 1.0, "passed": 4, "total": 4, "tokens": 13443, "duration_ms": 74556 }
+    }
+  ],
+  "aggregate": {
+    "with_skill": { "pass_rate": 1.0, "total_passed": 16, "total_assertions": 16, "mean_tokens": 21935, "mean_duration_ms": 54069 },
+    "without_skill": { "pass_rate": 1.0, "total_passed": 16, "total_assertions": 16, "mean_tokens": 11384, "mean_duration_ms": 39397 }
+  }
+}

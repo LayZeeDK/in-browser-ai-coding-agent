@@ -1,0 +1,27 @@
+{
+  "eval_id": 8,
+  "eval_name": "defer-testing",
+  "prompt": "Write unit tests for @defer blocks using DeferBlockFixture: getDeferBlocks(), DeferBlockState rendering (Complete, Loading, Placeholder, Error), async handling, complete TestBed example.",
+  "assertions": [
+    {
+      "name": "uses_getDeferBlocks",
+      "description": "Calls fixture.getDeferBlocks() or equivalent to get defer block references",
+      "type": "content_check"
+    },
+    {
+      "name": "uses_DeferBlockState",
+      "description": "Uses DeferBlockState enum (Complete, Loading, Placeholder, Error) to render states",
+      "type": "content_check"
+    },
+    {
+      "name": "handles_async",
+      "description": "Uses async/await or fakeAsync to handle defer block rendering",
+      "type": "content_check"
+    },
+    {
+      "name": "complete_testbed_example",
+      "description": "Shows full TestBed.configureTestingModule setup with component compilation",
+      "type": "content_check"
+    }
+  ]
+}

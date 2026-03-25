@@ -1,0 +1,27 @@
+{
+  "eval_id": 2,
+  "eval_name": "structural-directive",
+  "prompt": "Create a custom structural directive in Angular called `*appRepeat` that repeats its template a given number of times and exposes the current index as an implicit context variable. Full implementation using TemplateRef and ViewContainerRef with the modern inject() function.",
+  "assertions": [
+    {
+      "name": "uses_inject_function",
+      "description": "Uses inject(TemplateRef) and inject(ViewContainerRef) instead of constructor injection",
+      "type": "content_check"
+    },
+    {
+      "name": "creates_embedded_views",
+      "description": "Calls viewContainerRef.createEmbeddedView with context object",
+      "type": "content_check"
+    },
+    {
+      "name": "exposes_implicit_context",
+      "description": "Sets $implicit in the context to expose index to template",
+      "type": "content_check"
+    },
+    {
+      "name": "handles_changes",
+      "description": "Clears and recreates views when input changes, or uses effect/setter",
+      "type": "content_check"
+    }
+  ]
+}

@@ -1,0 +1,414 @@
+{
+  "tp": 75,
+  "ta": 80,
+  "wsp": 37,
+  "wst": 40,
+  "wosp": 38,
+  "wost": 40,
+  "results": {
+    "real-component-refactor": {
+      "with_skill": {
+        "passed": 9,
+        "total": 10,
+        "assertions": {
+          "removes_standalone_true": {
+            "passed": true,
+            "desc": "Removes explicit standalone:true (Angular 21 default)"
+          },
+          "uses_onpush": {
+            "passed": true,
+            "desc": "Adds OnPush change detection"
+          },
+          "uses_native_control_flow": {
+            "passed": true,
+            "desc": "Replaces *ngIf/*ngFor with @if/@for"
+          },
+          "uses_input_function": {
+            "passed": true,
+            "desc": "Uses input() function instead of bare property"
+          },
+          "uses_inject": {
+            "passed": true,
+            "desc": "Uses inject() instead of constructor DI"
+          },
+          "removes_any": {
+            "passed": true,
+            "desc": "Removes any types"
+          },
+          "uses_class_binding": {
+            "passed": true,
+            "desc": "Replaces [ngClass] with [class.x] binding"
+          },
+          "uses_proper_selector": {
+            "passed": true,
+            "desc": "Adds app- prefix to selector"
+          },
+          "uses_ng_optimized_image": {
+            "passed": true,
+            "desc": "Uses NgOptimizedImage instead of raw src"
+          },
+          "uses_track_expression": {
+            "passed": false,
+            "desc": "@for uses track with id or $index"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 9,
+        "total": 10,
+        "assertions": {
+          "removes_standalone_true": {
+            "passed": true,
+            "desc": "Removes explicit standalone:true (Angular 21 default)"
+          },
+          "uses_onpush": {
+            "passed": true,
+            "desc": "Adds OnPush change detection"
+          },
+          "uses_native_control_flow": {
+            "passed": true,
+            "desc": "Replaces *ngIf/*ngFor with @if/@for"
+          },
+          "uses_input_function": {
+            "passed": true,
+            "desc": "Uses input() function instead of bare property"
+          },
+          "uses_inject": {
+            "passed": true,
+            "desc": "Uses inject() instead of constructor DI"
+          },
+          "removes_any": {
+            "passed": true,
+            "desc": "Removes any types"
+          },
+          "uses_class_binding": {
+            "passed": true,
+            "desc": "Replaces [ngClass] with [class.x] binding"
+          },
+          "uses_proper_selector": {
+            "passed": true,
+            "desc": "Adds app- prefix to selector"
+          },
+          "uses_ng_optimized_image": {
+            "passed": true,
+            "desc": "Uses NgOptimizedImage instead of raw src"
+          },
+          "uses_track_expression": {
+            "passed": false,
+            "desc": "@for uses track with id or $index"
+          }
+        }
+      }
+    },
+    "real-data-fetching": {
+      "with_skill": {
+        "passed": 6,
+        "total": 6,
+        "assertions": {
+          "uses_httpResource_or_resource": {
+            "passed": true,
+            "desc": "Uses reactive resource API instead of manual subscribe"
+          },
+          "uses_onpush": {
+            "passed": true,
+            "desc": "OnPush change detection"
+          },
+          "handles_loading": {
+            "passed": true,
+            "desc": "Shows loading state"
+          },
+          "handles_error": {
+            "passed": true,
+            "desc": "Shows error state"
+          },
+          "uses_signals": {
+            "passed": true,
+            "desc": "Uses signals for state management"
+          },
+          "has_form_validation": {
+            "passed": true,
+            "desc": "Form validation present"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 5,
+        "total": 6,
+        "assertions": {
+          "uses_httpResource_or_resource": {
+            "passed": false,
+            "desc": "Uses reactive resource API instead of manual subscribe"
+          },
+          "uses_onpush": {
+            "passed": true,
+            "desc": "OnPush change detection"
+          },
+          "handles_loading": {
+            "passed": true,
+            "desc": "Shows loading state"
+          },
+          "handles_error": {
+            "passed": true,
+            "desc": "Shows error state"
+          },
+          "uses_signals": {
+            "passed": true,
+            "desc": "Uses signals for state management"
+          },
+          "has_form_validation": {
+            "passed": true,
+            "desc": "Form validation present"
+          }
+        }
+      }
+    },
+    "real-testing": {
+      "with_skill": {
+        "passed": 6,
+        "total": 6,
+        "assertions": {
+          "mocks_ai_service": {
+            "passed": true,
+            "desc": "Mocks the AiService"
+          },
+          "tests_loading_state": {
+            "passed": true,
+            "desc": "Tests the loading state"
+          },
+          "tests_error_state": {
+            "passed": true,
+            "desc": "Tests the error state"
+          },
+          "tests_send_message": {
+            "passed": true,
+            "desc": "Tests sending a message"
+          },
+          "tests_ai_response": {
+            "passed": true,
+            "desc": "Tests receiving AI response"
+          },
+          "uses_async_handling": {
+            "passed": true,
+            "desc": "Handles async properly"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 6,
+        "total": 6,
+        "assertions": {
+          "mocks_ai_service": {
+            "passed": true,
+            "desc": "Mocks the AiService"
+          },
+          "tests_loading_state": {
+            "passed": true,
+            "desc": "Tests the loading state"
+          },
+          "tests_error_state": {
+            "passed": true,
+            "desc": "Tests the error state"
+          },
+          "tests_send_message": {
+            "passed": true,
+            "desc": "Tests sending a message"
+          },
+          "tests_ai_response": {
+            "passed": true,
+            "desc": "Tests receiving AI response"
+          },
+          "uses_async_handling": {
+            "passed": true,
+            "desc": "Handles async properly"
+          }
+        }
+      }
+    },
+    "real-accessibility": {
+      "with_skill": {
+        "passed": 6,
+        "total": 6,
+        "assertions": {
+          "uses_role_combobox": {
+            "passed": true,
+            "desc": "Uses role=combobox ARIA pattern"
+          },
+          "uses_aria_expanded": {
+            "passed": true,
+            "desc": "Uses aria-expanded for dropdown state"
+          },
+          "uses_aria_activedescendant": {
+            "passed": true,
+            "desc": "Uses aria-activedescendant for keyboard navigation"
+          },
+          "handles_keyboard": {
+            "passed": true,
+            "desc": "Handles keyboard navigation"
+          },
+          "uses_listbox_role": {
+            "passed": true,
+            "desc": "Uses role=listbox for results"
+          },
+          "debounces_input": {
+            "passed": true,
+            "desc": "Debounces API calls"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 6,
+        "total": 6,
+        "assertions": {
+          "uses_role_combobox": {
+            "passed": true,
+            "desc": "Uses role=combobox ARIA pattern"
+          },
+          "uses_aria_expanded": {
+            "passed": true,
+            "desc": "Uses aria-expanded for dropdown state"
+          },
+          "uses_aria_activedescendant": {
+            "passed": true,
+            "desc": "Uses aria-activedescendant for keyboard navigation"
+          },
+          "handles_keyboard": {
+            "passed": true,
+            "desc": "Handles keyboard navigation"
+          },
+          "uses_listbox_role": {
+            "passed": true,
+            "desc": "Uses role=listbox for results"
+          },
+          "debounces_input": {
+            "passed": true,
+            "desc": "Debounces API calls"
+          }
+        }
+      }
+    },
+    "real-form": {
+      "with_skill": {
+        "passed": 6,
+        "total": 6,
+        "assertions": {
+          "multi_step": {
+            "passed": true,
+            "desc": "Implements multi-step navigation"
+          },
+          "validates_email_async": {
+            "passed": true,
+            "desc": "Async email validation"
+          },
+          "validates_password": {
+            "passed": true,
+            "desc": "Password validation with match check"
+          },
+          "validates_age": {
+            "passed": true,
+            "desc": "Age validation (18+)"
+          },
+          "shows_summary": {
+            "passed": true,
+            "desc": "Shows summary before submit"
+          },
+          "handles_submit_states": {
+            "passed": true,
+            "desc": "Handles submission states"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 6,
+        "total": 6,
+        "assertions": {
+          "multi_step": {
+            "passed": true,
+            "desc": "Implements multi-step navigation"
+          },
+          "validates_email_async": {
+            "passed": true,
+            "desc": "Async email validation"
+          },
+          "validates_password": {
+            "passed": true,
+            "desc": "Password validation with match check"
+          },
+          "validates_age": {
+            "passed": true,
+            "desc": "Age validation (18+)"
+          },
+          "shows_summary": {
+            "passed": true,
+            "desc": "Shows summary before submit"
+          },
+          "handles_submit_states": {
+            "passed": true,
+            "desc": "Handles submission states"
+          }
+        }
+      }
+    },
+    "real-performance": {
+      "with_skill": {
+        "passed": 4,
+        "total": 6,
+        "assertions": {
+          "uses_defer": {
+            "passed": true,
+            "desc": "Uses @defer for lazy loading heavy sections"
+          },
+          "uses_ng_optimized_image": {
+            "passed": true,
+            "desc": "Uses NgOptimizedImage for images"
+          },
+          "uses_onpush": {
+            "passed": true,
+            "desc": "OnPush change detection"
+          },
+          "uses_virtual_scroll_or_pagination": {
+            "passed": false,
+            "desc": "Handles 500+ rows efficiently"
+          },
+          "uses_track": {
+            "passed": false,
+            "desc": "Uses track expression in @for"
+          },
+          "defers_chart": {
+            "passed": true,
+            "desc": "Defers the heavy chart component"
+          }
+        }
+      },
+      "without_skill": {
+        "passed": 6,
+        "total": 6,
+        "assertions": {
+          "uses_defer": {
+            "passed": true,
+            "desc": "Uses @defer for lazy loading heavy sections"
+          },
+          "uses_ng_optimized_image": {
+            "passed": true,
+            "desc": "Uses NgOptimizedImage for images"
+          },
+          "uses_onpush": {
+            "passed": true,
+            "desc": "OnPush change detection"
+          },
+          "uses_virtual_scroll_or_pagination": {
+            "passed": true,
+            "desc": "Handles 500+ rows efficiently"
+          },
+          "uses_track": {
+            "passed": true,
+            "desc": "Uses track expression in @for"
+          },
+          "defers_chart": {
+            "passed": true,
+            "desc": "Defers the heavy chart component"
+          }
+        }
+      }
+    }
+  }
+}

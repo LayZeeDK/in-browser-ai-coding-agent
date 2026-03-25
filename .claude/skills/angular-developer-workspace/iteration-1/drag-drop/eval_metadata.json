@@ -1,0 +1,12 @@
+{
+  "eval_id": 14,
+  "eval_name": "drag-drop",
+  "prompt": "CDK drag and drop: cdkDropList/cdkDrag, moveItemInArray, transferArrayItem, cdkDragHandle, cdkDragPreview, cdkDragDisabled.",
+  "assertions": [
+    { "name": "basic_setup", "description": "Uses cdkDropList and cdkDrag directives", "type": "content_check" },
+    { "name": "reorder", "description": "Uses moveItemInArray from @angular/cdk/drag-drop", "type": "content_check" },
+    { "name": "transfer_between_lists", "description": "Shows transferArrayItem and cdkDropListConnectedTo", "type": "content_check" },
+    { "name": "drag_handle_preview", "description": "Shows cdkDragHandle and/or cdkDragPreview", "type": "content_check" },
+    { "name": "conditional_disable", "description": "Shows cdkDragDisabled for conditional disabling", "type": "content_check" }
+  ]
+}

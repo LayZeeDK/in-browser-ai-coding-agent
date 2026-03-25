@@ -1,0 +1,10 @@
+{
+  "eval_id": 5,
+  "config": "with_skill",
+  "expectations": [
+    { "text": "kebab_case_filenames", "passed": true, "evidence": "user-profile.component.ts, user-profile.service.ts, user-name.pipe.ts, auth.guard.ts" },
+    { "text": "proper_selectors", "passed": true, "evidence": "selector: 'app-user-profile'" },
+    { "text": "proper_class_names", "passed": true, "evidence": "UserProfileComponent, UserProfileService, UserNamePipe" },
+    { "text": "modern_apis", "passed": true, "evidence": "inject(), input.required(), functional CanActivateFn with RedirectCommand, OnPush" }
+  ]
+}

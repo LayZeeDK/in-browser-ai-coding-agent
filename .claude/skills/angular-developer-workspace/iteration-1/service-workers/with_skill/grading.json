@@ -1,0 +1,11 @@
+{
+  "eval_id": 13,
+  "config": "with_skill",
+  "expectations": [
+    { "text": "ng_add_pwa", "passed": true, "evidence": "Line 11: 'ng add @angular/pwa' with full list of what schematic does" },
+    { "text": "ngsw_config", "passed": true, "evidence": "Lines 62-125: Complete ngsw-config.json with assetGroups (prefetch/lazy), dataGroups (freshness with timeout, performance), navigationUrls" },
+    { "text": "sw_update", "passed": true, "evidence": "Lines 211-213: swUpdate.versionUpdates filtered for VERSION_READY. Line 230: activateUpdate(). Line 243: checkForUpdate()" },
+    { "text": "sw_push", "passed": true, "evidence": "Lines 312-387: SwPush with requestSubscription (VAPID key), messages observable, notificationClicks, unsubscribe()" },
+    { "text": "local_testing", "passed": true, "evidence": "Lines 398-452: ng build + http-server -c-1, DevTools Application tab, offline testing, ngsw/state endpoint, push simulation, Lighthouse audit" }
+  ]
+}

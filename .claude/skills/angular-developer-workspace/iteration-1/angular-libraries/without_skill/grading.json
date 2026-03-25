@@ -1,0 +1,12 @@
+{
+  "eval_id": 16,
+  "config": "without_skill",
+  "expectations": [
+    { "text": "generate_library", "passed": true, "evidence": "Line 17: 'ng generate library my-lib' with scaffold description" },
+    { "text": "project_structure", "passed": true, "evidence": "Lines 42-91: public-api.ts, ng-package.json, package.json with peerDependencies, tsconfig.lib.json" },
+    { "text": "secondary_entry_points", "passed": true, "evidence": "Lines 167-242: Directory structure, per-entry ng-package.json, testing stubs, consumer import examples, exports map in built package.json" },
+    { "text": "npm_publish", "passed": true, "evidence": "Lines 247-310: Build, cd dist, npm publish --access public, tags (next/beta), provenance signing, version automation" },
+    { "text": "forRoot_pattern", "passed": true, "evidence": "Lines 316-403: NgModule forRoot/forChild with full implementation. Lines 405-455: Modern provideMyLib/provideMyLibFeature. Lines 457-500: providedIn 'root' vs explicit vs 'any'. Lines 502-556: decision table and 10 best practices" }
+  ],
+  "qualitative_notes": "Baseline is SIGNIFICANTLY more comprehensive: includes angular.json architect config, tsconfig.lib.prod.json with partial compilation, provenance signing, are-the-types-wrong/publint validation, sideEffects:false, InjectionToken with factory, and providedIn:'any' explanation. 557 lines vs 424 lines."
+}

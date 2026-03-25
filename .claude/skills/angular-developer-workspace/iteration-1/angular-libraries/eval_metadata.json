@@ -1,0 +1,12 @@
+{
+  "eval_id": 16,
+  "eval_name": "angular-libraries",
+  "prompt": "Angular library creation: ng generate library, public-api.ts, ng-packagr, secondary entry points, npm publish, forRoot/forChild pattern.",
+  "assertions": [
+    { "name": "generate_library", "description": "Shows ng generate library command", "type": "content_check" },
+    { "name": "project_structure", "description": "Shows public-api.ts and ng-package.json", "type": "content_check" },
+    { "name": "secondary_entry_points", "description": "Explains secondary entry points for tree-shaking", "type": "content_check" },
+    { "name": "npm_publish", "description": "Shows npm publish workflow (build then publish from dist)", "type": "content_check" },
+    { "name": "forRoot_pattern", "description": "Shows forRoot/forChild or modern provide* pattern for library config", "type": "content_check" }
+  ]
+}

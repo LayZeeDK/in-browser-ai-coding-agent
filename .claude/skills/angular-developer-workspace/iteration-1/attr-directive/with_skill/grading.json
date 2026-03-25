@@ -1,0 +1,10 @@
+{
+  "eval_id": 1,
+  "config": "with_skill",
+  "expectations": [
+    { "text": "uses_host_metadata", "passed": true, "evidence": "Uses host: { '[style.backgroundColor]': 'currentBg()', '(mouseenter)': ..., '(mouseleave)': ... } in @Directive" },
+    { "text": "uses_input_function", "passed": true, "evidence": "Uses input('yellow') from @angular/core" },
+    { "text": "correct_selector", "passed": true, "evidence": "selector: '[appHighlight]'" },
+    { "text": "standalone_implicit", "passed": true, "evidence": "No standalone: true in decorator" }
+  ]
+}

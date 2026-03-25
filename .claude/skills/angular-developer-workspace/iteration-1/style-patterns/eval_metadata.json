@@ -1,0 +1,37 @@
+{
+  "eval_id": 6,
+  "eval_name": "style-patterns",
+  "prompt": "Refactor a poorly-written Angular component to follow the style guide: fix selector naming, remove standalone:true, replace *ngIf/*ngFor with @if/@for, replace ngClass with class binding, use inject() instead of constructor DI, add OnPush, remove any types.",
+  "assertions": [
+    {
+      "name": "fixes_selector",
+      "description": "Changes PascalCase selector to kebab-case with prefix (e.g., app-user-list)",
+      "type": "content_check"
+    },
+    {
+      "name": "removes_standalone_true",
+      "description": "Removes explicit standalone: true (Angular 21 default)",
+      "type": "content_check"
+    },
+    {
+      "name": "uses_control_flow",
+      "description": "Replaces *ngIf/*ngFor with @if/@for template control flow",
+      "type": "content_check"
+    },
+    {
+      "name": "uses_inject",
+      "description": "Replaces constructor(private http: HttpClient) with inject(HttpClient)",
+      "type": "content_check"
+    },
+    {
+      "name": "adds_onpush",
+      "description": "Adds ChangeDetectionStrategy.OnPush",
+      "type": "content_check"
+    },
+    {
+      "name": "removes_any",
+      "description": "Replaces any types with proper interfaces/types",
+      "type": "content_check"
+    }
+  ]
+}
