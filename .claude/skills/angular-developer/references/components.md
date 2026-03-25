@@ -5,10 +5,13 @@ Angular components are the fundamental building blocks of an application. Each c
 ## Component Definition
 
 ```ts
+import { NgOptimizedImage } from '@angular/common';
+
 @Component({
   selector: 'app-profile',
+  imports: [NgOptimizedImage],
   template: `
-    <img src="profile.jpg" alt="Profile photo" />
+    <img ngSrc="profile.jpg" alt="Profile photo" width="96" height="96" />
     <button (click)="save()">Save</button>
   `,
   styles: `
@@ -294,4 +297,5 @@ Triggers: `idle` (default), `viewport`, `interaction`, `hover`, `immediate`, `ti
 - **Keep lifecycle methods simple**: Delegate to well-named methods.
 - **Always implement lifecycle interfaces** (`OnInit`, `AfterViewInit`, etc.) for type safety.
 - **Refactor complex template expressions** into `computed()` signals.
+- **Use `NgOptimizedImage`** (`ngSrc` instead of `src`) for all `<img>` elements. It enforces `width`/`height` (prevents CLS), adds automatic lazy loading, and enables `priority` for LCP images. Import from `@angular/common`. Does not work for inline base64 data URIs. For image loaders, `fill` mode, `sizes`, and SSR preload details, see [performance.md](performance.md#image-optimization).
 - **Do not expose internal state in reusable component templates.** Measurement values (element height, scroll position), debug info, and implementation details belong in private fields or outputs — not rendered in the template. If the consumer needs the data, expose it via an output or a public signal, not inline text.
