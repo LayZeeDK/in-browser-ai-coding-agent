@@ -2,6 +2,8 @@
 
 Unit testing in Angular 21+ with Vitest. Covers the async-first model, signal-based APIs, service testing, and resource/httpResource patterns.
 
+**Test runner note:** Examples use Vitest (stable in Angular 21 via `@angular/build:unit-test`, experimental in v20). Many existing codebases use Jest (via Nx, `jest-preset-angular`, or `@angular-builders/jest`) or the legacy Jasmine/Karma stack. The `TestBed` patterns, `HttpTestingController`, and component testing approaches are framework-agnostic -- only mock/spy APIs differ (`vi.fn()` -> `jest.fn()` / `jasmine.createSpy()`). When working in a project, match the test runner already in use.
+
 ## Table of Contents
 
 1. [Async-First Testing](#async-first-testing)

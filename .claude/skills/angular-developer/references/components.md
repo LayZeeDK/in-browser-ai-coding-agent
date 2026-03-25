@@ -67,7 +67,7 @@ export class App {}
 
 1. **Does the item have a unique identifier** (`id`, `uuid`, `key`)? Use it: `track item.id`
 2. **No unique identifier exists?** Use `$index`: `track $index`
-3. **Never track by a non-unique property** (`name`, `label`, `title`, `text`). Duplicate values cause Angular to reuse the wrong DOM nodes, producing rendering bugs that are hard to diagnose.
+3. **Never track by a non-unique property** (`name`, `label`, `title`, `text`, `author`, `email`). Duplicate values cause Angular to reuse the wrong DOM nodes, producing rendering bugs that are hard to diagnose.
 4. **Avoid `track item`** (reference identity via `===`). Angular cannot map data to DOM efficiently, leading to significantly slower updates.
 
 ```html

@@ -102,7 +102,7 @@ Set `timeout` in milliseconds. Applies only to the backend request, not the inte
 
 ## httpResource (Experimental)
 
-`httpResource` is a reactive wrapper around `HttpClient` that exposes request status and response as signals. It initiates requests eagerly (unlike HttpClient which waits for subscription).
+`httpResource` is a reactive wrapper around `HttpClient` that exposes request status and response as signals. It initiates requests eagerly (unlike HttpClient which waits for subscription). **This API is experimental and may have breaking changes in minor releases.** Check the Angular changelog when upgrading.
 
 ```ts
 userId = input.required<string>();
