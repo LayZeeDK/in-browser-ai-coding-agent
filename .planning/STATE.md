@@ -68,6 +68,12 @@ Recent decisions affecting current work:
 - Research: AbortController for cancel with 500ms cooldown after abort
 - Research: DOMParser for truncation detection (deterministic, no AI tokens)
 
+### Quick Tasks Completed
+
+| #   | Task                                                      | Date       | Commits                   |
+| --- | --------------------------------------------------------- | ---------- | ------------------------- |
+| 1   | Implement angular-developer skill gaps from review report | 2026-03-25 | f11f0d2, 30bb9bc, b0afddb |
+
 ### Pending Todos
 
 None yet.
